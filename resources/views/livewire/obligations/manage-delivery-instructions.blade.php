@@ -1,0 +1,16 @@
+<section class="rounded-xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
+    <div class="border-b border-zinc-200 px-5 py-4 dark:border-zinc-700"><flux:heading size="lg">Delivery &amp; handover instructions</flux:heading><flux:text class="mt-1 text-sm">Keep more than one possible destination. Choose a clear place or person for returning an item; this does not change the obligation itself.</flux:text></div>
+    @if (session('delivery-instruction-created'))<div class="mx-5 mt-5 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{{ session('delivery-instruction-created') }}</div>@endif
+    @forelse ($instructionsList as $instruction)
+        <div class="flex items-start justify-between gap-3 border-b border-zinc-100 px-5 py-4 last:border-0 dark:border-zinc-800"><div><div class="font-medium">{{ $instruction->label }}</div><div class="mt-1 text-sm text-zinc-500">{{ ucfirst(str_replace('_', ' ', $instruction->method)) }}@if ($instruction->recipientParty) · recipient: {{ $instruction->recipientParty->preferred_name }}@endif</div>@if ($instruction->address)<div class="mt-1 text-xs text-zinc-500">{{ collect([$instruction->address->address_line_1, $instruction->address->city, $instruction->address->country_code])->filter()->implode(', ') }}</div>@endif @if ($instruction->instructions)<div class="mt-1 text-xs text-zinc-500">{{ $instruction->instructions }}</div>@endif</div><flux:button size="sm" variant="ghost" wire:click="archive('{{ $instruction->id }}')" wire:confirm="Archive this delivery instruction?">Archive</flux:button></div>
+    @empty
+        <div class="px-5 py-5 text-sm text-zinc-500">No delivery or handover instruction saved yet.</div>
+    @endforelse
+    <form wire:submit="save" class="grid gap-4 border-t border-zinc-200 px-5 py-5 sm:grid-cols-2 dark:border-zinc-700">
+        <flux:input wire:model="label" label="Label" placeholder="e.g. Return to home" required /><flux:select wire:model="method" label="Handover method"><flux:select.option value="delivery">Delivery</flux:select.option><flux:select.option value="in_person">In person</flux:select.option><flux:select.option value="courier">Courier</flux:select.option><flux:select.option value="pickup_point">Pickup point</flux:select.option><flux:select.option value="other">Other</flux:select.option></flux:select>
+        <flux:select wire:model="addressId" label="Address (optional)"><flux:select.option value="">No saved address</flux:select.option>@foreach ($addresses as $address)<flux:select.option value="{{ $address['id'] }}">{{ $address['label'] }}</flux:select.option>@endforeach</flux:select>
+        <flux:select wire:model="recipientPartyId" label="Recipient (optional)"><flux:select.option value="">No recipient selected</flux:select.option>@foreach ($parties as $party)<flux:select.option value="{{ $party->id }}">{{ $party->preferred_name }}</flux:select.option>@endforeach</flux:select>
+        <div class="sm:col-span-2"><flux:textarea wire:model="instructions" label="Handover instructions" placeholder="e.g. Call before arrival; leave with the named recipient only." rows="3" /></div>
+        <div class="sm:col-span-2 flex justify-end"><flux:button type="submit" variant="primary">Save handover instruction</flux:button></div>
+    </form>
+</section>

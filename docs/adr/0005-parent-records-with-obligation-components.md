@@ -1,0 +1,3 @@
+# Parent records with obligation components
+
+The application will model a `Record` as the case or arrangement with a profile and one or more linked parties, and model each `Obligation` as one payable or receivable component inside it. A record can contain multiple obligations with different kinds and directions; balances, movements, fulfillment events, evidence, and actions remain scoped to their component, while shared evidence and context belong to the record. We reject a kind array or polymorphic “one row does everything” design because it would blur validation and balance semantics, and we reject one record per kind because it cannot represent a single real-world arrangement faithfully.
