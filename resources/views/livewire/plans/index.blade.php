@@ -140,11 +140,11 @@
                                         <div class="text-zinc-500">Plan total</div>
                                         <div class="mt-1 font-semibold text-zinc-900 dark:text-zinc-100">{{ App\Domain\Money\MoneyAmount::format($planProgress->sum('planned'), $plan->currency) }}</div>
                                     </div>
-                                    @can('manageBudget', $budget->profile)
+                                    @if ($canManageBudget)
                                         @if ($plan->status === 'active')
                                             <flux:button size="sm" variant="ghost" wire:click="pausePlan('{{ $plan->id }}')">Pause plan</flux:button>
                                         @endif
-                                    @endcan
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -170,11 +170,11 @@
                                             <x-status-badge :tone="$progressTone" :label="ucfirst($progress['state'])" />
                                         </div>
                                     </div>
-                                    @can('recordTransaction', $progress['obligation'])
+                                    @if ($canRecordTransactions)
                                         <flux:modal.trigger name="plan-payment-{{ $progress['allocation']->id }}">
                                             <flux:button size="sm" variant="primary" class="shrink-0"><flux:icon name="plus" class="size-4" /> Record payment</flux:button>
                                         </flux:modal.trigger>
-                                    @endcan
+                                    @endif
                                 </div>
                             @empty
                                 <div class="px-5 py-8 text-sm text-zinc-500">No allocation was created because no selected obligation had a current payable balance.</div>
@@ -205,20 +205,20 @@
                                             <x-status-badge :tone="$historyStatusTone" :label="$history->statusLabel()" />
                                             @if ($historyIsCurrent)<span class="text-xs font-medium text-emerald-700 dark:text-emerald-300">Current view</span>@endif
                                         </div>
-                                        <div class="mt-1 text-sm text-zinc-500">{{ ucfirst(str_replace('_', ' ', $history->strategy)) }} · {{ $history->allocations->count() }} obligation{{ $history->allocations->count() === 1 ? '' : 's' }} · Generated {{ $history->generated_at?->format('d M Y, H:i') }}</div>
+                                        <div class="mt-1 text-sm text-zinc-500">{{ ucfirst(str_replace('_', ' ', $history->strategy)) }} · {{ $history->allocations_count }} obligation{{ $history->allocations_count === 1 ? '' : 's' }} · Generated {{ $history->generated_at?->format('d M Y, H:i') }}</div>
                                         @if ($history->status === 'needs_review')
                                             <div class="mt-2 text-xs text-amber-800 dark:text-amber-200">{{ $history->review_reason ?: 'A confirmed movement changed this plan.' }}</div>
                                         @elseif ($history->status === 'paused')
                                             <div class="mt-2 text-xs text-zinc-500">Paused {{ $history->paused_at?->format('d M Y, H:i') ?: 'manually' }} · can be activated again.</div>
                                         @endif
                                     </div>
-                                    @can('manageBudget', $budget->profile)
+                                    @if ($canManageBudget)
                                         @if ($history->status === 'paused')
                                             <flux:button size="sm" variant="primary" wire:click="activatePlan('{{ $history->id }}')">Activate plan</flux:button>
                                         @elseif ($history->status === 'needs_review')
                                             <flux:button size="sm" variant="primary" wire:click="activatePlan('{{ $history->id }}')">Review &amp; activate</flux:button>
                                         @endif
-                                    @endcan
+                                    @endif
                                 </div>
                             @endforeach
                         </div>

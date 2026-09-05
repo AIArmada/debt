@@ -44,6 +44,12 @@ test('authenticated export contains owned data without private storage paths', f
         ->and($payload['profiles'][0]['records'][0]['obligations'][0]['transactions'][0]['amount'])->toBe('100.00')
         ->and($payload['profiles'][0]['records'][0]['obligations'][0]['transactions'][0]['amount_minor'])->toBe(10000)
         ->and($payload['profiles'][0]['records'][0]['obligations'][0]['documents'][0] ?? [])->not->toHaveKey('storage_path');
+    $this->assertDatabaseHas('audit_logs', [
+        'actor_user_id' => $user->id,
+        'auditable_type' => User::class,
+        'auditable_id' => $user->id,
+        'action' => 'data_exported',
+    ]);
 });
 
 test('export requires authentication', function () {

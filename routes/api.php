@@ -3,10 +3,11 @@
 use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\PartyController;
 use App\Http\Controllers\Api\V1\RecordController;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware([StartSession::class, 'auth', 'verified', 'throttle:api'])->prefix('v1')->group(function (): void {
+Route::middleware([StartSession::class, PreventRequestForgery::class, 'auth', 'verified', 'throttle:api'])->prefix('v1')->group(function (): void {
     Route::get('records', [RecordController::class, 'index'])->name('api.v1.records.index');
     Route::post('records', [RecordController::class, 'store'])->name('api.v1.records.store');
     Route::get('records/{record}', [RecordController::class, 'show'])->name('api.v1.records.show');

@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Communication\Composer;
+use App\Livewire\Records\Show;
 use App\Mail\CommunicationMessageMail;
 use App\Models\CommunicationMessage;
 use App\Models\FinancialProfile;
@@ -49,6 +50,16 @@ test('user must explicitly send an email and sent message is recorded', function
     expect($message->status)->toBe('sent')
         ->and($message->recipient)->toBe('bank@example.test')
         ->and($message->sent_at)->not->toBeNull();
+});
+
+test('record page exposes the message composer for an obligation', function () {
+    $user = User::factory()->create();
+    $obligation = createCommunicationObligation($user, 'Aminah');
+
+    Livewire::actingAs($user)
+        ->test(Show::class, ['record' => $obligation->record])
+        ->assertSee('Messages')
+        ->assertSee('messages-'.$obligation->id, false);
 });
 
 function createCommunicationObligation(User $user, string $title): Obligation

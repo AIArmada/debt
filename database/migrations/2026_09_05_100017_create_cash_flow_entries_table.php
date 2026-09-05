@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('frequency', 30)->nullable();
             $table->date('occurred_on')->nullable();
             $table->timestamps();
+            $table->index('budget_period_id');
         });
     }
 

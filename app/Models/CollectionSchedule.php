@@ -8,7 +8,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
-/** @property Carbon|null $next_due_on */
+/**
+ * @property Carbon|null $starts_on
+ * @property Carbon|null $ends_on
+ * @property Carbon|null $next_due_on
+ */
 class CollectionSchedule extends Model
 {
     use HasUuids;

@@ -3,10 +3,11 @@
 namespace App\Livewire\Profiles;
 
 use App\Actions\Profiles\CreateFinancialProfile;
+use App\Livewire\Concerns\InteractsWithAccessibleProfiles;
 use App\Models\FinancialProfile;
+use App\Models\User;
 use App\Services\ProfileAccess;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Validate;
@@ -14,6 +15,8 @@ use Livewire\Component;
 
 class Index extends Component
 {
+    use InteractsWithAccessibleProfiles;
+
     #[Validate('required|string|max:100')]
     public string $name = '';
 
@@ -54,16 +57,21 @@ class Index extends Component
 
         session()->put('selected_profile_id', $profile->getKey());
         session()->flash('profile-created', 'The financial profile was created.');
+        $this->clearAccessibleProfilesCache();
         $this->resetForm();
     }
 
     public function render(): View
     {
         Gate::authorize('viewAny', FinancialProfile::class);
+        $profiles = $this->accessibleProfilesCollection();
+        $profiles->loadCount(['records as active_records_count' => fn ($query) => $query->where('is_archived', false)]);
+        $user = Auth::user();
+        abort_unless($user instanceof User, 401);
 
         return view('livewire.profiles.index', [
-            'profiles' => $this->profiles()->get(),
-            'roles' => $this->profiles()->get()->mapWithKeys(fn (FinancialProfile $profile): array => [$profile->getKey() => app(ProfileAccess::class)->role(Auth::user(), $profile)]),
+            'profiles' => $profiles,
+            'roles' => app(ProfileAccess::class)->rolesFor($user, $profiles),
         ])->layout('layouts.app', ['title' => 'Profiles']);
     }
 
@@ -75,11 +83,5 @@ class Index extends Component
         $this->timezone = 'Asia/Kuala_Lumpur';
         $this->locale = '';
         $this->isIslamicModeEnabled = false;
-    }
-
-    /** @return Builder<FinancialProfile> */
-    private function profiles(): Builder
-    {
-        return app(ProfileAccess::class)->accessibleProfiles(Auth::user());
     }
 }

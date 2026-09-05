@@ -37,10 +37,11 @@ class Composer extends Component
         $this->template = $obligation->obligation_kind === 'asset'
             ? 'return_reminder'
             : ($obligation->obligation_kind === 'service' ? 'service_reminder' : ($obligation->obligation_kind === 'action' ? 'commitment_reminder' : 'request_balance_confirmation'));
-        $this->recipient = (string) ($obligation->record->primaryParty()?->contacts
+        $emailContact = $obligation->record->primaryParty()?->contacts
             ->where('type', 'email')
             ->where('is_message_safe', true)
-            ->first()?->value ?? '');
+            ->first();
+        $this->recipient = $emailContact === null ? '' : (string) $emailContact->value;
         $this->compose();
     }
 
@@ -85,7 +86,13 @@ class Composer extends Component
         Gate::authorize('manageCommunication', $this->obligation);
 
         return view('livewire.communication.composer', [
-            'messages' => CommunicationMessage::query()->with('thread')->whereHas('thread', fn ($query) => $query->where('obligation_id', $this->obligation->getKey()))->latest()->limit(10)->get(),
+            'messages' => CommunicationMessage::query()
+                ->select(['id', 'communication_thread_id', 'status', 'body', 'created_at'])
+                ->with(['thread' => fn ($query) => $query->select(['id', 'obligation_id', 'channel'])])
+                ->whereHas('thread', fn ($query) => $query->where('obligation_id', $this->obligation->getKey()))
+                ->latest()
+                ->limit(10)
+                ->get(),
         ]);
     }
 }

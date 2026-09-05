@@ -88,8 +88,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('settings/push-subscription', [PushSubscriptionController::class, 'store'])->name('push-subscriptions.store');
     Route::delete('settings/push-subscription/{subscription}', [PushSubscriptionController::class, 'destroy'])->name('push-subscriptions.destroy');
     Route::get('documents/{document}', DocumentDownloadController::class)->name('documents.download');
-    Route::get('invitations/{token}', AcceptProfileInvitationController::class)->name('invitations.accept');
-    Route::get('export', ExportUserDataController::class)->name('data.export');
+    Route::get('invitations/{token}', AcceptProfileInvitationController::class)->middleware('throttle:invitations')->name('invitations.accept');
+    Route::get('export', ExportUserDataController::class)->middleware('throttle:exports')->name('data.export');
 });
 
 require __DIR__.'/settings.php';

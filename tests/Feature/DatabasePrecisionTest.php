@@ -7,7 +7,16 @@ use Illuminate\Support\Facades\Schema;
 pest()->use(RefreshDatabase::class);
 
 test('domain schema does not use floating point columns', function () {
-    $floatingPointColumns = DB::select("select m.name as table_name, p.name as column_name, p.type as column_type from sqlite_master m join pragma_table_info(m.name) p where m.type = 'table' and lower(p.type) in ('float', 'double', 'real')");
+    $floatingPointColumns = DB::select(
+        "select columns.table_name, columns.column_name, columns.data_type as column_type
+        from information_schema.columns
+        join information_schema.tables
+            on tables.table_schema = columns.table_schema
+            and tables.table_name = columns.table_name
+        where columns.table_schema = current_schema()
+            and tables.table_type = 'BASE TABLE'
+            and columns.data_type in ('real', 'double precision')",
+    );
 
     expect($floatingPointColumns)->toBeEmpty();
 });
@@ -22,7 +31,7 @@ test('money columns are integer minor units', function () {
         'cash_flow_entries' => ['amount'],
     ] as $table => $columns) {
         foreach ($columns as $column) {
-            expect(Schema::getColumnType($table, $column))->toBe('integer', "{$table}.{$column} must be stored as an integer minor unit.");
+            expect(Schema::getColumnType($table, $column))->toBe('int8', "{$table}.{$column} must be stored as a PostgreSQL signed integer minor unit.");
         }
     }
 });

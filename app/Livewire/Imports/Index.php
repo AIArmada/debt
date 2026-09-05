@@ -4,13 +4,11 @@ namespace App\Livewire\Imports;
 
 use App\Actions\Imports\ImportBankStatement;
 use App\Actions\Obligations\RecordTransaction;
+use App\Livewire\Concerns\InteractsWithAccessibleProfiles;
 use App\Models\BankImportRow;
-use App\Models\FinancialProfile;
 use App\Models\Obligation;
 use App\Rules\SafeUpload;
-use App\Services\ProfileAccess;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Url;
@@ -21,6 +19,7 @@ use Livewire\WithFileUploads;
 
 class Index extends Component
 {
+    use InteractsWithAccessibleProfiles;
     use WithFileUploads;
 
     #[Url(as: 'profile', keep: true)]
@@ -33,27 +32,27 @@ class Index extends Component
 
     public function mount(): void
     {
-        $profiles = $this->profiles();
+        $profiles = $this->accessibleProfilesCollection();
         $selectedProfileId = request()->query('profile') ?? session('selected_profile_id');
-        $this->profileId = is_string($selectedProfileId) && $profiles->whereKey($selectedProfileId)->exists()
+        $this->profileId = is_string($selectedProfileId) && $profiles->contains('id', $selectedProfileId)
             ? $selectedProfileId
             : $profiles->first()?->getKey();
         if ($this->profileId !== null) {
-            $this->currency = (string) $this->profiles()->findOrFail($this->profileId)->base_currency;
+            $this->currency = (string) $profiles->firstWhere('id', $this->profileId)->base_currency;
         }
     }
 
     public function updatedProfileId(): void
     {
-        abort_unless($this->profiles()->whereKey($this->profileId)->exists(), 403);
-        $this->currency = (string) $this->profiles()->findOrFail($this->profileId)->base_currency;
+        $profile = $this->accessibleProfile($this->profileId);
+        $this->currency = (string) $profile->base_currency;
         session()->put('selected_profile_id', $this->profileId);
     }
 
     public function runImport(ImportBankStatement $importBankStatement): void
     {
         $validated = $this->validate(['file' => ['required', 'file', 'mimes:csv,txt', 'max:10240', new SafeUpload], 'currency' => 'required|alpha|size:3']);
-        $profile = $this->profiles()->findOrFail($this->profileId);
+        $profile = $this->accessibleProfile($this->profileId);
         $importBankStatement->handle(auth()->user(), $profile, $this->file, strtoupper($validated['currency']));
         $this->reset('file');
         session()->flash('import-created', 'The statement was imported. Review each row before recording it as a payment or collection.');
@@ -126,21 +125,43 @@ class Index extends Component
 
     public function render(): View
     {
-        Gate::authorize('view', $this->profiles()->firstOrFail());
-        $profile = $this->profiles()->findOrFail($this->profileId);
-        $canManageImports = in_array(app(ProfileAccess::class)->role(auth()->user(), $profile), ['owner', 'editor'], true);
+        $profiles = $this->accessibleProfilesCollection();
+        $profile = $this->accessibleProfile($this->profileId);
+        Gate::authorize('view', $profile);
+        $canManageImports = in_array($this->accessibleProfileRole($this->profileId), ['owner', 'editor'], true);
+        $recordOptions = $profile->records()
+            ->select(['id', 'profile_id', 'title'])
+            ->where('is_archived', false)
+            ->with(['obligations' => fn ($query) => $query
+                ->select(['id', 'record_id', 'obligation_kind', 'title'])
+                ->where('obligation_kind', 'money')])
+            ->latest()
+            ->get();
 
-        return view('livewire.imports.index', ['profile' => $profile, 'canManageImports' => $canManageImports, 'profiles' => $this->profiles()->get(), 'imports' => $profile->bankImports()->with('rows.obligation', 'rows.financialTransaction')->latest()->limit(5)->get()])->layout('layouts.app', ['title' => 'Bank imports']);
+        $imports = $profile->bankImports()
+            ->select(['id', 'profile_id', 'format', 'currency', 'status', 'row_count', 'matched_count', 'created_at'])
+            ->with([
+                'media' => fn ($query) => $query->select([
+                    'id', 'model_id', 'model_type', 'collection_name', 'file_name', 'mime_type', 'size',
+                    'disk', 'custom_properties', 'order_column',
+                ]),
+                'rows' => fn ($query) => $query->select([
+                    'id', 'bank_import_id', 'obligation_id', 'financial_transaction_id', 'occurred_on',
+                    'description', 'amount', 'currency', 'suggested_direction', 'status',
+                ])->with([
+                    'obligation' => fn ($obligationQuery) => $obligationQuery->select(['id', 'title']),
+                ]),
+            ])
+            ->latest()
+            ->limit(5)
+            ->get();
+
+        return view('livewire.imports.index', compact('profile', 'canManageImports', 'profiles', 'recordOptions', 'imports'))
+            ->layout('layouts.app', ['title' => 'Bank imports']);
     }
 
     private function row(string $rowId): BankImportRow
     {
         return BankImportRow::query()->with(['bankImport.profile', 'obligation'])->whereKey($rowId)->firstOrFail();
-    }
-
-    /** @return Builder<FinancialProfile> */
-    private function profiles(): Builder
-    {
-        return app(ProfileAccess::class)->accessibleProfiles(auth()->user());
     }
 }

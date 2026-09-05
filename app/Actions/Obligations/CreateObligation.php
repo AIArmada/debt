@@ -15,40 +15,41 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * @phpstan-type ObligationData array{
+ *     direction: string,
+ *     tracking_mode?: string,
+ *     obligation_kind: string,
+ *     title: string,
+ *     category: string,
+ *     currency: string|null,
+ *     original_amount: string|null,
+ *     current_total_balance: string|null,
+ *     minimum_payment_amount: string|null,
+ *     next_due_on: string|null,
+ *     is_interest_bearing: bool,
+ *     description: string,
+ *     subject_name: string|null,
+ *     subject_quantity: string|null,
+ *     quantity_mode: string|null,
+ *     subject_unit: string|null,
+ *     subject_condition: string|null,
+ *     subject_details: string|null,
+ *     asset_type: string|null,
+ *     service_type: string|null,
+ *     estimated_value: string|null,
+ *     estimated_value_currency: string|null,
+ *     completion_criteria: string|null,
+ *     is_conditional: bool,
+ *     condition_description: string|null,
+ *     condition_triggered_on: string|null
+ * }
+ */
 class CreateObligation
 {
     public function __construct(private readonly AuditLogger $auditLogger) {}
 
-    /**
-     * @param array{
-     *     direction: string,
-     *     tracking_mode?: string,
-     *     obligation_kind: string,
-     *     title: string,
-     *     category: string,
-     *     currency: string|null,
-     *     original_amount: string|null,
-     *     current_total_balance: string|null,
-     *     minimum_payment_amount: string|null,
-     *     next_due_on: string|null,
-     *     is_interest_bearing: bool,
-     *     description: string,
-     *     subject_name: string|null,
-     *     subject_quantity: string|null,
-     *     quantity_mode: string|null,
-     *     subject_unit: string|null,
-     *     subject_condition: string|null,
-     *     subject_details: string|null,
-     *     asset_type: string|null,
-     *     service_type: string|null,
-     *     estimated_value: string|null,
-     *     estimated_value_currency: string|null,
-     *     completion_criteria: string|null,
-     *     is_conditional: bool,
-     *     condition_description: string|null,
-     *     condition_triggered_on: string|null
-     * } $data
-     */
+    /** @param ObligationData $data */
     public function handle(User $user, Record $record, array $data): Obligation
     {
         $record->loadMissing('profile');

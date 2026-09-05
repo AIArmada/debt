@@ -2,17 +2,20 @@
 
 namespace App\Models;
 
+use Database\Factories\FinancialProfileFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class FinancialProfile extends Model
 {
-    use HasUuids;
+    /** @use HasFactory<FinancialProfileFactory> */
+    use HasFactory, HasUuids;
 
     protected $fillable = [
-        'owner_user_id', 'name', 'type', 'base_currency', 'timezone', 'locale',
+        'name', 'type', 'base_currency', 'timezone', 'locale',
         'is_islamic_mode_enabled', 'is_archived',
     ];
 

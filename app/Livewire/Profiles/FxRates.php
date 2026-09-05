@@ -46,6 +46,12 @@ class FxRates extends Component
     {
         Gate::authorize('update', $this->profile);
 
-        return view('livewire.profiles.fx-rates', ['rates' => $this->profile->exchangeRates()->latest('effective_on')->limit(8)->get()]);
+        return view('livewire.profiles.fx-rates', [
+            'rates' => $this->profile->exchangeRates()
+                ->select(['id', 'profile_id', 'from_currency', 'to_currency', 'rate', 'effective_on'])
+                ->latest('effective_on')
+                ->limit(8)
+                ->get(),
+        ]);
     }
 }

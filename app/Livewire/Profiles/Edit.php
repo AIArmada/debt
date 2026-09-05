@@ -109,9 +109,17 @@ class Edit extends Component
 
         return view('livewire.profiles.edit')
             ->with([
-                'members' => $this->profile->members()->with('user')->whereNull('revoked_at')->get(),
-                'invitations' => $this->profile->invitations()->whereNull('accepted_at')->whereNull('revoked_at')->latest()->limit(10)->get(),
-                'emergencyRequests' => $this->profile->emergencyAccessRequests()->with('user')->where('status', 'pending')->latest()->get(),
+                'members' => $this->profile->members()
+                    ->select(['id', 'profile_id', 'user_id', 'role', 'revoked_at'])
+                    ->with(['user' => fn ($query) => $query->select(['id', 'email'])])
+                    ->whereNull('revoked_at')
+                    ->get(),
+                'emergencyRequests' => $this->profile->emergencyAccessRequests()
+                    ->select(['id', 'profile_id', 'user_id', 'status', 'activate_after'])
+                    ->with(['user' => fn ($query) => $query->select(['id', 'name', 'email'])])
+                    ->where('status', 'pending')
+                    ->latest()
+                    ->get(),
             ])
             ->layout('layouts.app', ['title' => 'Edit '.$this->profile->name]);
     }

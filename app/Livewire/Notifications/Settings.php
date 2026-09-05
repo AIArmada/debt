@@ -50,7 +50,11 @@ class Settings extends Component
     public function render(): View
     {
         return view('livewire.notifications.settings', [
-            'notifications' => Auth::user()->notifications()->latest()->limit(20)->get(),
+            'notifications' => Auth::user()->notifications()
+                ->select(['id', 'notifiable_type', 'notifiable_id', 'type', 'data', 'read_at', 'created_at'])
+                ->latest()
+                ->limit(20)
+                ->get(),
             'unreadCount' => Auth::user()->unreadNotifications()->count(),
         ])->layout('layouts.app', ['title' => 'Notifications']);
     }

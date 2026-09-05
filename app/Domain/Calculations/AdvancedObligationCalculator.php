@@ -33,7 +33,9 @@ class AdvancedObligationCalculator
         $extraPaymentMinor = is_int($extraPayment)
             ? $extraPayment
             : MoneyAmount::fromMajorOrZero($extraPayment, $currency);
-        $basePayment = $term?->fixed_installment_amount ?? $obligation->minimum_payment_amount ?? 0;
+        $basePayment = $term === null
+            ? $obligation->minimum_payment_amount ?? 0
+            : $term->fixed_installment_amount ?? $obligation->minimum_payment_amount ?? 0;
         $monthlyPayment = max(0, (int) $basePayment + $extraPaymentMinor);
 
         for ($month = 1; $month <= $months; $month++) {
@@ -113,7 +115,8 @@ class AdvancedObligationCalculator
             };
             $periodRate = $this->precise(bcdiv($monthlyRate, (string) $periods, 12));
             $growth = $this->decimalPower($this->precise(bcadd('1', $periodRate, 12)), $periods);
-            $charge = $this->precise(bcmul((string) $base, $this->precise(bcsub($growth, '1', 12)), 12));
+            $growthDelta = $this->precise(bcsub($growth, '1', 12));
+            $charge = $this->precise(bcmul((string) $base, $growthDelta, 12));
 
             return $this->roundMinor($charge);
         }
@@ -166,6 +169,10 @@ class AdvancedObligationCalculator
         };
     }
 
+    /**
+     * @param  numeric-string  $base
+     * @return numeric-string
+     */
     private function decimalPower(string $base, int $exponent): string
     {
         $result = '1.0000000000';
@@ -176,6 +183,7 @@ class AdvancedObligationCalculator
         return $result;
     }
 
+    /** @param numeric-string $value */
     private function roundMinor(string $value): int
     {
         if (bccomp($value, '0', 12) < 0) {
@@ -185,6 +193,7 @@ class AdvancedObligationCalculator
         return (int) bcadd($value, '0.5', 0);
     }
 
+    /** @return numeric-string */
     private function precise(string $value): string
     {
         if (! is_numeric($value)) {

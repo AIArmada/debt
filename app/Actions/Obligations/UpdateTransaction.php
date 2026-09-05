@@ -19,6 +19,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * @phpstan-import-type TransactionData from RecordTransaction
+ */
 class UpdateTransaction
 {
     public function __construct(
@@ -30,24 +33,12 @@ class UpdateTransaction
         private readonly RepaymentPlanContinuity $repaymentPlanContinuity,
     ) {}
 
-    /**
-     * @param array{
-     *     status: string,
-     *     amount: string,
-     *     currency: string,
-     *     occurred_on: string|null,
-     *     external_reference: string|null,
-     *     note: string|null,
-     *     entry_type?: string,
-     *     balance_effect?: string|null,
-     *     amount_minor?: int|null,
-     *     collection_schedule_id?: string|null
-     * } $data
-     */
+    /** @param TransactionData $data */
     public function handle(Obligation $obligation, FinancialTransaction $transaction, array $data): FinancialTransaction
     {
         return DB::transaction(function () use ($obligation, $transaction, $data): FinancialTransaction {
             $lockedObligation = Obligation::query()
+                ->with('record.profile')
                 ->whereKey($obligation->getKey())
                 ->lockForUpdate()
                 ->firstOrFail();
@@ -69,7 +60,9 @@ class UpdateTransaction
                 abort(404);
             }
 
-            $promoteSnapshotToLedger = $lockedObligation->tracking_mode === 'snapshot';
+            // A correction only starts detailed ledger tracking when the resulting
+            // movement is confirmed. Editing a draft must not promote a snapshot.
+            $promoteSnapshotToLedger = $lockedObligation->tracking_mode === 'snapshot' && $data['status'] === 'confirmed';
 
             $before = $lockedTransaction->only([
                 'status', 'amount', 'currency', 'entry_type', 'balance_effect',
@@ -148,7 +141,7 @@ class UpdateTransaction
 
             $recalculated = $this->nativeCurrencyLedger->recalculate(
                 $lockedObligation,
-                FinancialTransaction::query()->where('obligation_id', $lockedObligation->getKey())->get(),
+                FinancialTransaction::query()->where('obligation_id', $lockedObligation->getKey())->lockForUpdate()->get(),
                 $openingPrincipal,
             );
 

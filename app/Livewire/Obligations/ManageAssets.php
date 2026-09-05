@@ -94,7 +94,10 @@ class ManageAssets extends Component
         Gate::authorize('manageAssets', $this->obligation);
 
         return view('livewire.obligations.manage-assets', [
-            'assets' => $this->obligation->pledgedAssets()->latest()->get(),
+            'assets' => $this->obligation->pledgedAssets()
+                ->select(['id', 'obligation_id', 'asset_type', 'description', 'quantity', 'quantity_mode', 'quantity_unit', 'estimated_value', 'currency', 'matures_on'])
+                ->latest()
+                ->get(),
         ]);
     }
 }

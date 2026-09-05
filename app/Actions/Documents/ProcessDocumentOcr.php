@@ -10,7 +10,7 @@ class ProcessDocumentOcr
     {
         $media = $document->mediaFile();
 
-        if ($document->evidence_type !== 'file' || $media === null || $media->mime_type === null) {
+        if ($document->evidence_type !== 'file' || $media === null || $media->mime_type === '') {
             return $document->update(['ocr_status' => 'not_applicable', 'ocr_provider' => null, 'ocr_error' => null])
                 ? $document->refresh()
                 : $document;

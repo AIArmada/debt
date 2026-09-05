@@ -14,7 +14,7 @@ class EmergencyAccessRequest extends Model
 {
     use HasUuids;
 
-    protected $fillable = ['profile_id', 'user_id', 'approved_by_user_id', 'status', 'reason', 'activate_after', 'approved_at', 'activated_at', 'expires_at'];
+    protected $fillable = ['reason', 'activate_after'];
 
     protected function casts(): array
     {

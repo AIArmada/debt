@@ -64,7 +64,11 @@ class Scenarios extends Component
         Gate::authorize('view', $this->obligation);
 
         return view('livewire.obligations.scenarios', [
-            'scenarios' => $this->obligation->calculationScenarios()->with('createdBy')->limit(5)->get(),
+            'scenarios' => $this->obligation->calculationScenarios()
+                ->select(['id', 'obligation_id', 'name', 'extra_payment', 'horizon_months', 'result', 'created_at'])
+                ->with(['obligation' => fn ($query) => $query->select(['id', 'currency'])])
+                ->limit(5)
+                ->get(),
         ]);
     }
 }

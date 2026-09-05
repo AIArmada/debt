@@ -64,7 +64,12 @@ class Edit extends Component
     {
         Gate::authorize('update', $this->record);
 
-        $parties = Party::query()->where('profile_id', $this->record->profile_id)->whereNull('archived_at')->orderBy('preferred_name')->get();
+        $parties = Party::query()
+            ->select(['id', 'profile_id', 'kind', 'preferred_name', 'status'])
+            ->where('profile_id', $this->record->profile_id)
+            ->where('status', 'active')
+            ->orderBy('preferred_name')
+            ->get();
 
         return view('livewire.records.edit', compact('parties'))->layout('layouts.app', ['title' => 'Edit '.$this->record->title]);
     }

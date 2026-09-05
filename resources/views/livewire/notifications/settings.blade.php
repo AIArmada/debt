@@ -1,4 +1,4 @@
-<div class="mx-auto w-full max-w-2xl" wire:poll.10s>
+<div class="mx-auto w-full max-w-2xl" wire:poll.30s>
     <div class="mb-7">
         <div class="flex items-start justify-between gap-4"><div class="flex items-start gap-4"><span class="app-page-icon hidden shrink-0 sm:inline-flex"><flux:icon name="bell" class="size-6" /></span><div><div class="app-eyebrow">Stay informed</div><flux:heading size="xl" class="mt-2 text-3xl tracking-tight">Notifications</flux:heading><flux:text class="mt-2 leading-6">Important record activity appears here and is also available through the API.</flux:text></div></div><x-status-badge tone="success" :label="$unreadCount.' unread'" /></div>
     </div>

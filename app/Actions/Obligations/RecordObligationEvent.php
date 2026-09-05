@@ -113,7 +113,10 @@ class RecordObligationEvent
         }
     }
 
-    /** @return array{0: numeric-string|null, 1: string|null} */
+    /**
+     * @param  numeric-string|null  $quantity
+     * @return array{0: numeric-string|null, 1: string|null}
+     */
     private function applyQuantityEvent(Obligation $obligation, ObligationKind $kind, string $eventType, ?string $quantity): array
     {
         $current = $this->decimalString($obligation->current_subject_quantity)

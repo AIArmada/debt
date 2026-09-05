@@ -3,6 +3,10 @@
 namespace App\Http\Resources;
 
 use App\Models\Party;
+use App\Models\PartyAddress;
+use App\Models\PartyContact;
+use App\Models\PartyContactRoute;
+use App\Models\PartyPaymentDestination;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Gate;
@@ -13,8 +17,13 @@ class PartyResource extends JsonResource
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
-        $canViewPrivate = $this->profile !== null
-            && Gate::forUser($request->user())->allows('manageParties', $this->profile);
+        $profileRoles = $request->attributes->get('party_profile_roles');
+        $profileId = (string) $this->profile_id;
+        $canViewPrivate = is_array($profileRoles) && array_key_exists($profileId, $profileRoles)
+            ? in_array($profileRoles[$profileId], ['owner', 'editor'], true)
+            : ($this->relationLoaded('profile')
+                && $this->profile !== null
+                && Gate::forUser($request->user())->allows('manageParties', $this->profile));
 
         return [
             'id' => $this->getKey(),
@@ -27,7 +36,7 @@ class PartyResource extends JsonResource
             'status' => $this->status,
             'verification_status' => $this->verification_status,
             'contacts' => $canViewPrivate && $this->relationLoaded('contacts')
-                ? $this->contacts->map(fn ($contact): array => [
+                ? $this->contacts->map(fn (PartyContact $contact): array => [
                     'id' => $contact->getKey(),
                     'type' => $contact->type,
                     'label' => $contact->label,
@@ -38,7 +47,7 @@ class PartyResource extends JsonResource
                 ])->values()->all()
                 : [],
             'addresses' => $canViewPrivate && $this->relationLoaded('addresses')
-                ? $this->addresses->map(fn ($address): array => [
+                ? $this->addresses->map(fn (PartyAddress $address): array => [
                     'id' => $address->getKey(),
                     'label' => $address->label,
                     'address_line_1' => $address->address_line_1,
@@ -51,7 +60,7 @@ class PartyResource extends JsonResource
                 ])->values()->all()
                 : [],
             'payment_destinations' => $canViewPrivate && $this->relationLoaded('paymentDestinations')
-                ? $this->paymentDestinations->map(fn ($destination): array => [
+                ? $this->paymentDestinations->map(fn (PartyPaymentDestination $destination): array => [
                     'id' => $destination->getKey(),
                     'method' => $destination->method,
                     'label' => $destination->label,
@@ -64,7 +73,7 @@ class PartyResource extends JsonResource
                 ])->values()->all()
                 : [],
             'contact_routes' => $canViewPrivate && $this->relationLoaded('contactRoutes')
-                ? $this->contactRoutes->map(fn ($route): array => [
+                ? $this->contactRoutes->map(fn (PartyContactRoute $route): array => [
                     'id' => $route->getKey(),
                     'via_party_id' => $route->via_party_id,
                     'via_party_name' => $route->viaParty?->preferred_name,

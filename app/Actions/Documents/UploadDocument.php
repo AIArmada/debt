@@ -50,7 +50,7 @@ class UploadDocument
             throw ValidationException::withMessages(['file' => 'Choose a file to upload.']);
         }
 
-        if ($evidenceType === 'file' && $file !== null) {
+        if ($evidenceType === 'file') {
             Validator::make(
                 ['file' => $file],
                 ['file' => ['required', 'file', 'max:51200', new SafeUpload]],
@@ -91,7 +91,7 @@ class UploadDocument
                     'uploaded_by_user_id' => $user->getKey(),
                     'status' => 'active',
                     'evidence_type' => $evidenceType,
-                    'title' => $title ?: ($evidenceType === 'file' && $file !== null ? SafeUpload::sanitizedFilename($file) : null),
+                    'title' => $title ?: ($evidenceType === 'file' ? SafeUpload::sanitizedFilename($file) : null),
                     'source' => $source,
                     'external_url' => $externalUrl,
                     'content' => $content,
@@ -100,7 +100,7 @@ class UploadDocument
                     'verification_status' => $verificationStatus,
                 ]);
 
-                if ($evidenceType === 'file' && $file !== null) {
+                if ($evidenceType === 'file') {
                     $originalFilename = SafeUpload::sanitizedFilename($file);
                     $document->addMedia($file)
                         ->usingName(pathinfo($originalFilename, PATHINFO_FILENAME))
@@ -163,7 +163,12 @@ class UploadDocument
             try {
                 return app(ProcessDocumentOcr::class)->handle($document);
             } catch (Throwable $exception) {
-                $document->update(['ocr_status' => 'failed', 'ocr_provider' => 'local', 'ocr_error' => $exception->getMessage()]);
+                report($exception);
+                $document->update([
+                    'ocr_status' => 'failed',
+                    'ocr_provider' => 'local',
+                    'ocr_error' => 'Document text extraction failed.',
+                ]);
 
                 return $document->fresh();
             }

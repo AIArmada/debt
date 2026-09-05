@@ -7,18 +7,22 @@ use App\Domain\Money\Currency;
 use App\Domain\Obligations\ObligationKind;
 use App\Domain\Obligations\Quantity;
 use App\Domain\Obligations\QuantityMode;
+use App\Livewire\Concerns\InteractsWithAccessibleProfiles;
 use App\Models\FinancialProfile;
 use App\Models\Record;
-use App\Services\ProfileAccess;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
+/**
+ * @phpstan-import-type ObligationData from \App\Actions\Obligations\CreateObligation
+ */
 class Create extends Component
 {
+    use InteractsWithAccessibleProfiles;
+
     public ?string $profileId = null;
 
     public string $recordTitle = '';
@@ -99,7 +103,7 @@ class Create extends Component
 
     public function updatedProfileId(): void
     {
-        $profile = $this->profiles()->findOrFail($this->profileId);
+        $profile = $this->accessibleProfile($this->profileId);
         $this->currency = $profile->base_currency;
         $this->estimatedValueCurrency = $profile->base_currency;
         $this->primaryPartyId = null;
@@ -112,8 +116,8 @@ class Create extends Component
         // Each obligation kind has a different data contract. Clear values from
         // the previous contract so hidden inputs can never leak into validation
         // or into the next obligation that is saved.
-        $profile = $this->profiles()->find($this->profileId);
-        $baseCurrency = $profile?->base_currency ?? 'MYR';
+        $profile = $this->accessibleProfilesCollection()->firstWhere('id', $this->profileId);
+        $baseCurrency = $profile === null ? 'MYR' : (string) $profile->base_currency;
 
         $this->trackingMode = 'snapshot';
         $this->category = ObligationKind::from($this->obligationKind)->defaultCategory();
@@ -168,7 +172,7 @@ class Create extends Component
         $validatedObligation = $this->validatedObligation();
         $validated = array_merge($validated, $validatedObligation);
 
-        $profile = $this->profiles()->findOrFail($validated['profileId']);
+        $profile = $this->accessibleProfile($validated['profileId']);
         session()->put('selected_profile_id', $profile->getKey());
 
         $record = $createRecord->handle(
@@ -386,7 +390,10 @@ class Create extends Component
         }
     }
 
-    /** @param array<string, mixed> $validated @return array<string, mixed> */
+    /**
+     * @param  array<string, mixed>  $validated
+     * @return ObligationData
+     */
     protected function obligationData(array $validated): array
     {
         $kind = ObligationKind::from($validated['obligationKind']);
@@ -423,25 +430,34 @@ class Create extends Component
 
     public function render(): View
     {
-        $profile = $this->profiles()->find($this->profileId);
+        $profiles = $this->accessibleProfilesCollection();
+        $profile = $profiles->firstWhere('id', $this->profileId);
 
-        return view('livewire.records.create', ['profiles' => $this->profiles()->get(), 'parties' => $profile?->parties()->whereNull('archived_at')->orderBy('preferred_name')->get() ?? collect()])
+        return view('livewire.records.create', ['profiles' => $profiles, 'parties' => $this->partyMode === 'existing'
+            ? $profile?->parties()
+                ->select(['id', 'profile_id', 'kind', 'preferred_name', 'status'])
+                ->where('status', 'active')
+                ->orderBy('preferred_name')
+                ->get() ?? collect()
+            : collect()])
             ->layout('layouts.app', ['title' => 'New record']);
-    }
-
-    /** @return Builder<FinancialProfile> */
-    protected function profiles(): Builder
-    {
-        return app(ProfileAccess::class)->accessibleProfiles(Auth::user());
     }
 
     protected function selectedProfile(): FinancialProfile
     {
         $selectedProfileId = session('selected_profile_id');
 
-        return is_string($selectedProfileId)
-            ? $this->profiles()->whereKey($selectedProfileId)->first() ?? $this->profiles()->firstOrFail()
-            : $this->profiles()->firstOrFail();
+        if (is_string($selectedProfileId)) {
+            $profile = $this->accessibleProfilesCollection()->firstWhere('id', $selectedProfileId);
+            if ($profile instanceof FinancialProfile) {
+                return $profile;
+            }
+        }
+
+        $profile = $this->accessibleProfilesCollection()->first();
+        abort_unless($profile instanceof FinancialProfile, 403);
+
+        return $profile;
     }
 
     /** @param array<string, mixed> $validated */
@@ -456,9 +472,10 @@ class Create extends Component
                 throw ValidationException::withMessages(['primaryPartyId' => 'Choose the party involved in this record.']);
             }
 
-            $belongsToProfile = $this->profiles()
-                ->whereKey($validated['profileId'])
-                ->whereHas('parties', fn ($query) => $query->whereKey($validated['primaryPartyId'])->whereNull('archived_at'))
+            $belongsToProfile = $this->accessibleProfile($validated['profileId'])
+                ->parties()
+                ->whereKey($validated['primaryPartyId'])
+                ->where('status', 'active')
                 ->exists();
 
             if (! $belongsToProfile) {

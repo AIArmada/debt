@@ -141,6 +141,11 @@
                                         </flux:modal.trigger>
                                     @endif
                                 @endcan
+                                @can('managePaymentInstructions', $obligation)
+                                    <flux:modal.trigger name="payment-instructions-{{ $obligation->id }}">
+                                        <flux:button size="sm" variant="outline">Payment instructions</flux:button>
+                                    </flux:modal.trigger>
+                                @endcan
                             @endif
                             @if ($obligation->isPawnCategory())
                                 @can('manageAssets', $obligation)
@@ -156,6 +161,11 @@
                                     </flux:modal.trigger>
                                 @endcan
                             @endif
+                            @can('manageCommunication', $obligation)
+                                <flux:modal.trigger name="messages-{{ $obligation->id }}">
+                                    <flux:button size="sm" variant="outline">Messages</flux:button>
+                                </flux:modal.trigger>
+                            @endcan
                         </div>
                     </div>
                 </div>
@@ -356,6 +366,12 @@
                     </flux:modal>
                 @endif
             @endcan
+
+            @can('managePaymentInstructions', $obligation)
+                <flux:modal name="payment-instructions-{{ $obligation->id }}" class="w-full max-w-xl">
+                    <livewire:obligations.manage-payment-instructions :obligation="$obligation" :key="'payment-instructions-'.$obligation->id" />
+                </flux:modal>
+            @endcan
         @endif
 
         @if ($obligation->isPawnCategory())
@@ -373,6 +389,12 @@
                 </flux:modal>
             @endcan
         @endif
+
+        @can('manageCommunication', $obligation)
+            <flux:modal name="messages-{{ $obligation->id }}" class="w-full max-w-xl">
+                <livewire:communication.composer :obligation="$obligation" :key="'messages-'.$obligation->id" />
+            </flux:modal>
+        @endcan
 
         @foreach ($obligation->transactions as $transaction)
             @can('recordTransaction', $obligation)

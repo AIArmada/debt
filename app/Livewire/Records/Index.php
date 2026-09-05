@@ -2,16 +2,18 @@
 
 namespace App\Livewire\Records;
 
-use App\Models\FinancialProfile;
-use App\Services\ProfileAccess;
+use App\Livewire\Concerns\InteractsWithAccessibleProfiles;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Index extends Component
 {
+    use InteractsWithAccessibleProfiles;
+    use WithPagination;
+
     #[Url(as: 'profile', keep: true)]
     public ?string $profileId = null;
 
@@ -21,41 +23,84 @@ class Index extends Component
 
     public function mount(): void
     {
+        $profiles = $this->accessibleProfilesCollection();
         $selectedProfileId = request()->query('profile') ?? session('selected_profile_id');
-        $this->profileId = is_string($selectedProfileId) && $this->profiles()->whereKey($selectedProfileId)->exists()
+        $this->profileId = is_string($selectedProfileId) && $profiles->contains('id', $selectedProfileId)
             ? $selectedProfileId
-            : $this->profiles()->first()?->getKey();
+            : $profiles->first()?->getKey();
     }
 
     public function updatedProfileId(): void
     {
-        abort_unless($this->profiles()->whereKey($this->profileId)->exists(), 403);
+        $this->accessibleProfile($this->profileId);
         session()->put('selected_profile_id', $this->profileId);
+        $this->resetPage();
+    }
+
+    public function updatedDirection(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedKind(): void
+    {
+        $this->resetPage();
     }
 
     public function render(): View
     {
-        $profile = $this->profiles()->findOrFail($this->profileId);
-        $records = $profile->records()
-            ->with(['partyLinks.party', 'obligations'])
+        $profiles = $this->accessibleProfilesCollection();
+        $profile = $this->accessibleProfile($this->profileId);
+        $recordsQuery = $profile->records()
+            ->select(['id', 'profile_id', 'title', 'description', 'is_archived', 'created_at'])
+            ->with([
+                'partyLinks' => fn ($query) => $query->select(['id', 'record_id', 'party_id', 'role', 'is_primary']),
+                'partyLinks.party' => fn ($query) => $query->select(['id', 'preferred_name']),
+                'obligations' => fn ($query) => $query->select([
+                    'id', 'record_id', 'obligation_kind', 'direction', 'category', 'title', 'status', 'currency',
+                    'current_total_balance', 'currency_balances', 'current_subject_quantity', 'subject_unit', 'created_at',
+                ]),
+            ])
             ->where('is_archived', false)
-            ->latest()
-            ->get()
-            ->filter(function ($record): bool {
-                return $record->obligations->contains(function ($obligation): bool {
-                    return ($this->direction === 'all' || $obligation->hasCurrentDirection($this->direction))
-                        && ($this->kind === 'all' || $obligation->obligation_kind === $this->kind);
+            ->latest();
+
+        if ($this->kind !== 'all' || $this->direction !== 'all') {
+            $recordsQuery->whereHas('obligations', function (Builder $query): void {
+                if ($this->kind !== 'all') {
+                    $query->where('obligation_kind', $this->kind);
+                }
+
+                if ($this->direction === 'all') {
+                    return;
+                }
+
+                $query->where(function (Builder $directionQuery): void {
+                    $directionQuery
+                        ->where(function (Builder $query): void {
+                            $query->where('obligation_kind', '!=', 'money')
+                                ->where('direction', $this->direction);
+                        })
+                        ->orWhere(function (Builder $query): void {
+                            $query->where('obligation_kind', 'money')
+                                ->where(function (Builder $moneyQuery): void {
+                                    $moneyQuery
+                                        ->where(function (Builder $query): void {
+                                            $query->where('current_total_balance', '>', 0)
+                                                ->where('direction', $this->direction);
+                                        })
+                                        ->orWhere(function (Builder $query): void {
+                                            $query->where('current_total_balance', '<', 0)
+                                                ->where('direction', $this->direction === 'payable' ? 'receivable' : 'payable');
+                                        });
+                                });
+                        });
                 });
-            })
-            ->values();
+            });
+        }
 
-        return view('livewire.records.index', ['profile' => $profile, 'records' => $records, 'profiles' => $this->profiles()->get()])
+        $records = $recordsQuery->paginate(12);
+
+        return view('livewire.records.index', ['profile' => $profile, 'records' => $records, 'profiles' => $profiles])
             ->layout('layouts.app', ['title' => 'Records']);
-    }
-
-    /** @return Builder<FinancialProfile> */
-    private function profiles(): Builder
-    {
-        return app(ProfileAccess::class)->accessibleProfiles(Auth::user());
     }
 }

@@ -26,6 +26,7 @@ return new class extends Migration
             $table->timestamp('paused_at')->nullable();
             $table->timestamps();
             $table->index(['status', 'next_runs_on']);
+            $table->index('obligation_id');
         });
     }
 

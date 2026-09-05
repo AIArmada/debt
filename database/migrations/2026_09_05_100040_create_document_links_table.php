@@ -17,6 +17,11 @@ return new class extends Migration
             $table->foreignUuid('obligation_event_id')->nullable()->constrained('obligation_events')->cascadeOnDelete();
             $table->string('purpose', 40)->default('evidence');
             $table->timestamps();
+            $table->index('document_id', 'document_links_document_id_index');
+            $table->index('record_id', 'document_links_record_id_index');
+            $table->index('obligation_id', 'document_links_obligation_id_index');
+            $table->index('financial_transaction_id', 'document_links_financial_transaction_id_index');
+            $table->index('obligation_event_id', 'document_links_obligation_event_id_index');
         });
     }
 

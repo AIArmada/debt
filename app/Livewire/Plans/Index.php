@@ -10,12 +10,11 @@ use App\Actions\Plans\PauseRepaymentPlan;
 use App\Domain\Planning\BudgetCapacity;
 use App\Domain\Planning\ProfileRepaymentSummary;
 use App\Domain\Planning\RepaymentPlanRefreshPreview;
+use App\Livewire\Concerns\InteractsWithAccessibleProfiles;
 use App\Models\BudgetPeriod;
 use App\Models\FinancialProfile;
 use App\Models\RepaymentPlan;
-use App\Services\ProfileAccess;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\On;
@@ -25,6 +24,8 @@ use Livewire\Component;
 
 class Index extends Component
 {
+    use InteractsWithAccessibleProfiles;
+
     #[Url(as: 'profile', keep: true)]
     public ?string $profileId = null;
 
@@ -72,12 +73,18 @@ class Index extends Component
     /** @var array{currency?: string, previous_available?: int, current_available?: int, warning?: string|null, rows?: array<int, array{title: string, current: int, previous: int, proposed: int, currency: string}>, has_changes?: bool} */
     public array $activationPreview = [];
 
+    private ?BudgetPeriod $currentBudgetCache = null;
+
+    private ?string $currentBudgetCacheKey = null;
+
+    private bool $currentBudgetResolved = false;
+
     public function mount(): void
     {
         Gate::authorize('viewAny', FinancialProfile::class);
-        $profiles = $this->profiles();
+        $profiles = $this->accessibleProfilesCollection();
         $selectedProfileId = request()->query('profile') ?? session('selected_profile_id');
-        $this->profileId = is_string($selectedProfileId) && $profiles->whereKey($selectedProfileId)->exists()
+        $this->profileId = is_string($selectedProfileId) && $profiles->contains('id', $selectedProfileId)
             ? $selectedProfileId
             : $profiles->first()?->getKey();
         $this->startsOn = today()->startOfMonth()->toDateString();
@@ -89,8 +96,9 @@ class Index extends Component
 
     public function updatedProfileId(): void
     {
-        abort_unless($this->profiles()->whereKey($this->profileId)->exists(), 403);
+        $this->accessibleProfile($this->profileId);
         session()->put('selected_profile_id', $this->profileId);
+        $this->clearCurrentBudgetCache();
         $this->budgetPeriodId = $this->currentBudget()?->getKey();
         $this->planId = $this->currentPlanId();
         $this->selectionBudgetId = null;
@@ -104,7 +112,7 @@ class Index extends Component
             'endsOn' => 'required|date|after_or_equal:startsOn',
             'emergencyReserveAmount' => 'required|numeric|min:0',
         ]);
-        $profile = $this->profiles()->findOrFail($this->profileId);
+        $profile = $this->accessibleProfile($this->profileId);
         $budget = $createBudgetPeriod->handle(Auth::user(), $profile, [
             'currency' => $profile->base_currency,
             'starts_on' => $validated['startsOn'],
@@ -112,6 +120,9 @@ class Index extends Component
             'emergency_reserve_amount' => $validated['emergencyReserveAmount'],
         ]);
         $this->budgetPeriodId = $budget->getKey();
+        $this->currentBudgetCache = $budget->load('cashFlowEntries');
+        $this->currentBudgetCacheKey = $this->budgetCacheKey();
+        $this->currentBudgetResolved = true;
         $this->planId = null;
         $this->selectionBudgetId = null;
         $this->selectedObligationIds = [];
@@ -144,6 +155,7 @@ class Index extends Component
             'is_essential' => $validated['cashFlowEssential'],
             'is_recurring' => $validated['cashFlowRecurring'],
         ]);
+        $this->clearCurrentBudgetCache();
         $this->reset('cashFlowAmount');
         session()->flash('cash-flow-added', 'The cash-flow entry was added.');
     }
@@ -284,9 +296,14 @@ class Index extends Component
     public function render(): View
     {
         Gate::authorize('viewAny', FinancialProfile::class);
+        $profiles = $this->accessibleProfilesCollection();
+        $profile = $this->accessibleProfile($this->profileId);
+        $role = $this->accessibleProfileRole($this->profileId);
+        $canManageBudget = in_array($role, ['owner', 'editor'], true);
+        $canRecordTransactions = in_array($role, ['owner', 'editor', 'payment_manager'], true);
         $budget = $this->currentBudget();
         $capacityService = app(BudgetCapacity::class);
-        $capacityBreakdown = $budget === null ? null : $capacityService->breakdown($budget->load('cashFlowEntries'));
+        $capacityBreakdown = $budget === null ? null : $capacityService->breakdown($budget->loadMissing('cashFlowEntries'));
         $capacity = $capacityBreakdown['available_to_plan'] ?? 0;
         $plan = $this->planId === null ? null : RepaymentPlan::query()
             ->where('profile_id', $this->profileId)
@@ -294,7 +311,7 @@ class Index extends Component
             ->with('allocations.obligation')
             ->find($this->planId);
         $plans = $budget === null ? collect() : $budget->repaymentPlans()
-            ->with('allocations.obligation')
+            ->withCount('allocations')
             ->latest('generated_at')
             ->get();
         $summaryService = app(ProfileRepaymentSummary::class);
@@ -311,7 +328,9 @@ class Index extends Component
         $planProgress = $plan === null ? collect() : $summaryService->planProgress($plan);
 
         return view('livewire.plans.index', [
-            'profiles' => $this->profiles()->get(),
+            'profiles' => $profiles,
+            'canManageBudget' => $canManageBudget,
+            'canRecordTransactions' => $canRecordTransactions,
             'budget' => $budget,
             'capacity' => $capacity,
             'capacityBreakdown' => $capacityBreakdown,
@@ -325,11 +344,39 @@ class Index extends Component
 
     private function currentBudget(): ?BudgetPeriod
     {
-        if ($this->budgetPeriodId !== null) {
-            return BudgetPeriod::query()->whereKey($this->budgetPeriodId)->where('profile_id', $this->profileId)->with('cashFlowEntries')->first();
+        $cacheKey = $this->budgetCacheKey();
+        if ($this->currentBudgetResolved && $this->currentBudgetCacheKey === $cacheKey) {
+            return $this->currentBudgetCache;
         }
 
-        return BudgetPeriod::query()->where('profile_id', $this->profileId)->where('status', 'open')->latest('starts_on')->with('cashFlowEntries')->first();
+        $this->currentBudgetCacheKey = $cacheKey;
+        $this->currentBudgetResolved = true;
+        if ($this->budgetPeriodId !== null) {
+            return $this->currentBudgetCache = BudgetPeriod::query()
+                ->whereKey($this->budgetPeriodId)
+                ->where('profile_id', $this->profileId)
+                ->with('cashFlowEntries')
+                ->first();
+        }
+
+        return $this->currentBudgetCache = BudgetPeriod::query()
+            ->where('profile_id', $this->profileId)
+            ->where('status', 'open')
+            ->latest('starts_on')
+            ->with('cashFlowEntries')
+            ->first();
+    }
+
+    private function clearCurrentBudgetCache(): void
+    {
+        $this->currentBudgetCache = null;
+        $this->currentBudgetCacheKey = null;
+        $this->currentBudgetResolved = false;
+    }
+
+    private function budgetCacheKey(): string
+    {
+        return (string) $this->profileId.'|'.(string) $this->budgetPeriodId;
     }
 
     private function currentPlan(): ?RepaymentPlan
@@ -369,11 +416,5 @@ class Index extends Component
             ->where('budget_period_id', $this->budgetPeriodId)
             ->with('budgetPeriod')
             ->findOrFail($planId);
-    }
-
-    /** @return Builder<FinancialProfile> */
-    private function profiles(): Builder
-    {
-        return app(ProfileAccess::class)->accessibleProfiles(Auth::user());
     }
 }

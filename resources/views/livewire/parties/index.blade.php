@@ -190,7 +190,7 @@
                                     <flux:input wire:model="paymentAccountHolder" label="Account holder (optional)" />
                                     <div>
                                         <flux:input wire:model="paymentAccountIdentifier" label="Account / wallet identifier" placeholder="Stored encrypted; only last 4 shown" :disabled="$paymentMethod === 'cash'" />
-                                        @if ($paymentMethod === 'cash')<p class="mt-1 text-xs text-zinc-500">Cash has no account identifier.</p>@endif
+                                        @if ($paymentMethod === 'cash')<p class="mt-1 text-xs text-zinc-500">Cash has no account identifier.</p>@elseif ($editingPaymentDestinationId)<p class="mt-1 text-xs text-zinc-500">Leave blank to keep the saved identifier. Changing the method requires entering it again.</p>@endif
                                     </div>
                                     <flux:input wire:model="paymentReference" label="Reference template (optional)" />
                                 </div>
@@ -208,4 +208,7 @@
             </div>
         @endforelse
     </section>
+    @if ($parties->hasPages())
+        <div>{{ $parties->links() }}</div>
+    @endif
 </div>

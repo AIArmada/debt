@@ -3,11 +3,10 @@
 namespace App\Livewire\Parties;
 
 use App\Domain\Money\Currency;
-use App\Models\FinancialProfile;
+use App\Livewire\Concerns\InteractsWithAccessibleProfiles;
 use App\Models\Party;
 use App\Models\PartyContact;
 use App\Models\PartyPaymentDestination;
-use App\Services\ProfileAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
@@ -15,9 +14,13 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Index extends Component
 {
+    use InteractsWithAccessibleProfiles;
+    use WithPagination;
+
     #[Url(as: 'profile', keep: true)]
     public ?string $profileId = null;
 
@@ -71,16 +74,18 @@ class Index extends Component
 
     public function mount(): void
     {
+        $profiles = $this->accessibleProfilesCollection();
         $selected = request()->query('profile') ?? session('selected_profile_id');
-        $this->profileId = is_string($selected) && $this->profiles()->whereKey($selected)->exists()
+        $this->profileId = is_string($selected) && $profiles->contains('id', $selected)
             ? $selected
-            : $this->profiles()->first()?->getKey();
+            : $profiles->first()?->getKey();
     }
 
     public function updatedProfileId(): void
     {
-        abort_unless($this->profiles()->whereKey($this->profileId)->exists(), 403);
+        $this->accessibleProfile($this->profileId);
         session()->put('selected_profile_id', $this->profileId);
+        $this->resetPage();
     }
 
     public function save(): void
@@ -97,7 +102,7 @@ class Index extends Component
             'countryCode' => ['nullable', 'string', 'size:2'],
         ]);
 
-        $profile = $this->profiles()->findOrFail($validated['profileId']);
+        $profile = $this->accessibleProfile($validated['profileId']);
         Gate::authorize('manageParties', $profile);
 
         $party = $profile->parties()->create([
@@ -156,12 +161,12 @@ class Index extends Component
             ?? $party->contacts->firstWhere('type', 'email');
         $phoneContact = $party->contacts->first(fn (PartyContact $contact): bool => $contact->type === 'phone' && $contact->is_primary)
             ?? $party->contacts->firstWhere('type', 'phone');
-        $this->email = (string) ($emailContact?->value ?? '');
-        $this->phone = (string) ($phoneContact?->value ?? '');
+        $this->email = $emailContact === null ? '' : (string) $emailContact->value;
+        $this->phone = $phoneContact === null ? '' : (string) $phoneContact->value;
         $address = $party->addresses->firstWhere('is_primary', true) ?? $party->addresses->first();
-        $this->addressLine1 = (string) ($address?->address_line_1 ?? '');
-        $this->city = (string) ($address?->city ?? '');
-        $this->countryCode = (string) ($address?->country_code ?? 'MY');
+        $this->addressLine1 = $address === null ? '' : (string) $address->address_line_1;
+        $this->city = $address === null ? '' : (string) $address->city;
+        $this->countryCode = $address === null ? 'MY' : (string) $address->country_code;
     }
 
     public function updateParty(): void
@@ -229,7 +234,7 @@ class Index extends Component
 
     public function cancelPartyEdit(): void
     {
-        Gate::authorize('manageParties', $this->profiles()->findOrFail($this->profileId));
+        Gate::authorize('manageParties', $this->accessibleProfile($this->profileId));
         $this->resetPartyForm();
     }
 
@@ -308,6 +313,18 @@ class Index extends Component
 
     public function addPaymentDestination(): void
     {
+        $editingDestination = $this->editingPaymentDestinationId
+            ? $this->paymentDestination($this->editingPaymentDestinationId)
+            : null;
+        // The saved identifier is never hydrated into the form, so a blank
+        // identifier on edit keeps the existing encrypted value instead of
+        // wiping it. Changing method still requires re-entering the identifier.
+        $keepExistingIdentifier = $editingDestination !== null
+            && trim($this->paymentAccountIdentifier) === ''
+            && $this->paymentMethod !== 'cash'
+            && $this->paymentMethod === $editingDestination->method
+            && $editingDestination->account_identifier_encrypted !== null;
+
         $validated = $this->validate([
             'paymentPartyId' => ['required', 'uuid'],
             'paymentMethod' => ['required', Rule::in(['bank_account', 'cash', 'e_wallet', 'payment_provider', 'crypto_wallet', 'other'])],
@@ -315,7 +332,9 @@ class Index extends Component
             'paymentProvider' => ['nullable', 'string', 'max:100'],
             'paymentCurrency' => ['nullable', Rule::in(Currency::codes())],
             'paymentAccountHolder' => ['nullable', 'string', 'max:255'],
-            'paymentAccountIdentifier' => ['required_unless:paymentMethod,cash', 'nullable', 'string', 'max:255'],
+            'paymentAccountIdentifier' => $keepExistingIdentifier
+                ? ['nullable', 'string', 'max:255']
+                : ['required_unless:paymentMethod,cash', 'nullable', 'string', 'min:8', 'max:255'],
             'paymentReference' => ['nullable', 'string', 'max:255'],
         ]);
         $party = $this->party($validated['paymentPartyId']);
@@ -336,8 +355,12 @@ class Index extends Component
         ];
 
         if ($this->editingPaymentDestinationId) {
-            $destination = $this->paymentDestination($this->editingPaymentDestinationId);
+            $destination = $editingDestination ?? $this->paymentDestination($this->editingPaymentDestinationId);
             abort_unless($destination->party_id === $party->getKey(), 403);
+            if ($keepExistingIdentifier) {
+                $attributes['account_identifier_encrypted'] = $destination->account_identifier_encrypted;
+                $attributes['account_identifier_last4'] = $destination->account_identifier_last4;
+            }
             $destination->update($attributes);
             $this->resetPaymentDestinationForm();
             session()->flash('payment-updated', 'Payment destination updated. Existing payment instructions keep their recorded snapshot.');
@@ -400,7 +423,8 @@ class Index extends Component
         $this->paymentProvider = $destination->provider ?? '';
         $this->paymentCurrency = $destination->currency;
         $this->paymentAccountHolder = $destination->account_holder_name ?? '';
-        $this->paymentAccountIdentifier = $destination->account_identifier_encrypted ?? '';
+        // Never hydrate the decrypted identifier into Livewire's browser-visible state.
+        $this->paymentAccountIdentifier = '';
         $this->paymentReference = $destination->reference_template ?? '';
     }
 
@@ -425,17 +449,23 @@ class Index extends Component
 
     public function render(): View
     {
-        $profile = $this->profiles()->findOrFail($this->profileId);
+        $profiles = $this->accessibleProfilesCollection();
+        $profile = $this->accessibleProfile($this->profileId);
         Gate::authorize('view', $profile);
-        $canManage = in_array(app(ProfileAccess::class)->role(Auth::user(), $profile), ['owner', 'editor'], true);
+        $canManage = in_array($this->accessibleProfileRole($this->profileId), ['owner', 'editor'], true);
         $parties = $profile->parties()
-            ->with(['contacts', 'addresses', 'paymentDestinations'])
+            ->select(['id', 'profile_id', 'kind', 'preferred_name', 'legal_name', 'status'])
+            ->with([
+                'contacts' => fn ($query) => $query->select(['id', 'party_id', 'type', 'label', 'value']),
+                'addresses' => fn ($query) => $query->select(['id', 'party_id', 'label', 'address_line_1', 'city', 'region', 'postal_code', 'country_code', 'is_primary']),
+                'paymentDestinations' => fn ($query) => $query
+                    ->where('status', 'active')
+                    ->select(['id', 'party_id', 'method', 'label', 'provider', 'currency', 'account_holder_name', 'account_identifier_last4', 'reference_template', 'verification_status', 'status']),
+            ])
             ->withCount('recordParties')
-            ->whereNull('archived_at')
+            ->where('status', 'active')
             ->orderBy('preferred_name')
-            ->get();
-
-        $profiles = $this->profiles()->get();
+            ->paginate(24);
 
         $currencies = Currency::options();
 
@@ -443,32 +473,37 @@ class Index extends Component
             ->layout('layouts.app', ['title' => 'Parties']);
     }
 
-    /** @return Builder<FinancialProfile> */
-    private function profiles(): Builder
-    {
-        return app(ProfileAccess::class)->accessibleProfiles(Auth::user());
-    }
-
     private function party(string $id): Party
     {
-        return Party::query()->whereKey($id)->where('profile_id', $this->profileId)->whereNull('archived_at')->with(['contacts', 'addresses'])->firstOrFail();
+        return Party::query()
+            ->select(['id', 'profile_id', 'kind', 'preferred_name', 'legal_name', 'status'])
+            ->whereKey($id)
+            ->where('profile_id', $this->profileId)
+            ->where('status', 'active')
+            ->with([
+                'contacts' => fn ($query) => $query->select(['id', 'party_id', 'type', 'label', 'value', 'is_primary']),
+                'addresses' => fn ($query) => $query->select(['id', 'party_id', 'label', 'address_line_1', 'city', 'region', 'postal_code', 'country_code', 'is_primary']),
+            ])
+            ->firstOrFail();
     }
 
     private function contact(string $id): PartyContact
     {
         return PartyContact::query()
+            ->select(['id', 'party_id', 'type', 'label', 'value', 'is_primary'])
             ->whereKey($id)
-            ->whereHas('party', fn (Builder $query) => $query->where('profile_id', $this->profileId)->whereNull('archived_at'))
-            ->with('party.profile')
+            ->whereHas('party', fn (Builder $query) => $query->where('profile_id', $this->profileId)->where('status', 'active'))
+            ->with(['party' => fn ($query) => $query->select(['id', 'profile_id'])])
             ->firstOrFail();
     }
 
     private function paymentDestination(string $id): PartyPaymentDestination
     {
         return PartyPaymentDestination::query()
+            ->select(['id', 'party_id', 'method', 'label', 'provider', 'currency', 'account_holder_name', 'account_identifier_encrypted', 'account_identifier_last4', 'reference_template', 'status'])
             ->whereKey($id)
-            ->whereHas('party', fn (Builder $query) => $query->where('profile_id', $this->profileId)->whereNull('archived_at'))
-            ->with('party.profile')
+            ->whereHas('party', fn (Builder $query) => $query->where('profile_id', $this->profileId)->where('status', 'active'))
+            ->with(['party' => fn ($query) => $query->select(['id', 'profile_id'])])
             ->firstOrFail();
     }
 

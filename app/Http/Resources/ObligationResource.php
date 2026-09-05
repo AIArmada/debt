@@ -3,7 +3,11 @@
 namespace App\Http\Resources;
 
 use App\Domain\Money\MoneyAmount;
+use App\Models\Document;
+use App\Models\FinancialTransaction;
 use App\Models\Obligation;
+use App\Models\ObligationEvent;
+use App\Models\ObligationParty;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -62,7 +66,7 @@ class ObligationResource extends JsonResource
             'next_due_on' => $this->dateString($this->getAttribute('next_due_on')),
             'data_confidence' => $this->data_confidence,
             'is_interest_bearing' => $this->is_interest_bearing,
-            'parties' => $this->whenLoaded('partyLinks', fn (): array => $this->partyLinks->map(fn ($link): array => [
+            'parties' => $this->whenLoaded('partyLinks', fn (): array => $this->partyLinks->map(fn (ObligationParty $link): array => [
                 'id' => $link->party_id,
                 'name' => $link->party?->preferred_name,
                 'kind' => $link->party?->kind,
@@ -73,7 +77,7 @@ class ObligationResource extends JsonResource
             ])->values()->all()),
             'collection_schedules' => CollectionScheduleResource::collection($this->whenLoaded('collectionSchedules')),
             'delivery_instructions' => DeliveryInstructionResource::collection($this->whenLoaded('deliveryInstructions')),
-            'events' => $this->whenLoaded('events', fn (): array => $this->events->map(fn ($event): array => [
+            'events' => $this->whenLoaded('events', fn (): array => $this->events->map(fn (ObligationEvent $event): array => [
                 'id' => $event->getKey(),
                 'event_type' => $event->event_type,
                 'quantity' => $event->quantity,
@@ -82,7 +86,7 @@ class ObligationResource extends JsonResource
                 'occurred_on' => $this->dateString($event->getAttribute('occurred_on')),
                 'note' => $event->note,
             ])->values()->all()),
-            'transactions' => $this->whenLoaded('transactions', fn (): array => $this->transactions->map(fn ($transaction): array => [
+            'transactions' => $this->whenLoaded('transactions', fn (): array => $this->transactions->map(fn (FinancialTransaction $transaction): array => [
                 'id' => $transaction->getKey(),
                 'repayment_plan_allocation_id' => $transaction->repayment_plan_allocation_id,
                 'collection_schedule_id' => $transaction->collection_schedule_id,
@@ -99,7 +103,7 @@ class ObligationResource extends JsonResource
                 'occurred_on' => $this->dateString($transaction->getAttribute('occurred_on')),
                 'external_reference' => $transaction->external_reference,
                 'note' => $transaction->note,
-                'documents' => $transaction->relationLoaded('documents') ? $transaction->documents->map(fn ($document): array => [
+                'documents' => $transaction->relationLoaded('documents') ? $transaction->documents->map(fn (Document $document): array => [
                     'id' => $document->getKey(),
                     'evidence_type' => $document->evidence_type,
                     'title' => $document->title,

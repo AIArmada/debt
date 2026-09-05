@@ -14,8 +14,8 @@
             <div class="divide-y divide-zinc-200 dark:divide-zinc-700">
                 @foreach ($profiles as $profile)
                     <div class="flex items-center justify-between gap-4 px-5 py-4">
-                        <div><div class="font-medium">{{ $profile->name }}</div><div class="mt-1 text-sm text-zinc-500">{{ ucfirst($profile->type) }} · {{ $profile->base_currency }} · {{ $profile->records()->where('is_archived', false)->count() }} records</div><div class="mt-1 text-xs text-zinc-500">{{ $roles[$profile->id] === 'owner' ? 'Owner' : ucfirst(str_replace('_', ' ', (string) $roles[$profile->id])) }}</div>@if ($profile->is_islamic_mode_enabled)<div class="mt-1 text-xs text-zinc-500">Islamic Mode enabled</div>@endif</div>
-                        <div class="flex items-center gap-2"><flux:button size="sm" variant="ghost" :href="route('dashboard', ['profile' => $profile->id])" wire:navigate>Open</flux:button>@can('update', $profile)<flux:button size="sm" variant="ghost" :href="route('financial-profiles.edit', $profile)" wire:navigate>Edit</flux:button>@endcan</div>
+                        <div><div class="font-medium">{{ $profile->name }}</div><div class="mt-1 text-sm text-zinc-500">{{ ucfirst($profile->type) }} · {{ $profile->base_currency }} · {{ $profile->active_records_count }} records</div><div class="mt-1 text-xs text-zinc-500">{{ $roles[$profile->id] === 'owner' ? 'Owner' : ucfirst(str_replace('_', ' ', (string) $roles[$profile->id])) }}</div>@if ($profile->is_islamic_mode_enabled)<div class="mt-1 text-xs text-zinc-500">Islamic Mode enabled</div>@endif</div>
+                        <div class="flex items-center gap-2"><flux:button size="sm" variant="ghost" :href="route('dashboard', ['profile' => $profile->id])" wire:navigate>Open</flux:button>@if (($roles[$profile->id] ?? null) === 'owner')<flux:button size="sm" variant="ghost" :href="route('financial-profiles.edit', $profile)" wire:navigate>Edit</flux:button>@endif</div>
                     </div>
                 @endforeach
             </div>

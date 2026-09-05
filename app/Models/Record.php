@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use Database\Factories\RecordFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,9 +12,10 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Record extends Model
 {
-    use HasUuids;
+    /** @use HasFactory<RecordFactory> */
+    use HasFactory, HasUuids;
 
-    protected $fillable = ['profile_id', 'title', 'description', 'sensitivity', 'is_archived'];
+    protected $fillable = ['title', 'description', 'sensitivity', 'is_archived'];
 
     protected function casts(): array
     {

@@ -2,11 +2,33 @@
 
 use App\Models\FinancialProfile;
 use App\Models\Obligation;
+use App\Models\ProfileMember;
 use App\Models\Record;
 use App\Models\User;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Route;
 
 pest()->use(RefreshDatabase::class);
+
+beforeEach(function (): void {
+    $csrfToken = 'test-csrf-token';
+
+    $this->withSession(['_token' => $csrfToken])
+        ->withHeader('X-CSRF-TOKEN', $csrfToken);
+});
+
+test('session-authenticated api routes include csrf protection', function () {
+    $middleware = Route::getRoutes()->getByName('api.v1.records.store')->gatherMiddleware();
+
+    expect($middleware)->toContain(PreventRequestForgery::class);
+});
+
+test('invitation acceptance is rate limited', function () {
+    $middleware = Route::getRoutes()->getByName('invitations.accept')->gatherMiddleware();
+
+    expect($middleware)->toContain('throttle:invitations');
+});
 
 test('authenticated user can list and create records with nested obligations', function () {
     $user = User::factory()->create();
@@ -88,6 +110,23 @@ test('api rejects unauthenticated and cross user access', function () {
     $obligation = createApiObligation($owner->financialProfiles()->firstOrFail(), 'Private API balance');
     $this->getJson(route('api.v1.records.index'))->assertUnauthorized();
     $this->actingAs(User::factory()->create())->getJson(route('api.v1.records.show', $obligation->record))->assertForbidden();
+});
+
+test('api does not expose records to a pending heir without activated emergency access', function () {
+    $owner = User::factory()->create();
+    $heir = User::factory()->create();
+    $profile = $owner->financialProfiles()->firstOrFail();
+    $obligation = createApiObligation($profile, 'Heir-only record');
+
+    $member = new ProfileMember(['role' => 'heir', 'accepted_at' => now()]);
+    $member->setAttribute('user_id', $heir->id);
+    $profile->members()->save($member);
+
+    $this->actingAs($heir)
+        ->getJson(route('api.v1.records.index'))
+        ->assertOk()
+        ->assertJsonCount(0, 'data');
+    expect($obligation->exists)->toBeTrue();
 });
 
 function createApiObligation(FinancialProfile $profile, string $title): Obligation

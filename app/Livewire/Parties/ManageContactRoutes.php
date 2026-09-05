@@ -11,9 +11,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class ManageContactRoutes extends Component
 {
+    use WithPagination;
+
     public FinancialProfile $profile;
 
     public ?string $partyId = null;
@@ -164,23 +167,49 @@ class ManageContactRoutes extends Component
     public function render(): View
     {
         Gate::authorize('manageParties', $this->profile);
-        $parties = $this->profile->parties()->whereNull('archived_at')->with('contacts')->orderBy('preferred_name')->get();
-        $routes = PartyContactRoute::query()->whereHas('party', fn ($query) => $query->where('profile_id', $this->profile->getKey()))->with(['party', 'viaParty', 'viaContact'])->where('status', 'active')->orderBy('party_id')->orderBy('priority')->get();
+        $parties = $this->profile->parties()
+            ->select(['id', 'profile_id', 'preferred_name', 'status'])
+            ->where('status', 'active')
+            ->with(['contacts' => fn ($query) => $query->select(['id', 'party_id', 'type', 'value'])])
+            ->orderBy('preferred_name')
+            ->get();
+        $routes = PartyContactRoute::query()
+            ->select(['id', 'party_id', 'via_party_id', 'via_contact_id', 'relationship_type', 'purpose', 'priority', 'is_primary', 'status', 'instructions'])
+            ->whereIn('party_id', $parties->modelKeys())
+            ->with([
+                'party' => fn ($query) => $query->select(['id', 'preferred_name']),
+                'viaParty' => fn ($query) => $query->select(['id', 'preferred_name']),
+                'viaContact' => fn ($query) => $query->select(['id', 'type', 'value']),
+            ])
+            ->where('status', 'active')
+            ->orderBy('party_id')
+            ->orderBy('priority')
+            ->paginate(20);
 
         return view('livewire.parties.manage-contact-routes', compact('parties', 'routes'));
     }
 
     private function party(string $id): Party
     {
-        return Party::query()->whereKey($id)->where('profile_id', $this->profile->getKey())->whereNull('archived_at')->firstOrFail();
+        return Party::query()
+            ->select(['id', 'profile_id', 'preferred_name', 'status'])
+            ->whereKey($id)
+            ->where('profile_id', $this->profile->getKey())
+            ->where('status', 'active')
+            ->firstOrFail();
     }
 
     private function route(string $id): PartyContactRoute
     {
         return PartyContactRoute::query()
+            ->select(['id', 'party_id', 'via_party_id', 'via_contact_id', 'relationship_type', 'purpose', 'priority', 'is_primary', 'status', 'instructions'])
             ->whereKey($id)
             ->whereHas('party', fn ($query) => $query->where('profile_id', $this->profile->getKey()))
-            ->with(['party', 'viaParty', 'viaContact'])
+            ->with([
+                'party' => fn ($query) => $query->select(['id', 'preferred_name']),
+                'viaParty' => fn ($query) => $query->select(['id', 'preferred_name']),
+                'viaContact' => fn ($query) => $query->select(['id', 'type', 'value']),
+            ])
             ->firstOrFail();
     }
 

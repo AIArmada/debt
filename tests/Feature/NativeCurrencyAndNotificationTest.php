@@ -7,6 +7,13 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
 
+beforeEach(function (): void {
+    $csrfToken = 'test-csrf-token';
+
+    $this->withSession(['_token' => $csrfToken])
+        ->withHeader('X-CSRF-TOKEN', $csrfToken);
+});
+
 test('movement currencies remain separate without conversion', function () {
     $user = User::factory()->create();
     $this->actingAs($user);

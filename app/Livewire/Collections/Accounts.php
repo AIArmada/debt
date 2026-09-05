@@ -42,7 +42,7 @@ class Accounts extends Component
             'provider' => ['nullable', 'string', 'max:100'],
             'currency' => ['nullable', Rule::in(Currency::codes())],
             'accountHolderName' => ['nullable', 'string', 'max:255'],
-            'accountIdentifier' => ['required_unless:method,cash', 'nullable', 'string', 'max:255'],
+            'accountIdentifier' => ['required_unless:method,cash', 'nullable', 'string', 'min:8', 'max:255'],
         ]);
         $identifier = trim((string) ($validated['accountIdentifier'] ?? ''));
 
@@ -75,7 +75,11 @@ class Accounts extends Component
         Gate::authorize('manageImports', $this->profile);
 
         return view('livewire.collections.accounts', [
-            'accounts' => $this->profile->collectionAccounts()->where('status', 'active')->latest()->get(),
+            'accounts' => $this->profile->collectionAccounts()
+                ->select(['id', 'profile_id', 'method', 'label', 'provider', 'currency', 'account_identifier_last4', 'status'])
+                ->where('status', 'active')
+                ->latest()
+                ->get(),
             'currencies' => Currency::options(),
         ]);
     }

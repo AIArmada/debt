@@ -20,7 +20,16 @@ class PawnRiskService
             ->whereHas('record', fn ($query) => $query->where('profile_id', $profile->getKey())->where('is_archived', false))
             ->active()
             ->whereIn('category', ['pawn_loan', 'pawned_asset'])
-            ->with(['pledgedAssets', 'terms'])
+            ->select(['id', 'record_id', 'obligation_kind', 'currency', 'current_total_balance', 'minimum_payment_amount', 'due_on', 'next_due_on'])
+            ->with([
+                'record:id,profile_id,title,is_archived',
+                'pledgedAssets' => fn ($query) => $query->select(['id', 'obligation_id', 'matures_on', 'currency', 'estimated_value']),
+                'terms' => fn ($query) => $query->select([
+                    'id', 'obligation_id', 'version', 'calculation_method', 'interest_rate', 'interest_period',
+                    'compounding_period', 'late_fee_amount', 'late_fee_rate', 'storage_fee_amount', 'storage_fee_period',
+                    'fixed_installment_amount', 'formula', 'effective_from',
+                ]),
+            ])
             ->get()
             ->filter(fn (Obligation $obligation): bool => ! $obligation->isPositionReversed())
             ->map(

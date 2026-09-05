@@ -24,6 +24,7 @@ return new class extends Migration
             $table->timestamps();
             $table->unique(['record_id', 'party_id', 'role']);
             $table->index(['record_id', 'role', 'status']);
+            $table->index('party_id');
         });
     }
 

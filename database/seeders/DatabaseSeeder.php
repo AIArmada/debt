@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\FinancialProfile;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -32,8 +31,8 @@ class DatabaseSeeder extends Seeder
             ])->save();
         }
 
-        $profile = FinancialProfile::query()->firstOrCreate(
-            ['owner_user_id' => $user->getKey(), 'name' => 'Personal'],
+        $profile = $user->financialProfiles()->firstOrCreate(
+            ['name' => 'Personal'],
             ['type' => 'personal', 'base_currency' => 'MYR', 'timezone' => 'Asia/Kuala_Lumpur'],
         );
 

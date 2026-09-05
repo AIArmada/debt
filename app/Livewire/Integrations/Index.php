@@ -3,10 +3,8 @@
 namespace App\Livewire\Integrations;
 
 use App\Actions\Profiles\ConnectIntegration;
-use App\Models\FinancialProfile;
-use App\Services\ProfileAccess;
+use App\Livewire\Concerns\InteractsWithAccessibleProfiles;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Url;
 use Livewire\Attributes\Validate;
@@ -14,6 +12,8 @@ use Livewire\Component;
 
 class Index extends Component
 {
+    use InteractsWithAccessibleProfiles;
+
     #[Url(as: 'profile', keep: true)]
     public ?string $profileId = null;
 
@@ -28,39 +28,43 @@ class Index extends Component
 
     public function mount(): void
     {
-        $profiles = $this->profiles();
+        $profiles = $this->accessibleProfilesCollection();
         $selectedProfileId = request()->query('profile') ?? session('selected_profile_id');
-        $this->profileId = is_string($selectedProfileId) && $profiles->whereKey($selectedProfileId)->exists()
+        $this->profileId = is_string($selectedProfileId) && $profiles->contains('id', $selectedProfileId)
             ? $selectedProfileId
             : $profiles->first()?->getKey();
     }
 
     public function updatedProfileId(): void
     {
-        abort_unless($this->profiles()->whereKey($this->profileId)->exists(), 403);
+        $this->accessibleProfile($this->profileId);
         session()->put('selected_profile_id', $this->profileId);
     }
 
     public function connect(ConnectIntegration $connectIntegration): void
     {
-        $validated = $this->validate();
-        $profile = $this->profiles()->findOrFail($this->profileId);
-        $connectIntegration->handle(auth()->user(), $profile, $validated['provider'], $validated['type'], $validated['secret'] ?? '');
-        $this->reset('secret');
-        session()->flash('integration-connected', 'The provider connection was saved securely.');
+        try {
+            $validated = $this->validate();
+            $profile = $this->accessibleProfile($this->profileId);
+            $connectIntegration->handle(auth()->user(), $profile, $validated['provider'], $validated['type'], $validated['secret'] ?? '');
+            session()->flash('integration-connected', 'The provider connection was saved securely.');
+        } finally {
+            $this->reset('secret');
+        }
     }
 
     public function render(): View
     {
-        $profile = $this->profiles()->findOrFail($this->profileId);
+        $profiles = $this->accessibleProfilesCollection();
+        $profile = $this->accessibleProfile($this->profileId);
         Gate::authorize('viewIntegrations', $profile);
 
-        return view('livewire.integrations.index', ['profiles' => $this->profiles()->get(), 'integrations' => $profile->integrations()->latest()->get()])->layout('layouts.app', ['title' => 'Connections']);
-    }
-
-    /** @return Builder<FinancialProfile> */
-    private function profiles(): Builder
-    {
-        return app(ProfileAccess::class)->accessibleProfiles(auth()->user());
+        return view('livewire.integrations.index', [
+            'profiles' => $profiles,
+            'integrations' => $profile->integrations()
+                ->select(['id', 'profile_id', 'provider', 'type', 'status', 'metadata', 'last_synced_at'])
+                ->latest()
+                ->get(),
+        ])->layout('layouts.app', ['title' => 'Connections']);
     }
 }

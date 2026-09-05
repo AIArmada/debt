@@ -11,7 +11,12 @@ final class Quantity
     {
         $value = trim((string) $value);
 
-        if (preg_match('/^\d{1,16}(?:\.\d{1,4})?$/D', $value) !== 1 || bccomp($value, '0', 4) !== 1) {
+        if (preg_match('/^\d{1,16}(?:\.\d{1,4})?$/D', $value) !== 1) {
+            throw new \InvalidArgumentException('Enter a positive quantity with no more than four decimal places.');
+        }
+        $normalised = Decimal::normalise($value);
+
+        if (bccomp($normalised, '0', 4) !== 1) {
             throw new \InvalidArgumentException('Enter a positive quantity with no more than four decimal places.');
         }
 
@@ -19,7 +24,7 @@ final class Quantity
             throw new \InvalidArgumentException('Whole-unit items must use a whole number, such as 1 camera or 2 cameras.');
         }
 
-        return bcadd($value, '0', 4);
+        return $normalised;
     }
 
     public static function isValid(string|int|float|null $value, QuantityMode $mode, bool $allowNull = true): bool

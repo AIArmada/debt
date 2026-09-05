@@ -7,6 +7,7 @@ use App\Domain\Money\Currency;
 use App\Domain\Money\MoneyAmount;
 use App\Models\FinancialTransaction;
 use App\Models\Obligation;
+use DateTimeInterface;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
@@ -49,7 +50,10 @@ class EditTransaction extends Component
         $this->currency = (string) $transaction->currency;
         $this->amount = MoneyAmount::majorInput((int) $transaction->amount, $this->currency);
         $this->status = $transaction->status;
-        $this->occurredOn = $transaction->occurred_on?->format('Y-m-d') ?? today()->toDateString();
+        $occurredOn = $transaction->occurred_on;
+        $this->occurredOn = $occurredOn instanceof DateTimeInterface
+            ? $occurredOn->format('Y-m-d')
+            : today()->toDateString();
         $this->externalReference = (string) ($transaction->external_reference ?? '');
         $this->note = (string) ($transaction->note ?? '');
     }

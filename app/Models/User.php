@@ -64,8 +64,8 @@ class User extends Authenticatable implements PasskeyUser
 
         static::deleting(function (self $user): void {
             $profileIds = $user->financialProfiles()->pluck('id');
-            Document::query()->whereIn('profile_id', $profileIds)->get()->each->delete();
-            BankImport::query()->whereIn('profile_id', $profileIds)->get()->each->delete();
+            Document::query()->whereIn('profile_id', $profileIds)->lazyById(100)->each->delete();
+            BankImport::query()->whereIn('profile_id', $profileIds)->lazyById(100)->each->delete();
             $user->notifications()->delete();
             $user->pushSubscriptions()->delete();
             $user->notificationPreference()->delete();

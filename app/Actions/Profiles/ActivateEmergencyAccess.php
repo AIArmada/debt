@@ -26,7 +26,7 @@ class ActivateEmergencyAccess
             throw ValidationException::withMessages(['emergencyAccess' => 'This request can be activated after '.$accessRequest->activate_after->format('d M Y, H:i').'.']);
         }
         $status = $decision === 'activate' ? 'activated' : 'rejected';
-        $accessRequest->update(['status' => $status, 'approved_by_user_id' => $owner->getKey(), 'approved_at' => now(), 'activated_at' => $status === 'activated' ? now() : null, 'expires_at' => $status === 'activated' ? now()->addDays(90) : null]);
+        $accessRequest->forceFill(['status' => $status, 'approved_by_user_id' => $owner->getKey(), 'approved_at' => now(), 'activated_at' => $status === 'activated' ? now() : null, 'expires_at' => $status === 'activated' ? now()->addDays(90) : null])->save();
         $this->auditLogger->record($profile, $owner, EmergencyAccessRequest::class, $accessRequest->getKey(), $status, after: $accessRequest->only(['user_id', 'status', 'approved_at', 'activated_at', 'expires_at']));
         $this->activityNotifier->notifyProfileActivity($profile, 'emergency_access_updated', $status === 'activated' ? 'Emergency access activated' : 'Emergency access request decided', $status === 'activated' ? 'An emergency representative can now access the shared profile.' : 'An emergency access request was rejected by the profile owner.', priority: $status === 'activated' ? 'urgent' : 'normal', context: ['status' => $status]);
 

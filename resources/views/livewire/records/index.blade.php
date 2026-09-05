@@ -77,4 +77,7 @@
             </div>
         @endforelse
     </section>
+    @if ($records->hasPages())
+        <div>{{ $records->links() }}</div>
+    @endif
 </div>

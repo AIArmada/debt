@@ -5,7 +5,8 @@ namespace App\Actions\Plans;
 use App\Domain\Planning\BudgetCapacity;
 use App\Domain\Planning\RepaymentPlanner;
 use App\Models\BudgetPeriod;
-use App\Models\FinancialTransaction;
+use App\Models\FinancialProfile;
+use App\Models\Obligation;
 use App\Models\RepaymentPlan;
 use App\Services\AuditLogger;
 use Carbon\CarbonImmutable;
@@ -25,7 +26,7 @@ class GenerateRepaymentPlan
     public function handle(BudgetPeriod $budgetPeriod, string $strategy, array $obligationIds, ?RepaymentPlan $refreshingPlan = null): RepaymentPlan
     {
         Gate::authorize('manageBudget', $budgetPeriod->profile);
-        $budgetPeriod->load('cashFlowEntries', 'profile.records.obligations');
+        $budgetPeriod->loadMissing('cashFlowEntries', 'profile');
         $availableAmount = $this->budgetCapacity->calculate($budgetPeriod);
         $selectedIds = collect($obligationIds)->map(fn ($id): string => (string) $id)->filter()->values();
 
@@ -33,8 +34,15 @@ class GenerateRepaymentPlan
             throw new InvalidArgumentException('A repayment plan must include at least one obligation.');
         }
 
-        $obligations = $budgetPeriod->profile->records
-            ->flatMap(fn ($record) => $record->obligations)
+        $obligations = Obligation::query()
+            ->with('record')
+            ->whereIn('id', $selectedIds->all())
+            ->where('obligation_kind', 'money')
+            ->where('status', 'active')
+            ->whereHas('record', fn ($query) => $query
+                ->where('profile_id', $budgetPeriod->profile_id)
+                ->where('is_archived', false))
+            ->get()
             ->filter(function ($obligation) use ($budgetPeriod, $selectedIds): bool {
                 $isEligible = $obligation->obligation_kind === 'money'
                     && $obligation->status === 'active'
@@ -64,13 +72,27 @@ class GenerateRepaymentPlan
         })->all();
 
         return DB::transaction(function () use ($budgetPeriod, $availableAmount, $strategy, $allocations, $refreshingPlan): RepaymentPlan {
+            FinancialProfile::query()
+                ->whereKey($budgetPeriod->profile_id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
             $previousActivePlan = RepaymentPlan::query()
                 ->where('profile_id', $budgetPeriod->profile_id)
                 ->where('budget_period_id', $budgetPeriod->getKey())
                 ->where('currency', $budgetPeriod->currency)
                 ->where('status', 'active')
+                ->lockForUpdate()
                 ->latest('generated_at')
                 ->first();
+
+            $previousBefore = $previousActivePlan?->only(['status', 'paused_at']);
+            if ($previousActivePlan !== null) {
+                $previousActivePlan->forceFill([
+                    'status' => 'paused',
+                    'paused_at' => now(),
+                ])->save();
+            }
 
             $plan = $budgetPeriod->profile->repaymentPlans()->create([
                 'budget_period_id' => $budgetPeriod->getKey(),
@@ -86,12 +108,6 @@ class GenerateRepaymentPlan
             $plan->allocations()->createMany($allocations);
 
             if ($previousActivePlan !== null) {
-                $previousBefore = $previousActivePlan->only(['status', 'paused_at']);
-                $previousActivePlan->forceFill([
-                    'status' => 'paused',
-                    'paused_at' => now(),
-                ])->save();
-
                 $this->auditLogger->record(
                     $budgetPeriod->profile,
                     null,
@@ -155,15 +171,17 @@ class GenerateRepaymentPlan
             return [];
         }
 
-        return FinancialTransaction::query()
+        return DB::table('financial_transactions')
             ->whereIn('obligation_id', $obligationIds)
             ->where('status', 'confirmed')
             ->where('entry_type', 'payment')
             ->where('currency', strtoupper((string) $budgetPeriod->currency))
             ->whereBetween('occurred_on', [$budgetPeriod->starts_on, $budgetPeriod->ends_on])
-            ->get(['obligation_id', 'amount'])
-            ->groupBy(fn (FinancialTransaction $transaction): string => (string) $transaction->obligation_id)
-            ->map(fn ($transactions): int => $transactions->sum(fn (FinancialTransaction $transaction): int => (int) $transaction->amount))
+            ->select('obligation_id')
+            ->selectRaw('SUM(amount) AS total')
+            ->groupBy('obligation_id')
+            ->get()
+            ->mapWithKeys(fn (object $row): array => [(string) $row->obligation_id => (int) $row->total])
             ->all();
     }
 }

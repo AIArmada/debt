@@ -11,7 +11,11 @@ class NotificationController extends Controller
     public function index(Request $request): JsonResponse
     {
         $limit = min(max((int) $request->integer('limit', 20), 1), 50);
-        $notifications = $request->user()->notifications()->latest()->limit($limit)->get();
+        $notifications = $request->user()->notifications()
+            ->select(['id', 'notifiable_type', 'notifiable_id', 'type', 'data', 'read_at', 'created_at'])
+            ->latest()
+            ->limit($limit)
+            ->get();
 
         return response()->json([
             'data' => $notifications->map(fn ($notification): array => $this->payload($notification))->values(),

@@ -36,7 +36,6 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
-        $this->configureOptionalCommerceViews();
         Gate::policy(Document::class, DocumentPolicy::class);
         Gate::policy(FinancialProfile::class, FinancialProfilePolicy::class);
         Gate::policy(Obligation::class, ObligationPolicy::class);
@@ -44,19 +43,12 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('api', fn (Request $request): Limit => Limit::perMinute(60)->by(
             (string) ($request->user()?->getAuthIdentifier() ?? $request->ip()),
         ));
-    }
-
-    private function configureOptionalCommerceViews(): void
-    {
-        if (class_exists(FilamentFilamentManager::class)) {
-            return;
-        }
-
-        $this->app->booted(function (): void {
-            $this->app['view']->getFinder()->replaceNamespace('commerce-support', [
-                resource_path('views'),
-            ]);
-        });
+        RateLimiter::for('exports', fn (Request $request): Limit => Limit::perMinutes(10, 3)->by(
+            (string) ($request->user()?->getAuthIdentifier() ?? $request->ip()),
+        ));
+        RateLimiter::for('invitations', fn (Request $request): Limit => Limit::perMinutes(10, 10)->by(
+            (string) ($request->user()?->getAuthIdentifier() ?? $request->ip()),
+        ));
     }
 
     /**
@@ -70,14 +62,18 @@ class AppServiceProvider extends ServiceProvider
             app()->isProduction(),
         );
 
-        Password::defaults(fn (): ?Password => app()->isProduction()
-            ? Password::min(12)
-                ->mixedCase()
-                ->letters()
-                ->numbers()
-                ->symbols()
-                ->uncompromised()
-            : null,
-        );
+        Password::defaults(function (): Password {
+            $rule = Password::min(8);
+
+            return app()->isProduction()
+                ? $rule
+                    ->min(12)
+                    ->mixedCase()
+                    ->letters()
+                    ->numbers()
+                    ->symbols()
+                    ->uncompromised()
+                : $rule;
+        });
     }
 }

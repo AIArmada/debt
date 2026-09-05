@@ -24,7 +24,7 @@ class UpdateRecord
             $party = Party::query()
                 ->whereKey($data['party_id'])
                 ->where('profile_id', $record->profile_id)
-                ->whereNull('archived_at')
+                ->where('status', 'active')
                 ->first();
 
             if ($party === null) {

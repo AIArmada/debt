@@ -19,6 +19,21 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * @phpstan-type TransactionData array{
+ *     status: string,
+ *     amount: string,
+ *     currency: string,
+ *     occurred_on: string|null,
+ *     external_reference: string|null,
+ *     note: string|null,
+ *     entry_type?: string|null,
+ *     balance_effect?: string|null,
+ *     amount_minor?: int|null,
+ *     repayment_plan_allocation_id?: string|null,
+ *     collection_schedule_id?: string|null
+ * }
+ */
 class RecordTransaction
 {
     public function __construct(
@@ -30,21 +45,7 @@ class RecordTransaction
         private readonly RepaymentPlanContinuity $repaymentPlanContinuity,
     ) {}
 
-    /**
-     * @param array{
-     *     status: string,
-     *     amount: string,
-     *     currency: string,
-     *     occurred_on: string|null,
-     *     external_reference: string|null,
-     *     note: string|null,
-     *     entry_type?: string,
-     *     balance_effect?: string|null,
-     *     amount_minor?: int|null,
-     *     repayment_plan_allocation_id?: string|null,
-     *     collection_schedule_id?: string|null
-     * } $data
-     */
+    /** @param TransactionData $data */
     public function handle(Obligation $obligation, array $data): FinancialTransaction
     {
         return $this->record($obligation, $data, true);
@@ -53,19 +54,7 @@ class RecordTransaction
     /**
      * Used by an authorised server-side payment provider execution.
      *
-     * @param array{
-     *     status: string,
-     *     amount: string,
-     *     currency: string,
-     *     occurred_on: string|null,
-     *     external_reference: string|null,
-     *     note: string|null,
-     *     entry_type?: string,
-     *     balance_effect?: string|null,
-     *     amount_minor?: int|null,
-     *     repayment_plan_allocation_id?: string|null,
-     *     collection_schedule_id?: string|null
-     * } $data
+     * @param  TransactionData  $data
      */
     public function handleSystem(Obligation $obligation, array $data): FinancialTransaction
     {
@@ -91,6 +80,7 @@ class RecordTransaction
     {
         return DB::transaction(function () use ($obligation, $data, $authorise): FinancialTransaction {
             $lockedObligation = Obligation::query()
+                ->with('record.profile')
                 ->whereKey($obligation->getKey())
                 ->lockForUpdate()
                 ->firstOrFail();
@@ -103,7 +93,9 @@ class RecordTransaction
                 throw ValidationException::withMessages(['obligation' => 'Only money obligations have financial transactions.']);
             }
 
-            $promoteSnapshotToLedger = $lockedObligation->tracking_mode === 'snapshot';
+            // Only a confirmed movement starts detailed ledger tracking. Drafts,
+            // submissions, failures, and cancellations must not promote a snapshot.
+            $promoteSnapshotToLedger = $lockedObligation->tracking_mode === 'snapshot' && $data['status'] === 'confirmed';
 
             $currency = strtoupper($data['currency']);
             if (! Currency::isSupported($currency)) {
@@ -252,20 +244,11 @@ class RecordTransaction
             ->whereHas('plan', fn ($query) => $query
                 ->where('profile_id', $obligation->record->profile_id)
                 ->where('status', 'active'))
+            ->whereHas('plan.budgetPeriod', fn ($query) => $query
+                ->where('starts_on', '<=', $date)
+                ->where('ends_on', '>=', $date))
             ->latest('created_at')
-            ->get()
-            ->first(function (RepaymentPlanAllocation $allocation) use ($currency, $date): bool {
-                $period = $allocation->plan?->budgetPeriod;
-                if ($period === null) {
-                    return false;
-                }
-
-                $allocationCurrency = strtoupper((string) ($allocation->currency ?: $allocation->plan->currency));
-
-                return $allocationCurrency === $currency
-                    && $date >= CarbonImmutable::parse((string) $period->starts_on)->toDateString()
-                    && $date <= CarbonImmutable::parse((string) $period->ends_on)->toDateString();
-            });
+            ->first();
     }
 
     private function resolveCollectionSchedule(Obligation $obligation, ?string $scheduleId, string $currency, string $entryType): ?CollectionSchedule

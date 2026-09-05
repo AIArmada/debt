@@ -25,6 +25,7 @@ return new class extends Migration
             $table->timestamps();
             $table->unique(['obligation_id', 'party_id', 'role']);
             $table->index(['obligation_id', 'role', 'status']);
+            $table->index('party_id');
         });
     }
 

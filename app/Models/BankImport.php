@@ -11,6 +11,11 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
+/**
+ * @property-read string|null $original_filename
+ * @property-read string|null $mime_type
+ * @property-read int|null $size_bytes
+ */
 class BankImport extends Model implements HasMedia
 {
     use HasUuids, InteractsWithMedia;
@@ -36,23 +41,26 @@ class BankImport extends Model implements HasMedia
         return $this->getFirstMedia(self::MEDIA_COLLECTION);
     }
 
+    /** @return Attribute<?string, mixed> */
     protected function originalFilename(): Attribute
     {
-        return Attribute::get(function (): ?string {
+        return Attribute::make(get: function (mixed $value, array $attributes): ?string {
             $media = $this->mediaFile();
 
             return $media?->getCustomProperty('original_filename') ?: $media?->file_name;
         });
     }
 
+    /** @return Attribute<?string, mixed> */
     protected function mimeType(): Attribute
     {
-        return Attribute::get(fn (): ?string => $this->mediaFile()?->mime_type);
+        return Attribute::make(get: fn (mixed $value, array $attributes): ?string => $this->mediaFile()?->mime_type);
     }
 
+    /** @return Attribute<?int, mixed> */
     protected function sizeBytes(): Attribute
     {
-        return Attribute::get(fn (): ?int => $this->mediaFile()?->size);
+        return Attribute::make(get: fn (mixed $value, array $attributes): ?int => $this->mediaFile()?->size);
     }
 
     /** @return BelongsTo<FinancialProfile, $this> */

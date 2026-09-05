@@ -39,7 +39,7 @@ class ManageParties extends Component
         $party = Party::query()
             ->whereKey($validated['partyId'])
             ->where('profile_id', $this->record->profile_id)
-            ->whereNull('archived_at')
+            ->where('status', 'active')
             ->firstOrFail();
 
         if ($validated['role'] === 'other_party') {
@@ -72,8 +72,17 @@ class ManageParties extends Component
     public function render(): View
     {
         Gate::authorize('view', $this->record);
-        $record = $this->record->load(['partyLinks.party.contacts', 'profile']);
-        $parties = $record->profile->parties()->whereNull('archived_at')->orderBy('preferred_name')->get();
+        $record = $this->record->load([
+            'partyLinks' => fn ($query) => $query->select(['id', 'record_id', 'party_id', 'role', 'is_primary', 'notes']),
+            'partyLinks.party' => fn ($query) => $query->select(['id', 'profile_id', 'preferred_name']),
+            'partyLinks.party.contacts' => fn ($query) => $query->select(['id', 'party_id', 'value', 'is_message_safe']),
+            'profile',
+        ]);
+        $parties = $record->profile->parties()
+            ->select(['id', 'profile_id', 'kind', 'preferred_name', 'status'])
+            ->where('status', 'active')
+            ->orderBy('preferred_name')
+            ->get();
 
         return view('livewire.records.manage-parties', compact('record', 'parties'));
     }

@@ -49,7 +49,7 @@ class ManageDeliveryInstructions extends Component
             : PartyAddress::query()->whereKey($validated['addressId'])->whereHas('party', fn ($query) => $query->where('profile_id', $profile->getKey()))->firstOrFail();
         $recipient = $validated['recipientPartyId'] === null
             ? null
-            : Party::query()->whereKey($validated['recipientPartyId'])->where('profile_id', $profile->getKey())->whereNull('archived_at')->firstOrFail();
+            : Party::query()->whereKey($validated['recipientPartyId'])->where('profile_id', $profile->getKey())->where('status', 'active')->firstOrFail();
 
         if ($address === null && blank($validated['instructions'])) {
             $this->addError('addressId', 'Choose an address or add handover instructions.');
@@ -91,11 +91,29 @@ class ManageDeliveryInstructions extends Component
     {
         Gate::authorize('manageDelivery', $this->obligation);
         $profile = $this->obligation->record->profile;
+        $parties = $profile->parties()
+            ->select(['id', 'profile_id', 'preferred_name', 'status'])
+            ->where('status', 'active')
+            ->with(['addresses' => fn ($query) => $query->select(['id', 'party_id', 'label', 'address_line_1', 'city', 'country_code'])])
+            ->orderBy('preferred_name')
+            ->get();
+        $addresses = $parties->flatMap(fn (Party $party) => $party->addresses->map(fn (PartyAddress $address): array => [
+            'id' => $address->id,
+            'label' => $party->preferred_name.' · '.($address->label ?: 'Address').' · '.collect([$address->address_line_1, $address->city])->filter()->implode(', '),
+        ]));
 
         return view('livewire.obligations.manage-delivery-instructions', [
-            'addresses' => $profile->parties()->whereNull('archived_at')->with('addresses')->get()->flatMap(fn (Party $party) => $party->addresses->map(fn (PartyAddress $address): array => ['id' => $address->id, 'label' => $party->preferred_name.' · '.($address->label ?: 'Address').' · '.collect([$address->address_line_1, $address->city])->filter()->implode(', ')])),
-            'parties' => $profile->parties()->whereNull('archived_at')->orderBy('preferred_name')->get(),
-            'instructionsList' => $this->obligation->deliveryInstructions()->with(['address.party', 'recipientParty'])->where('status', 'active')->latest()->get(),
+            'addresses' => $addresses,
+            'parties' => $parties,
+            'instructionsList' => $this->obligation->deliveryInstructions()
+                ->select(['id', 'obligation_id', 'address_id', 'recipient_party_id', 'method', 'label', 'instructions', 'status'])
+                ->with([
+                    'address' => fn ($query) => $query->select(['id', 'address_line_1', 'city', 'country_code']),
+                    'recipientParty' => fn ($query) => $query->select(['id', 'preferred_name']),
+                ])
+                ->where('status', 'active')
+                ->latest()
+                ->get(),
         ]);
     }
 }

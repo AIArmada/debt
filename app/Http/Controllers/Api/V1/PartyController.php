@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use App\Domain\Money\Currency;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PartyResource;
-use App\Models\FinancialProfile;
 use App\Models\Party;
 use App\Models\PartyContact;
 use App\Models\PartyContactRoute;
@@ -20,15 +19,19 @@ class PartyController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $profileIds = app(ProfileAccess::class)->accessibleProfiles($request->user())->pluck('id');
+        $profiles = app(ProfileAccess::class)->accessibleProfiles($request->user())->get(['id', 'owner_user_id']);
+        $profileIds = $profiles->modelKeys();
+        $request->attributes->set('party_profile_roles', app(ProfileAccess::class)->rolesFor($request->user(), $profiles));
+        $perPage = min(100, max(1, $request->integer('per_page', 25)));
         $parties = Party::query()
             ->whereIn('profile_id', $profileIds)
-            ->whereNull('archived_at')
-            ->with(['profile', 'contacts', 'addresses', 'paymentDestinations', 'contactRoutes.viaParty', 'contactRoutes.viaContact'])
+            ->where('status', 'active')
+            ->select(['id', 'profile_id', 'kind', 'preferred_name', 'legal_name', 'aliases', 'status', 'verification_status'])
+            ->with($this->partyRelations())
             ->orderBy('preferred_name')
-            ->get();
+            ->paginate($perPage);
 
-        return response()->json(['data' => PartyResource::collection($parties)]);
+        return PartyResource::collection($parties)->response();
     }
 
     public function store(Request $request): PartyResource
@@ -42,7 +45,10 @@ class PartyController extends Controller
             'contacts.*.type' => ['required_with:contacts', Rule::in(['email', 'phone', 'whatsapp', 'telegram', 'website', 'other'])],
             'contacts.*.value' => ['required_with:contacts', 'string', 'max:255'],
         ]);
-        $profile = FinancialProfile::query()->whereKey($validated['profile_id'])->firstOrFail();
+        $profile = app(ProfileAccess::class)
+            ->accessibleProfiles($request->user())
+            ->whereKey($validated['profile_id'])
+            ->firstOrFail();
         Gate::authorize('manageParties', $profile);
         $party = $profile->parties()->create([
             'created_by_user_id' => $request->user()->getKey(),
@@ -66,14 +72,14 @@ class PartyController extends Controller
             ]);
         }
 
-        return new PartyResource($party->load(['profile', 'contacts', 'addresses', 'paymentDestinations', 'contactRoutes.viaParty', 'contactRoutes.viaContact']));
+        return new PartyResource($party->load($this->partyRelations(true)));
     }
 
     public function show(Party $party): PartyResource
     {
         Gate::authorize('view', $party->profile);
 
-        return new PartyResource($party->load(['profile', 'contacts', 'addresses', 'paymentDestinations', 'contactRoutes.viaParty', 'contactRoutes.viaContact']));
+        return new PartyResource($party->load($this->partyRelations(true)));
     }
 
     public function update(Request $request, Party $party): PartyResource
@@ -86,7 +92,7 @@ class PartyController extends Controller
         ]);
         $party->forceFill($validated)->save();
 
-        return new PartyResource($party->refresh()->load(['profile', 'contacts', 'addresses', 'paymentDestinations', 'contactRoutes.viaParty', 'contactRoutes.viaContact']));
+        return new PartyResource($party->refresh()->load($this->partyRelations(true)));
     }
 
     public function addContactRoute(Request $request, Party $party): JsonResponse
@@ -101,7 +107,7 @@ class PartyController extends Controller
             'is_primary' => ['boolean'],
             'instructions' => ['nullable', 'string', 'max:2000'],
         ]);
-        $viaParty = Party::query()->whereKey($validated['via_party_id'])->where('profile_id', $party->profile_id)->whereNull('archived_at')->firstOrFail();
+        $viaParty = Party::query()->whereKey($validated['via_party_id'])->where('profile_id', $party->profile_id)->where('status', 'active')->firstOrFail();
         abort_if($viaParty->is($party), 422, 'An intermediary must be a different party from the subject.');
         $viaContact = null;
         if ($validated['via_contact_id'] !== null) {
@@ -127,7 +133,7 @@ class PartyController extends Controller
             'provider' => ['nullable', 'string', 'max:100'],
             'currency' => ['nullable', Rule::in(Currency::codes())],
             'account_holder_name' => ['nullable', 'string', 'max:255'],
-            'account_identifier' => ['required_unless:method,cash', 'nullable', 'string', 'max:255'],
+            'account_identifier' => ['required_unless:method,cash', 'nullable', 'string', 'min:8', 'max:255'],
             'reference_template' => ['nullable', 'string', 'max:255'],
         ]);
         $identifier = trim((string) ($validated['account_identifier'] ?? ''));
@@ -147,5 +153,24 @@ class PartyController extends Controller
         ]);
 
         return response()->json(['data' => ['id' => $destination->getKey(), 'party_id' => $destination->party_id, 'method' => $destination->method, 'label' => $destination->label, 'currency' => $destination->currency, 'masked_identifier' => $destination->maskedIdentifier(), 'verification_status' => $destination->verification_status]], 201);
+    }
+
+    /** @return array<int, string> */
+    private function partyRelations(bool $includeProfile = false): array
+    {
+        $relations = [
+            'contacts:id,party_id,type,label,value,purpose,is_primary,is_message_safe',
+            'addresses:id,party_id,label,address_line_1,address_line_2,city,region,postal_code,country_code,purpose',
+            'paymentDestinations:id,party_id,method,label,provider,currency,account_holder_name,account_identifier_last4,status,verification_status,reference_template',
+            'contactRoutes:id,party_id,via_party_id,via_contact_id,relationship_type,purpose,priority,is_primary,instructions,status',
+            'contactRoutes.viaParty:id,preferred_name',
+            'contactRoutes.viaContact:id,value',
+        ];
+
+        if ($includeProfile) {
+            $relations[] = 'profile:id,owner_user_id';
+        }
+
+        return $relations;
     }
 }

@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\EmergencyAccessRequest;
 use App\Models\ProfileInvitation;
+use App\Models\ProfileMember;
 use App\Services\ActivityNotifier;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,15 +26,26 @@ class AcceptProfileInvitationController extends Controller
         }
 
         DB::transaction(function () use ($request, $invitation): void {
-            $invitation->profile->members()->updateOrCreate(
-                ['user_id' => $request->user()->getKey()],
-                ['role' => $invitation->role, 'accepted_at' => now(), 'revoked_at' => null],
-            );
+            $profile = $invitation->profile;
+            $member = $profile->members()->where('user_id', $request->user()->getKey())->first() ?? new ProfileMember;
+            $member->setAttribute('user_id', $request->user()->getKey());
+            $member->fill(['role' => $invitation->role, 'accepted_at' => now(), 'revoked_at' => null]);
+            $profile->members()->save($member);
+
             if ($invitation->role === 'heir') {
-                $invitation->profile->emergencyAccessRequests()->firstOrCreate(
-                    ['user_id' => $request->user()->getKey(), 'status' => 'pending'],
-                    ['reason' => 'Emergency representative invitation accepted.', 'activate_after' => now()->addDays(7)],
-                );
+                $accessRequest = $profile->emergencyAccessRequests()
+                    ->where('user_id', $request->user()->getKey())
+                    ->where('status', 'pending')
+                    ->first();
+
+                if ($accessRequest === null) {
+                    $accessRequest = new EmergencyAccessRequest;
+                    $accessRequest->setAttribute('user_id', $request->user()->getKey());
+                    $accessRequest->setAttribute('status', 'pending');
+                    $accessRequest->setAttribute('reason', 'Emergency representative invitation accepted.');
+                    $accessRequest->setAttribute('activate_after', now()->addDays(7));
+                    $profile->emergencyAccessRequests()->save($accessRequest);
+                }
             }
             $invitation->update(['accepted_at' => now()]);
         });

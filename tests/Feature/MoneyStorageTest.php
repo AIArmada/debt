@@ -25,7 +25,7 @@ test('every money column uses signed integer minor units', function () {
 
     foreach ($moneyColumns as $table => $columns) {
         foreach ($columns as $column) {
-            expect(['integer', 'bigint'])->toContain(Schema::getColumnType($table, $column));
+            expect(Schema::getColumnType($table, $column))->toBe('int8');
         }
     }
 });

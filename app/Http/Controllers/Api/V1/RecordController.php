@@ -17,7 +17,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\CollectionScheduleResource;
 use App\Http\Resources\DeliveryInstructionResource;
 use App\Http\Resources\RecordResource;
-use App\Models\FinancialProfile;
 use App\Models\FinancialTransaction;
 use App\Models\Obligation;
 use App\Models\ObligationDeliveryInstruction;
@@ -26,28 +25,38 @@ use App\Models\Party;
 use App\Models\PartyAddress;
 use App\Models\Record;
 use App\Models\RecordParty;
+use App\Services\ProfileAccess;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * @phpstan-import-type ObligationData from CreateObligation
+ * @phpstan-import-type TransactionData from RecordTransaction
+ */
 class RecordController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $profileIds = $this->profileIds($request);
-        $records = Record::query()->whereIn('profile_id', $profileIds)->where('is_archived', false)->with(['partyLinks.party', 'obligations.partyLinks.party', 'obligations.events', 'obligations.transactions', 'obligations.collectionSchedules', 'obligations.deliveryInstructions'])->latest()->get();
+        $perPage = min(100, max(1, $request->integer('per_page', 25)));
+        $records = Record::query()
+            ->whereIn('profile_id', app(ProfileAccess::class)->accessibleProfiles($request->user())->select('id'))
+            ->where('is_archived', false)
+            ->select(['id', 'profile_id', 'title', 'description', 'sensitivity', 'is_archived', 'created_at'])
+            ->with($this->recordListRelations())
+            ->latest()
+            ->paginate($perPage);
 
-        return response()->json(['data' => RecordResource::collection($records)]);
+        return RecordResource::collection($records)->response();
     }
 
     public function show(Record $record): RecordResource
     {
         Gate::authorize('view', $record);
 
-        return new RecordResource($record->load(['profile', 'partyLinks.party', 'documents', 'obligations.partyLinks.party', 'obligations.events.documents', 'obligations.events.createdBy', 'obligations.transactions.documents', 'obligations.collectionSchedules', 'obligations.deliveryInstructions']));
+        return new RecordResource($record->load($this->recordDetailRelations()));
     }
 
     public function store(Request $request, CreateRecord $createRecord): RecordResource
@@ -63,7 +72,10 @@ class RecordController extends Controller
             'sensitivity' => ['nullable', 'in:private,shared'],
             'obligation' => ['required', 'array'],
         ]);
-        $profile = FinancialProfile::query()->whereKey($validated['profile_id'])->firstOrFail();
+        $profile = app(ProfileAccess::class)
+            ->accessibleProfiles($request->user())
+            ->whereKey($validated['profile_id'])
+            ->firstOrFail();
         $obligation = $this->validatedObligation($validated['obligation']);
         $record = $createRecord->handle($request->user(), $profile, [
             'title' => $validated['title'],
@@ -73,7 +85,7 @@ class RecordController extends Controller
             'sensitivity' => $validated['sensitivity'] ?? 'private',
         ], $obligation);
 
-        return new RecordResource($record->load(['profile', 'partyLinks.party', 'obligations.partyLinks.party', 'obligations.events', 'obligations.transactions', 'obligations.collectionSchedules', 'obligations.deliveryInstructions']));
+        return new RecordResource($record->load($this->recordListRelations()));
     }
 
     public function addObligation(Request $request, Record $record, CreateObligation $createObligation): JsonResponse
@@ -82,7 +94,7 @@ class RecordController extends Controller
         $validated = $request->validate(['obligation' => ['required', 'array']]);
         $createObligation->handle($request->user(), $record, $this->validatedObligation($validated['obligation']));
 
-        return (new RecordResource($record->refresh()->load(['profile', 'partyLinks.party', 'obligations.partyLinks.party', 'obligations.events', 'obligations.transactions', 'obligations.collectionSchedules', 'obligations.deliveryInstructions'])))->response()->setStatusCode(201);
+        return (new RecordResource($record->refresh()->load($this->recordListRelations())))->response()->setStatusCode(201);
     }
 
     public function addParty(Request $request, Record $record): JsonResponse
@@ -93,7 +105,7 @@ class RecordController extends Controller
             'role' => ['required', Rule::in(['other_party', 'beneficiary', 'obligor', 'guarantor', 'witness', 'representative', 'contact', 'custodian', 'service_recipient'])],
             'notes' => ['nullable', 'string', 'max:2000'],
         ]);
-        $party = Party::query()->whereKey($validated['party_id'])->where('profile_id', $record->profile_id)->whereNull('archived_at')->firstOrFail();
+        $party = Party::query()->whereKey($validated['party_id'])->where('profile_id', $record->profile_id)->where('status', 'active')->firstOrFail();
         if ($validated['role'] === 'other_party') {
             $record->partyLinks()->where('role', 'other_party')->update(['is_primary' => false]);
         }
@@ -124,7 +136,7 @@ class RecordController extends Controller
             'share_basis' => ['required', Rule::in(['full', 'percentage', 'fixed_amount', 'unspecified'])],
             'share_percent' => ['nullable', 'numeric', 'gt:0', 'max:100'],
         ]);
-        $party = Party::query()->whereKey($validated['party_id'])->where('profile_id', $record->profile_id)->whereNull('archived_at')->firstOrFail();
+        $party = Party::query()->whereKey($validated['party_id'])->where('profile_id', $record->profile_id)->where('status', 'active')->firstOrFail();
         $link = ObligationParty::query()->updateOrCreate(
             ['obligation_id' => $obligation->getKey(), 'party_id' => $party->getKey(), 'role' => $validated['role']],
             ['created_by_user_id' => $request->user()->getKey(), 'share_basis' => $validated['share_basis'], 'share_percent' => $validated['share_basis'] === 'percentage' ? ($validated['share_percent'] ?? null) : null, 'status' => 'active'],
@@ -189,7 +201,7 @@ class RecordController extends Controller
         ]);
         $profile = $record->profile;
         $address = $validated['address_id'] === null ? null : PartyAddress::query()->whereKey($validated['address_id'])->whereHas('party', fn ($query) => $query->where('profile_id', $profile->getKey()))->firstOrFail();
-        $recipient = $validated['recipient_party_id'] === null ? null : Party::query()->whereKey($validated['recipient_party_id'])->where('profile_id', $profile->getKey())->whereNull('archived_at')->firstOrFail();
+        $recipient = $validated['recipient_party_id'] === null ? null : Party::query()->whereKey($validated['recipient_party_id'])->where('profile_id', $profile->getKey())->where('status', 'active')->firstOrFail();
         if ($address === null && blank($validated['instructions'] ?? null)) {
             throw ValidationException::withMessages(['address_id' => 'Choose an address or add handover instructions.']);
         }
@@ -220,16 +232,41 @@ class RecordController extends Controller
         $validated = $request->validate(['event_type' => ['required', 'string'], 'quantity' => ['nullable', 'numeric', 'gt:0'], 'occurred_on' => ['nullable', 'date'], 'note' => ['nullable', 'string', 'max:4000']]);
         $event = $recordObligationEvent->handle($request->user(), $obligation, ['event_type' => $validated['event_type'], 'quantity' => isset($validated['quantity']) ? (string) $validated['quantity'] : null, 'occurred_on' => $validated['occurred_on'] ?? null, 'note' => $validated['note'] ?? null]);
 
-        return response()->json(['data' => ['id' => $event->getKey(), 'event_type' => $event->event_type, 'quantity' => $event->quantity, 'quantity_effect' => $event->quantity_effect, 'unit' => $event->unit, 'occurred_on' => $event->occurred_on?->toDateString(), 'note' => $event->note, 'obligation_status' => $obligation->fresh()->status, 'outstanding_quantity' => $obligation->fresh()->current_subject_quantity]], 201);
+        $updatedObligation = $obligation->fresh();
+
+        return response()->json(['data' => ['id' => $event->getKey(), 'event_type' => $event->event_type, 'quantity' => $event->quantity, 'quantity_effect' => $event->quantity_effect, 'unit' => $event->unit, 'occurred_on' => $event->occurred_on?->toDateString(), 'note' => $event->note, 'obligation_status' => $updatedObligation->status, 'outstanding_quantity' => $updatedObligation->current_subject_quantity]], 201);
     }
 
-    /** @return Collection<int, string> */
-    private function profileIds(Request $request)
+    /** @return array<int, string> */
+    private function recordListRelations(): array
     {
-        return FinancialProfile::query()->where('owner_user_id', $request->user()->getKey())->orWhereHas('members', fn ($query) => $query->where('user_id', $request->user()->getKey())->whereNotNull('accepted_at')->whereNull('revoked_at'))->pluck('id');
+        return [
+            'partyLinks:id,record_id,party_id,role,is_primary,status',
+            'partyLinks.party:id,kind,preferred_name',
+            'obligations.partyLinks:id,obligation_id,party_id,role,share_basis,share_percent,share_currency',
+            'obligations.partyLinks.party:id,kind,preferred_name',
+            'obligations.events:id,obligation_id,event_type,quantity,quantity_effect,unit,occurred_on,note',
+            'obligations.transactions:id,obligation_id,repayment_plan_allocation_id,collection_schedule_id,entry_type,balance_effect,status,amount,currency,balance_before,balance_after,occurred_on,external_reference,note',
+            'obligations.collectionSchedules:id,obligation_id,collection_account_id,mode,status,amount,currency,frequency,starts_on,ends_on,next_due_on,collection_method,grace_days,note',
+            'obligations.deliveryInstructions:id,obligation_id,address_id,recipient_party_id,method,label,instructions,status,verification_status,shown_snapshot',
+        ];
     }
 
-    /** @param array<string, mixed> $data @return array<string, mixed> */
+    /** @return array<int, string> */
+    private function recordDetailRelations(): array
+    {
+        return [
+            ...$this->recordListRelations(),
+            'documents',
+            'obligations.transactions.documents',
+            'obligations.transactions.documents.media',
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return ObligationData
+     */
     private function validatedObligation(array $data): array
     {
         $validated = validator($data, [
@@ -292,7 +329,10 @@ class RecordController extends Controller
         return ['amount' => ['required_without:amount_minor', 'nullable', 'numeric', 'gt:0'], 'amount_minor' => ['required_without:amount', 'nullable', 'integer', 'gt:0'], 'currency' => ['nullable', Rule::in(Currency::codes())], 'status' => ['required', 'in:planned,submitted,confirmed,failed,cancelled'], 'entry_type' => [$entryRequired ? 'required' : 'nullable', 'in:payment,collection,advance,interest,fee,adjustment,write_off,opening_balance'], 'balance_effect' => ['nullable', 'in:increase,decrease'], 'occurred_on' => ['nullable', 'date'], 'external_reference' => ['nullable', 'string', 'max:255'], 'note' => ['nullable', 'string', 'max:4000'], 'repayment_plan_allocation_id' => ['nullable', 'uuid'], 'collection_schedule_id' => ['nullable', 'uuid']];
     }
 
-    /** @param array<string, mixed> $validated @return array<string, mixed> */
+    /**
+     * @param  array<string, mixed>  $validated
+     * @return TransactionData
+     */
     private function transactionData(array $validated, Obligation $obligation): array
     {
         return ['status' => $validated['status'], 'amount' => (string) ($validated['amount'] ?? '0'), 'amount_minor' => $validated['amount_minor'] ?? null, 'currency' => $validated['currency'] ?? $obligation->currency, 'occurred_on' => $validated['occurred_on'] ?? null, 'external_reference' => $validated['external_reference'] ?? null, 'note' => $validated['note'] ?? null, 'entry_type' => $validated['entry_type'] ?? null, 'balance_effect' => $validated['balance_effect'] ?? null, 'repayment_plan_allocation_id' => $validated['repayment_plan_allocation_id'] ?? null, 'collection_schedule_id' => $validated['collection_schedule_id'] ?? null];

@@ -2,15 +2,22 @@
 
 namespace App\Models;
 
+use Database\Factories\FinancialTransactionFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property Carbon|null $occurred_on
+ */
 class FinancialTransaction extends Model
 {
-    use HasUuids;
+    /** @use HasFactory<FinancialTransactionFactory> */
+    use HasFactory, HasUuids;
 
     protected $fillable = [
         'obligation_id', 'repayment_plan_allocation_id', 'repayment_installment_id', 'payment_schedule_id', 'collection_schedule_id',

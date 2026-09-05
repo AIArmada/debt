@@ -64,5 +64,8 @@
                 </div>
             @endforeach
         </div>
+        @if ($routes->hasPages())
+            <div class="mt-4">{{ $routes->links() }}</div>
+        @endif
     @endif
 </section>

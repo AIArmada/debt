@@ -7,7 +7,6 @@ use App\Actions\Obligations\CreatePaymentSchedule;
 use App\Actions\Obligations\PausePaymentSchedule;
 use App\Actions\Obligations\ResumePaymentSchedule;
 use App\Models\Obligation;
-use App\Models\PaymentSchedule;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
@@ -78,7 +77,7 @@ class ManageSchedule extends Component
     public function pause(string $scheduleId, PausePaymentSchedule $pausePaymentSchedule): void
     {
         Gate::authorize('manageSchedule', $this->obligation);
-        $schedule = PaymentSchedule::query()->findOrFail($scheduleId);
+        $schedule = $this->obligation->paymentSchedules()->whereKey($scheduleId)->firstOrFail();
         $pausePaymentSchedule->handle($this->obligation, $schedule);
         session()->flash('schedule-paused', 'The schedule was paused.');
     }
@@ -119,7 +118,10 @@ class ManageSchedule extends Component
         Gate::authorize('manageSchedule', $this->obligation);
 
         return view('livewire.obligations.manage-schedule', [
-            'schedules' => $this->obligation->paymentSchedules()->latest()->get(),
+            'schedules' => $this->obligation->paymentSchedules()
+                ->select(['id', 'obligation_id', 'mode', 'status', 'amount', 'currency', 'frequency', 'next_runs_on'])
+                ->latest()
+                ->get(),
         ]);
     }
 }

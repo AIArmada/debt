@@ -3,7 +3,7 @@
 namespace App\Domain\Planning;
 
 use App\Models\BudgetPeriod;
-use App\Models\FinancialTransaction;
+use Illuminate\Support\Facades\DB;
 
 class BudgetCapacity
 {
@@ -37,15 +37,16 @@ class BudgetCapacity
         }
 
         $reserve = (int) $budgetPeriod->emergency_reserve_amount;
-        $actualRepayments = (int) FinancialTransaction::query()
-            ->whereHas('obligation.record', fn ($query) => $query
-                ->where('profile_id', $budgetPeriod->profile_id)
-                ->where('is_archived', false))
-            ->where('status', 'confirmed')
-            ->where('entry_type', 'payment')
-            ->where('currency', strtoupper((string) $budgetPeriod->currency))
-            ->whereBetween('occurred_on', [$budgetPeriod->starts_on, $budgetPeriod->ends_on])
-            ->sum('amount');
+        $actualRepayments = (int) DB::table('financial_transactions')
+            ->join('obligations', 'obligations.id', '=', 'financial_transactions.obligation_id')
+            ->join('records', 'records.id', '=', 'obligations.record_id')
+            ->where('records.profile_id', $budgetPeriod->profile_id)
+            ->where('records.is_archived', false)
+            ->where('financial_transactions.status', 'confirmed')
+            ->where('financial_transactions.entry_type', 'payment')
+            ->where('financial_transactions.currency', strtoupper((string) $budgetPeriod->currency))
+            ->whereBetween('financial_transactions.occurred_on', [$budgetPeriod->starts_on, $budgetPeriod->ends_on])
+            ->sum('financial_transactions.amount');
         $safeCapacity = max(0, $income - $essentialExpenses - $reserve);
         $recommendedCapacity = max(0, $income - $essentialExpenses - $flexibleExpenses - $reserve);
 

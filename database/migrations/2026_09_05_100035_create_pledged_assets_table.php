@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('status', 30)->default('pledged');
             $table->timestamps();
             $table->index(['matures_on', 'status']);
+            $table->index('obligation_id');
         });
     }
 

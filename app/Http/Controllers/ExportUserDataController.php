@@ -19,8 +19,12 @@ use App\Models\Integration;
 use App\Models\Obligation;
 use App\Models\ObligationDeliveryInstruction;
 use App\Models\ObligationEvent;
+use App\Models\ObligationParty;
+use App\Models\ObligationPaymentInstruction;
 use App\Models\ObligationTerm;
 use App\Models\Party;
+use App\Models\PartyAddress;
+use App\Models\PartyContact;
 use App\Models\PartyContactRoute;
 use App\Models\PartyPaymentDestination;
 use App\Models\PaymentAuthorisation;
@@ -30,17 +34,24 @@ use App\Models\PledgedAsset;
 use App\Models\ProfileInvitation;
 use App\Models\ProfileMember;
 use App\Models\Record;
+use App\Models\RecordParty;
 use App\Models\RepaymentInstallment;
+use App\Models\RepaymentPlan;
+use App\Models\RepaymentPlanAllocation;
+use App\Models\User;
+use App\Services\AuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ExportUserDataController extends Controller
 {
+    public function __construct(private readonly AuditLogger $auditLogger) {}
+
     public function __invoke(Request $request): StreamedResponse
     {
         $user = $request->user();
-        $profiles = FinancialProfile::query()
+        $profileQuery = FinancialProfile::query()
             ->where('owner_user_id', $user->getKey())
             ->with([
                 'parties.contacts',
@@ -82,10 +93,23 @@ class ExportUserDataController extends Controller
                 'records.obligations.collectionSchedules.collectionAccount',
                 'records.obligations.deliveryInstructions.address',
                 'records.obligations.deliveryInstructions.recipientParty',
+                'records.obligations.paymentInstructions.paymentDestination',
+                'records.obligations.paymentInstructions.beneficiary',
+                'records.obligations.paymentInstructions.payee',
                 'bankImports.rows.financialTransaction',
                 'collectionAccounts',
-            ])
-            ->get();
+            ]);
+        $profileCount = (clone $profileQuery)->count();
+        $profiles = $profileQuery->lazyById(25);
+
+        $this->auditLogger->record(
+            null,
+            $user,
+            User::class,
+            $user->getKey(),
+            'data_exported',
+            metadata: ['profile_count' => $profileCount],
+        );
 
         $payload = [
             'exported_at' => now()->toIso8601String(),
@@ -157,7 +181,7 @@ class ExportUserDataController extends Controller
                     'identifiers' => $party->identifiers,
                     'status' => $party->status,
                     'verification_status' => $party->verification_status,
-                    'contacts' => $party->contacts->map(fn ($contact): array => [
+                    'contacts' => $party->contacts->map(fn (PartyContact $contact): array => [
                         'id' => $contact->getKey(),
                         'type' => $contact->type,
                         'label' => $contact->label,
@@ -166,7 +190,7 @@ class ExportUserDataController extends Controller
                         'is_primary' => $contact->is_primary,
                         'is_message_safe' => $contact->is_message_safe,
                     ])->values()->all(),
-                    'addresses' => $party->addresses->map(fn ($address): array => [
+                    'addresses' => $party->addresses->map(fn (PartyAddress $address): array => [
                         'id' => $address->getKey(),
                         'label' => $address->label,
                         'address_line_1' => $address->address_line_1,
@@ -214,20 +238,20 @@ class ExportUserDataController extends Controller
                     'description' => $record->description,
                     'sensitivity' => $record->sensitivity,
                     'is_archived' => $record->is_archived,
-                    'parties' => $record->partyLinks->map(fn ($link): array => [
+                    'parties' => $record->partyLinks->map(fn (RecordParty $link): array => [
                         'id' => $link->party_id,
                         'name' => $link->party?->preferred_name,
                         'kind' => $link->party?->kind,
                         'role' => $link->role,
                         'is_primary' => $link->is_primary,
                         'status' => $link->status,
-                        'contacts' => $link->party?->contacts->map(fn ($contact): array => [
+                        'contacts' => $link->party?->contacts->map(fn (PartyContact $contact): array => [
                             'type' => $contact->type,
                             'label' => $contact->label,
                             'value' => $contact->value,
                             'purpose' => $contact->purpose,
                         ])->values()->all(),
-                        'addresses' => $link->party?->addresses->map(fn ($address): array => [
+                        'addresses' => $link->party?->addresses->map(fn (PartyAddress $address): array => [
                             'label' => $address->label,
                             'address_line_1' => $address->address_line_1,
                             'address_line_2' => $address->address_line_2,
@@ -294,7 +318,7 @@ class ExportUserDataController extends Controller
                         'next_due_on' => $this->dateString($obligation->getAttribute('next_due_on')),
                         'data_confidence' => $obligation->data_confidence,
                         'is_interest_bearing' => $obligation->is_interest_bearing,
-                        'parties' => $obligation->partyLinks->map(fn ($link): array => [
+                        'parties' => $obligation->partyLinks->map(fn (ObligationParty $link): array => [
                             'party_id' => $link->party_id,
                             'name' => $link->party?->preferred_name,
                             'role' => $link->role,
@@ -324,7 +348,7 @@ class ExportUserDataController extends Controller
                             'asset_type' => $asset->asset_type,
                             'description' => $asset->description,
                             'quantity' => $asset->quantity,
-                            'quantity_mode' => $asset->quantity_mode->value,
+                            'quantity_mode' => $asset->quantityMode()->value,
                             'quantity_unit' => $asset->quantity_unit,
                             'estimated_value' => $this->money($asset->estimated_value, $asset->currency),
                             'estimated_value_minor' => $asset->estimated_value,
@@ -497,6 +521,18 @@ class ExportUserDataController extends Controller
                             'superseded_at' => $this->isoDateTime($instruction->getAttribute('superseded_at')),
                             'shown_snapshot' => $instruction->shown_snapshot,
                         ])->values()->all(),
+                        'payment_instructions' => $obligation->paymentInstructions->map(fn (ObligationPaymentInstruction $instruction): array => [
+                            'id' => $instruction->getKey(),
+                            'payment_destination_id' => $instruction->payment_destination_id,
+                            'beneficiary_party_id' => $instruction->beneficiary_party_id,
+                            'payee_party_id' => $instruction->payee_party_id,
+                            'currency' => $instruction->currency,
+                            'reference' => $instruction->reference,
+                            'status' => $instruction->status,
+                            'verified_at' => $this->isoDateTime($instruction->getAttribute('verified_at')),
+                            'superseded_at' => $this->isoDateTime($instruction->getAttribute('superseded_at')),
+                            'shown_snapshot' => $instruction->shown_snapshot,
+                        ])->values()->all(),
                     ])->values()->all(),
                 ])->values()->all(),
                 'budget_periods' => $profile->budgetPeriods->map(fn (BudgetPeriod $budget): array => [
@@ -515,7 +551,7 @@ class ExportUserDataController extends Controller
                         'is_recurring' => $entry->is_recurring,
                     ])->values()->all(),
                 ])->values()->all(),
-                'repayment_plans' => $profile->repaymentPlans->map(fn ($plan): array => [
+                'repayment_plans' => $profile->repaymentPlans->map(fn (RepaymentPlan $plan): array => [
                     'id' => $plan->getKey(),
                     'budget_period_id' => $plan->budget_period_id,
                     'name' => $plan->name,
@@ -531,7 +567,7 @@ class ExportUserDataController extends Controller
                     'paused_at' => $this->isoDateTime($plan->getAttribute('paused_at')),
                     'activated_at' => $this->isoDateTime($plan->getAttribute('activated_at')),
                     'generated_at' => $this->isoDateTime($plan->getAttribute('generated_at')),
-                    'allocations' => $plan->allocations->map(fn ($allocation): array => [
+                    'allocations' => $plan->allocations->map(fn (RepaymentPlanAllocation $allocation): array => [
                         'obligation_id' => $allocation->obligation_id,
                         'currency' => $allocation->currency,
                         'priority_rank' => $allocation->priority_rank,
@@ -576,12 +612,15 @@ class ExportUserDataController extends Controller
         ];
 
         $payload['notification_preferences'] = $user->notificationPreference()->first()?->only(['email_enabled', 'in_app_enabled', 'push_enabled', 'generic_push', 'due_reminder_days']);
-        $payload['notifications'] = $user->notifications()->get()->map(fn (DatabaseNotification $notification): array => [
-            'type' => $notification->type,
-            'data' => $notification->data,
-            'read_at' => $this->isoDateTime($notification->getAttribute('read_at')),
-            'created_at' => $this->isoDateTime($notification->getAttribute('created_at')),
-        ])->values()->all();
+        $payload['notifications'] = $user->notifications()
+            ->select(['id', 'notifiable_type', 'notifiable_id', 'type', 'data', 'read_at', 'created_at'])
+            ->get()
+            ->map(fn (DatabaseNotification $notification): array => [
+                'type' => $notification->type,
+                'data' => $notification->data,
+                'read_at' => $this->isoDateTime($notification->getAttribute('read_at')),
+                'created_at' => $this->isoDateTime($notification->getAttribute('created_at')),
+            ])->values()->all();
 
         return response()->streamDownload(function () use ($payload): void {
             echo json_encode($payload, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR);

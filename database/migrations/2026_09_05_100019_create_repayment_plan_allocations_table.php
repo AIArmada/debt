@@ -24,6 +24,7 @@ return new class extends Migration
             $table->unique(['repayment_plan_id', 'obligation_id']);
             $table->index(['repayment_plan_id', 'priority_rank']);
             $table->index(['repayment_plan_id', 'currency']);
+            $table->index('obligation_id');
         });
     }
 

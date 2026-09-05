@@ -135,8 +135,15 @@ class ManageCollectionSchedule extends Component
         Gate::authorize('manageSchedule', $this->obligation);
 
         return view('livewire.obligations.manage-collection-schedule', [
-            'schedules' => $this->obligation->collectionSchedules()->latest()->get(),
-            'collectionAccounts' => $this->obligation->record->profile->collectionAccounts()->where('status', 'active')->where('currency', strtoupper($this->currency))->get(),
+            'schedules' => $this->obligation->collectionSchedules()
+                ->select(['id', 'obligation_id', 'status', 'amount', 'currency', 'frequency', 'next_due_on', 'collection_method', 'note'])
+                ->latest()
+                ->get(),
+            'collectionAccounts' => $this->obligation->record->profile->collectionAccounts()
+                ->select(['id', 'profile_id', 'label', 'method', 'provider', 'currency', 'account_identifier_last4', 'status'])
+                ->where('status', 'active')
+                ->where('currency', strtoupper($this->currency))
+                ->get(),
             'currencies' => $this->collectibleCurrencies(),
         ]);
     }
@@ -144,11 +151,13 @@ class ManageCollectionSchedule extends Component
     /** @return list<string> */
     private function collectibleCurrencies(): array
     {
-        $currencies = collect($this->obligation->currencyPositions())
-            ->filter(fn (array $position): bool => $position['direction'] === 'receivable')
-            ->pluck('currency')
-            ->values()
-            ->all();
+        $currencies = [];
+        foreach ($this->obligation->currencyPositions() as $position) {
+            if ($position['direction'] === 'receivable') {
+                $currencies[$position['currency']] = true;
+            }
+        }
+        $currencies = array_keys($currencies);
 
         return $currencies !== [] ? $currencies : [strtoupper((string) $this->obligation->currency)];
     }

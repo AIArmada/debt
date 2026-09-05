@@ -28,3 +28,14 @@ test('new users can register', function () {
 
     $this->assertAuthenticated();
 });
+
+test('registration rejects passwords shorter than eight characters', function () {
+    $response = $this->post(route('register.store'), [
+        'name' => 'Short Password User',
+        'email' => 'short-password@example.com',
+        'password' => 'short7',
+        'password_confirmation' => 'short7',
+    ]);
+
+    $response->assertSessionHasErrors('password');
+});

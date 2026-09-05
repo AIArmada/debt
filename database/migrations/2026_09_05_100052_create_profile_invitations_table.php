@@ -20,6 +20,7 @@ return new class extends Migration
             $table->timestamp('revoked_at')->nullable();
             $table->timestamps();
             $table->index(['email', 'expires_at']);
+            $table->index(['profile_id', 'accepted_at', 'revoked_at', 'created_at']);
         });
     }
 

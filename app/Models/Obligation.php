@@ -5,8 +5,10 @@ namespace App\Models;
 use App\Domain\Obligations\ObligationKind;
 use App\Domain\Obligations\Quantity;
 use App\Domain\Obligations\QuantityMode;
+use Database\Factories\ObligationFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -17,10 +19,13 @@ use Illuminate\Support\Str;
 /**
  * @property Carbon|null $due_on
  * @property Carbon|null $next_due_on
+ * @property numeric-string|null $subject_quantity
+ * @property numeric-string|null $current_subject_quantity
  */
 class Obligation extends Model
 {
-    use HasUuids;
+    /** @use HasFactory<ObligationFactory> */
+    use HasFactory, HasUuids;
 
     protected $fillable = [
         'record_id', 'direction', 'category', 'title', 'description',
@@ -269,7 +274,7 @@ class Obligation extends Model
     /** @return list<array{currency: string, balance: int, direction: string|null, amount: int, label: string}> */
     public function currencyPositions(): array
     {
-        return array_values(array_map(fn (string $currency): array => $this->currencyPosition($currency), array_keys($this->currencyBalances())));
+        return array_map(fn (string $currency): array => $this->currencyPosition($currency), array_keys($this->currencyBalances()));
     }
 
     public function currentPositionDirection(): ?string
@@ -333,15 +338,17 @@ class Obligation extends Model
     public function currentPositionDirections(): array
     {
         if (! $this->kind()->isMoney()) {
-            return $this->direction === null ? [] : [$this->direction];
+            return [$this->direction];
         }
 
-        return collect($this->currencyPositions())
-            ->filter(fn (array $position): bool => $position['direction'] !== null)
-            ->pluck('direction')
-            ->unique()
-            ->values()
-            ->all();
+        $directions = [];
+        foreach ($this->currencyPositions() as $position) {
+            if (is_string($position['direction'])) {
+                $directions[$position['direction']] = true;
+            }
+        }
+
+        return array_keys($directions);
     }
 
     public function hasCurrentDirection(string $direction): bool

@@ -9,6 +9,12 @@ use Illuminate\Http\UploadedFile;
 final class SafeUpload implements ValidationRule
 {
     /** @var list<string> */
+    private const ALLOWED_EXTENSIONS = [
+        'csv', 'doc', 'docx', 'jpeg', 'jpg', 'm4a', 'mp3', 'mp4', 'mov',
+        'pdf', 'png', 'rtf', 'txt', 'wav', 'webp', 'xls', 'xlsx', 'zip',
+    ];
+
+    /** @var list<string> */
     private const DENIED_EXTENSIONS = [
         'apk', 'app', 'appimage', 'bat', 'bash', 'bin', 'cmd', 'com', 'command',
         'cpl', 'crt', 'dll', 'dmg', 'docm', 'dotm', 'exe', 'gadget', 'hta', 'htm',
@@ -47,14 +53,28 @@ final class SafeUpload implements ValidationRule
         'text/x-shellscript',
     ];
 
+    public static function allowedExtensions(): string
+    {
+        return implode(',', self::ALLOWED_EXTENSIONS);
+    }
+
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         if (! $value instanceof UploadedFile || ! $value->isValid()) {
             return;
         }
 
-        $extension = strtolower(pathinfo($value->getClientOriginalName(), PATHINFO_EXTENSION));
-        if (in_array($extension, self::DENIED_EXTENSIONS, true)) {
+        $filename = strtolower(basename(str_replace('\\', '/', $value->getClientOriginalName())));
+        $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        if ($extension === '' || ! in_array($extension, self::ALLOWED_EXTENSIONS, true)) {
+            $fail('Only approved document and media file extensions can be uploaded.');
+
+            return;
+        }
+
+        $filenameParts = explode('.', $filename);
+        $nestedExtensions = array_slice($filenameParts, 0, -1);
+        if (array_intersect($nestedExtensions, self::DENIED_EXTENSIONS) !== []) {
             $fail('Executable and active-content files cannot be uploaded. Archive the material if you need to preserve it.');
 
             return;

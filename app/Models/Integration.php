@@ -11,7 +11,7 @@ class Integration extends Model
 {
     use HasUuids;
 
-    protected $fillable = ['profile_id', 'provider', 'type', 'status', 'credentials_encrypted', 'metadata', 'last_synced_at', 'revoked_at'];
+    protected $fillable = ['provider', 'type', 'status', 'metadata', 'last_synced_at', 'revoked_at'];
 
     protected function casts(): array
     {

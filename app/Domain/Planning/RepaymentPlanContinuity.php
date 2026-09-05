@@ -37,7 +37,11 @@ final class RepaymentPlanContinuity
             ->where('profile_id', $obligation->record->profile_id)
             ->whereIn('status', ['active', 'needs_review', 'paused', 'completed'])
             ->whereHas('allocations', fn ($query) => $query->where('obligation_id', $obligation->getKey()))
-            ->with(['budgetPeriod', 'allocations.obligation.transactions'])
+            ->with([
+                'profile',
+                'budgetPeriod',
+                'allocations' => fn ($query) => $query->where('obligation_id', $obligation->getKey()),
+            ])
             ->get();
 
         foreach ($plans as $plan) {

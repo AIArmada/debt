@@ -16,9 +16,11 @@ use App\Models\Obligation;
 use App\Models\ObligationTerm;
 use App\Models\Record;
 use App\Models\User;
+use App\Rules\SafeUpload;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Livewire\Livewire;
 
 pest()->use(RefreshDatabase::class);
@@ -284,8 +286,7 @@ test('user cannot edit another users profile', function () {
 
 test('profile selection is persisted when changed on dashboard', function () {
     $user = User::factory()->create();
-    $secondProfile = FinancialProfile::create([
-        'owner_user_id' => $user->id,
+    $secondProfile = $user->financialProfiles()->create([
         'name' => 'Business',
         'type' => 'business',
         'base_currency' => 'USD',
@@ -369,6 +370,15 @@ test('evidence upload rejects executable file types', function () {
         ->assertHasErrors(['file']);
 
     expect(Document::query()->count())->toBe(0);
+});
+
+test('safe upload rejects extensionless hidden and compound active-content filenames', function () {
+    foreach (['.htaccess', 'README', 'x.php.jpg'] as $filename) {
+        $file = UploadedFile::fake()->create($filename, 100, 'image/jpeg');
+        $validator = Validator::make(['file' => $file], ['file' => [new SafeUpload]]);
+
+        expect($validator->fails())->toBeTrue();
+    }
 });
 
 test('evidence upload accepts zip archives', function () {

@@ -6,12 +6,14 @@ use App\Actions\Obligations\RecordTransaction;
 use App\Livewire\Collections\Accounts;
 use App\Livewire\Obligations\ManageCollectionSchedule;
 use App\Livewire\Obligations\ManageDeliveryInstructions;
+use App\Livewire\Obligations\ManagePaymentInstructions;
 use App\Livewire\Parties\Index as PartiesIndex;
 use App\Livewire\Parties\ManageContactRoutes;
 use App\Models\CollectionSchedule;
 use App\Models\FinancialProfile;
 use App\Models\Obligation;
 use App\Models\ObligationDeliveryInstruction;
+use App\Models\ObligationPaymentInstruction;
 use App\Models\PartyContact;
 use App\Models\PartyContactRoute;
 use App\Models\PartyPaymentDestination;
@@ -20,6 +22,13 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
 pest()->use(RefreshDatabase::class);
+
+beforeEach(function (): void {
+    $csrfToken = 'test-csrf-token';
+
+    $this->withSession(['_token' => $csrfToken])
+        ->withHeader('X-CSRF-TOKEN', $csrfToken);
+});
 
 test('collection schedules are currency specific and only affected exposures pause', function () {
     $user = User::factory()->create();
@@ -272,6 +281,95 @@ test('contact routes and delivery instructions can be saved from the ui', functi
     expect($assetObligation->deliveryInstructions()->first())->toBeInstanceOf(ObligationDeliveryInstruction::class);
 });
 
+test('money obligations can record payment instructions with a destination snapshot', function () {
+    $user = User::factory()->create();
+    $profile = $user->financialProfiles()->firstOrFail();
+    $payee = $profile->parties()->create(['created_by_user_id' => $user->id, 'kind' => 'individual', 'preferred_name' => 'Lender', 'status' => 'active', 'verification_status' => 'unverified', 'source' => 'test']);
+    $destination = PartyPaymentDestination::create([
+        'party_id' => $payee->id,
+        'created_by_user_id' => $user->id,
+        'method' => 'bank_account',
+        'label' => 'Lender Maybank',
+        'provider' => 'Maybank',
+        'currency' => 'MYR',
+        'account_holder_name' => 'Lender',
+        'account_identifier_encrypted' => '1234567890',
+        'account_identifier_last4' => '7890',
+        'verification_status' => 'verified',
+        'status' => 'active',
+    ]);
+    $obligation = $profile->records()->create(['title' => 'Payable arrangement', 'sensitivity' => 'private'])->obligations()->create([
+        'direction' => 'payable',
+        'obligation_kind' => 'money',
+        'tracking_mode' => 'snapshot',
+        'category' => 'personal_loan',
+        'title' => 'Payable loan',
+        'status' => 'active',
+        'currency' => 'MYR',
+        'current_principal_balance' => 50000,
+        'current_total_balance' => 50000,
+        'data_confidence' => 'partial',
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(ManagePaymentInstructions::class, ['obligation' => $obligation])
+        ->set('paymentDestinationId', $destination->id)
+        ->set('beneficiaryPartyId', $payee->id)
+        ->set('reference', 'March instalment')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $instruction = $obligation->paymentInstructions()->firstOrFail();
+    expect($instruction)->toBeInstanceOf(ObligationPaymentInstruction::class)
+        ->and($instruction->shown_snapshot['destination_label'])->toBe('Lender Maybank')
+        ->and($instruction->shown_snapshot['destination_masked'])->toBe($destination->maskedIdentifier())
+        ->and($instruction->shown_snapshot['beneficiary'])->toBe('Lender');
+    expect($instruction->shown_snapshot)->not->toHaveKey('account_identifier_encrypted');
+    $this->assertDatabaseHas('obligation_payment_instructions', [
+        'obligation_id' => $obligation->id,
+        'payment_destination_id' => $destination->id,
+        'currency' => 'MYR',
+        'reference' => 'March instalment',
+        'status' => 'active',
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(ManagePaymentInstructions::class, ['obligation' => $obligation])
+        ->call('archive', $instruction->id)
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('obligation_payment_instructions', [
+        'id' => $instruction->id,
+        'status' => 'archived',
+    ]);
+});
+
+test('payment instructions are rejected for non-money obligations', function () {
+    $user = User::factory()->create();
+    $profile = $user->financialProfiles()->firstOrFail();
+    $obligation = $profile->records()->create(['title' => 'Camera arrangement', 'sensitivity' => 'private'])->obligations()->create([
+        'direction' => 'receivable',
+        'obligation_kind' => 'asset',
+        'category' => 'borrowed_item',
+        'title' => 'Borrowed camera',
+        'status' => 'active',
+        'subject_name' => 'Camera',
+        'subject_quantity' => '1',
+        'current_subject_quantity' => '1',
+        'quantity_mode' => 'countable',
+        'subject_unit' => 'unit',
+        'asset_type' => 'physical',
+        'data_confidence' => 'partial',
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(ManagePaymentInstructions::class, ['obligation' => $obligation])
+        ->call('save')
+        ->assertHasErrors(['obligation']);
+
+    expect($obligation->paymentInstructions()->count())->toBe(0);
+});
+
 test('payment destinations can be viewed edited and archived from the directory', function () {
     $user = User::factory()->create();
     $profile = $user->financialProfiles()->firstOrFail();
@@ -306,7 +404,7 @@ test('payment destinations can be viewed edited and archived from the directory'
         ->assertSet('viewingPaymentDestinationId', null)
         ->call('editPaymentDestination', $destination->id)
         ->assertSet('editingPaymentDestinationId', $destination->id)
-        ->assertSet('paymentAccountIdentifier', '1234567890')
+        ->assertSet('paymentAccountIdentifier', '')
         ->set('paymentLabel', 'Updated Maybank account')
         ->set('paymentAccountIdentifier', '9988776655')
         ->call('addPaymentDestination')
@@ -341,6 +439,47 @@ test('payment destinations can be viewed edited and archived from the directory'
         'id' => $destination->id,
         'status' => 'archived',
     ]);
+});
+
+test('editing a payment destination without re-entering the identifier keeps the saved secret', function () {
+    $user = User::factory()->create();
+    $profile = $user->financialProfiles()->firstOrFail();
+    $party = $profile->parties()->create([
+        'created_by_user_id' => $user->id,
+        'kind' => 'individual',
+        'preferred_name' => 'Secret keeper',
+        'status' => 'active',
+        'verification_status' => 'unverified',
+        'source' => 'test',
+    ]);
+    $destination = PartyPaymentDestination::create([
+        'party_id' => $party->id,
+        'created_by_user_id' => $user->id,
+        'method' => 'bank_account',
+        'label' => 'Original account',
+        'provider' => 'Maybank',
+        'currency' => 'MYR',
+        'account_holder_name' => 'Secret keeper',
+        'account_identifier_encrypted' => '1234567890',
+        'account_identifier_last4' => '7890',
+        'verification_status' => 'unverified',
+        'status' => 'active',
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(PartiesIndex::class)
+        ->call('editPaymentDestination', $destination->id)
+        ->assertSet('paymentAccountIdentifier', '')
+        ->set('paymentLabel', 'Renamed account')
+        ->call('addPaymentDestination')
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('party_payment_destinations', [
+        'id' => $destination->id,
+        'label' => 'Renamed account',
+        'account_identifier_last4' => '7890',
+    ]);
+    expect($destination->fresh()->account_identifier_encrypted)->toBe('1234567890');
 });
 
 test('api can create party routes collection schedules and delivery instructions', function () {

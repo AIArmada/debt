@@ -10,7 +10,7 @@ class ProfileMember extends Model
 {
     use HasUuids;
 
-    protected $fillable = ['profile_id', 'user_id', 'role', 'permissions', 'accepted_at', 'revoked_at'];
+    protected $fillable = ['role', 'permissions', 'accepted_at', 'revoked_at'];
 
     protected function casts(): array
     {

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->timestamps();
             $table->unique(['financial_transaction_id', 'party_id', 'role']);
+            $table->index('party_id');
         });
     }
 

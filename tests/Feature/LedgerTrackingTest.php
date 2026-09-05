@@ -109,6 +109,44 @@ test('first snapshot movement promotes the record to ledger tracking', function 
     expect($obligation->fresh()->tracking_mode)->toBe('ledger');
 });
 
+test('only a confirmed movement promotes a snapshot to ledger tracking', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+    $profile = FinancialProfile::query()->where('owner_user_id', $user->id)->firstOrFail();
+    $obligation = $profile->records()->create(['title' => 'Draft movement arrangement'])->obligations()->create([
+        'direction' => 'payable',
+        'obligation_kind' => 'money',
+        'tracking_mode' => 'snapshot',
+        'category' => 'personal_loan',
+        'title' => 'Draft movement loan',
+        'status' => 'active',
+        'currency' => 'MYR',
+        'current_principal_balance' => 10000,
+        'current_total_balance' => 10000,
+        'data_confidence' => 'partial',
+    ]);
+
+    $planned = entry('payment', '20.0000');
+    $planned['status'] = 'planned';
+    app(RecordTransaction::class)->handle($obligation, $planned);
+
+    expect($obligation->fresh()->tracking_mode)->toBe('snapshot');
+    $this->assertDatabaseMissing('audit_logs', [
+        'auditable_type' => 'App\\Models\\Obligation',
+        'auditable_id' => $obligation->id,
+        'action' => 'tracking_mode_promoted',
+    ]);
+
+    app(RecordTransaction::class)->handle($obligation, entry('payment', '20.0000'));
+
+    expect($obligation->fresh()->tracking_mode)->toBe('ledger');
+    $this->assertDatabaseHas('audit_logs', [
+        'auditable_type' => 'App\\Models\\Obligation',
+        'auditable_id' => $obligation->id,
+        'action' => 'tracking_mode_promoted',
+    ]);
+});
+
 test('adjustment requires an explicit direction and can reopen a settled record', function () {
     $user = User::factory()->create();
     $this->actingAs($user);

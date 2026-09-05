@@ -200,8 +200,16 @@ class Upload extends Component
         Gate::authorize('uploadDocument', $this->obligation);
 
         return view('livewire.documents.upload', [
-            'transactions' => $this->obligation->transactions()->latest('occurred_on')->latest('created_at')->get(),
-            'events' => $this->obligation->events()->latest('occurred_on')->latest('created_at')->get(),
+            'transactions' => $this->obligation->transactions()
+                ->select(['id', 'obligation_id', 'entry_type', 'amount', 'currency', 'occurred_on'])
+                ->latest('occurred_on')
+                ->latest('created_at')
+                ->get(),
+            'events' => $this->obligation->events()
+                ->select(['id', 'obligation_id', 'event_type', 'occurred_on'])
+                ->latest('occurred_on')
+                ->latest('created_at')
+                ->get(),
         ]);
     }
 }

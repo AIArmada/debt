@@ -4,16 +4,19 @@ namespace App\Domain\Planning;
 
 use App\Models\BudgetPeriod;
 use App\Models\FinancialProfile;
-use App\Models\FinancialTransaction;
 use App\Models\Obligation;
 use App\Models\RepaymentPlan;
 use App\Models\RepaymentPlanAllocation;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 final class ProfileRepaymentSummary
 {
+    /** @var array<string, EloquentCollection<int, Obligation>> */
+    private array $obligationsCache = [];
+
     /**
      * Money obligations that can be included in a budget plan.
      *
@@ -27,7 +30,7 @@ final class ProfileRepaymentSummary
         $currency = strtoupper((string) $budgetPeriod->currency);
         $plannedByObligation = $this->plannedByObligation($plan);
 
-        return $this->obligations($budgetPeriod->profile)->toBase()
+        return $this->obligations($budgetPeriod->profile, true, true)->toBase()
             ->filter(fn (Obligation $obligation): bool => strtoupper((string) $obligation->currency) === $currency
                 && $obligation->currentPositionDirection() === 'payable'
             )
@@ -48,7 +51,7 @@ final class ProfileRepaymentSummary
     {
         $budgetCurrency = strtoupper((string) $budgetPeriod->currency);
 
-        return $this->obligations($budgetPeriod->profile)->toBase()
+        return $this->obligations($budgetPeriod->profile, true, true)->toBase()
             ->flatMap(fn (Obligation $obligation): array => $this->excludedRowsForObligation($obligation, $budgetCurrency))
             ->sortBy([
                 ['currency', 'asc'],
@@ -64,50 +67,27 @@ final class ProfileRepaymentSummary
      */
     public function profileSummary(FinancialProfile $profile, ?BudgetPeriod $budgetPeriod = null, ?RepaymentPlan $plan = null): Collection
     {
-        $rows = [];
+        return $this->profileSummaryFromRows($this->baseSummaryRows($profile), $budgetPeriod, $plan);
+    }
+
+    /**
+     * Complete a summary from already-aggregated obligation positions.
+     *
+     * This keeps the expensive movement and plan queries separate from the
+     * position scan, which lets callers reuse an existing streamed scan.
+     *
+     * @param  array<string, array{currency: string, payable: int, receivable: int, minimum: int, planned: int, paid: int, actual_paid: int, remaining: int}>  $rows
+     * @return Collection<string, array{currency: string, payable: int, receivable: int, minimum: int, planned: int, paid: int, actual_paid: int, remaining: int}>
+     */
+    public function profileSummaryFromRows(array $rows, ?BudgetPeriod $budgetPeriod = null, ?RepaymentPlan $plan = null): Collection
+    {
         $actualPaidByCurrency = $budgetPeriod === null ? [] : $this->actualPaymentsByCurrency($budgetPeriod);
         $planPaidByCurrency = $plan === null
             ? []
             : $this->planProgress($plan)->groupBy('currency')->map(fn (Collection $progress): int => $progress->sum('paid'))->all();
 
-        foreach ($this->obligations($profile) as $obligation) {
-            if ($obligation->obligation_kind !== 'money') {
-                continue;
-            }
-
-            foreach ($obligation->currencyPositions() as $position) {
-                if ($position['direction'] === null) {
-                    continue;
-                }
-
-                $currency = $position['currency'];
-                $rows[$currency] ??= [
-                    'currency' => $currency,
-                    'payable' => 0,
-                    'receivable' => 0,
-                    'minimum' => 0,
-                    'planned' => 0,
-                    'paid' => 0,
-                    'actual_paid' => 0,
-                    'remaining' => 0,
-                ];
-
-                if ($position['direction'] === 'payable') {
-                    $rows[$currency]['payable'] += (int) $position['amount'];
-                } else {
-                    $rows[$currency]['receivable'] += (int) $position['amount'];
-                }
-
-                if (strtoupper((string) $obligation->currency) === $currency && $obligation->currentPositionDirection() === 'payable') {
-                    $rows[$currency]['minimum'] += $obligation->minimum_payment_amount === null
-                        ? 0
-                        : min((int) $obligation->minimum_payment_amount, (int) $position['amount']);
-                }
-
-            }
-        }
-
         foreach ($actualPaidByCurrency as $currency => $paid) {
+            $currency = (string) $currency;
             $rows[$currency] ??= [
                 'currency' => $currency,
                 'payable' => 0,
@@ -122,6 +102,7 @@ final class ProfileRepaymentSummary
         }
 
         foreach ($planPaidByCurrency as $currency => $paid) {
+            $currency = (string) $currency;
             $rows[$currency] ??= [
                 'currency' => $currency,
                 'payable' => 0,
@@ -136,6 +117,7 @@ final class ProfileRepaymentSummary
         }
 
         foreach ($this->plannedByCurrency($plan) as $currency => $planned) {
+            $currency = (string) $currency;
             $rows[$currency] ??= [
                 'currency' => $currency,
                 'payable' => 0,
@@ -161,6 +143,38 @@ final class ProfileRepaymentSummary
     }
 
     /**
+     * Add one money obligation's native-currency positions to a summary.
+     *
+     * @param  array<string, array{currency: string, payable: int, receivable: int, minimum: int, planned: int, paid: int, actual_paid: int, remaining: int}>  $rows
+     */
+    public function addObligationToSummaryRows(array &$rows, Obligation $obligation): void
+    {
+        if ($obligation->obligation_kind !== 'money') {
+            return;
+        }
+
+        foreach ($obligation->currencyPositions() as $position) {
+            if ($position['direction'] === null) {
+                continue;
+            }
+
+            $currency = (string) $position['currency'];
+            $rows[$currency] ??= $this->emptySummaryRow($currency);
+            if ($position['direction'] === 'payable') {
+                $rows[$currency]['payable'] += (int) $position['amount'];
+            } else {
+                $rows[$currency]['receivable'] += (int) $position['amount'];
+            }
+
+            if (strtoupper((string) $obligation->currency) === $currency && $obligation->currentPositionDirection() === 'payable') {
+                $rows[$currency]['minimum'] += $obligation->minimum_payment_amount === null
+                    ? 0
+                    : min((int) $obligation->minimum_payment_amount, (int) $position['amount']);
+            }
+        }
+    }
+
+    /**
      * Progress for each allocation in a generated plan.
      *
      * @return Collection<int, array{allocation: RepaymentPlanAllocation, obligation: Obligation, currency: string, planned: int, paid: int, remaining: int, state: string}>
@@ -168,26 +182,22 @@ final class ProfileRepaymentSummary
     public function planProgress(RepaymentPlan $plan): Collection
     {
         $plan->loadMissing([
-            'budgetPeriod',
-            'allocations.obligation.record.partyLinks.party',
-            'allocations.paidTransactions',
+            'budgetPeriod:id,profile_id,currency,starts_on,ends_on',
+            'allocations' => fn ($query) => $query->select([
+                'id', 'repayment_plan_id', 'obligation_id', 'currency', 'priority_rank',
+                'total_amount', 'carried_paid_amount', 'priority_reason',
+            ]),
+            'allocations.obligation' => fn ($query) => $query->select(['id', 'record_id', 'title']),
+            'allocations.obligation.record' => fn ($query) => $query->select(['id', 'profile_id', 'title', 'is_archived']),
         ]);
 
-        return $plan->allocations->toBase()->map(function (RepaymentPlanAllocation $allocation) use ($plan): array {
+        $period = $plan->budgetPeriod;
+        $paidByAllocation = $period === null ? [] : $this->paidByAllocation($plan, $period);
+
+        return $plan->allocations->toBase()->map(function (RepaymentPlanAllocation $allocation) use ($plan, $paidByAllocation): array {
             $currency = strtoupper((string) ($allocation->currency ?: $plan->currency));
-            $period = $plan->budgetPeriod;
-            $paid = (int) $allocation->carried_paid_amount + $allocation->paidTransactions
-                ->filter(fn ($transaction): bool => $transaction->status === 'confirmed'
-                    && $transaction->entry_type === 'payment'
-                    && strtoupper((string) $transaction->currency) === $currency
-                    && $period !== null
-                    && $transaction->occurred_on !== null
-                    && CarbonImmutable::parse((string) $transaction->occurred_on)->betweenIncluded(
-                        CarbonImmutable::parse((string) $period->starts_on),
-                        CarbonImmutable::parse((string) $period->ends_on),
-                    )
-                )
-                ->sum(fn ($transaction): int => (int) $transaction->amount);
+            $paid = (int) $allocation->carried_paid_amount
+                + ($paidByAllocation[(string) $allocation->getKey()][$currency] ?? 0);
 
             return [
                 'allocation' => $allocation,
@@ -212,32 +222,111 @@ final class ProfileRepaymentSummary
     /** @return array<string, int> */
     private function actualPaymentsByCurrency(BudgetPeriod $budgetPeriod): array
     {
-        return FinancialTransaction::query()
-            ->whereHas('obligation.record', fn ($query) => $query
-                ->where('profile_id', $budgetPeriod->profile_id)
-                ->where('is_archived', false))
-            ->where('status', 'confirmed')
-            ->where('entry_type', 'payment')
-            ->whereBetween('occurred_on', [
+        return DB::table('financial_transactions')
+            ->join('obligations', 'obligations.id', '=', 'financial_transactions.obligation_id')
+            ->join('records', 'records.id', '=', 'obligations.record_id')
+            ->where('records.profile_id', $budgetPeriod->profile_id)
+            ->where('records.is_archived', false)
+            ->where('financial_transactions.status', 'confirmed')
+            ->where('financial_transactions.entry_type', 'payment')
+            ->whereBetween('financial_transactions.occurred_on', [
                 CarbonImmutable::parse((string) $budgetPeriod->starts_on)->toDateString(),
                 CarbonImmutable::parse((string) $budgetPeriod->ends_on)->toDateString(),
             ])
-            ->get(['amount', 'currency'])
-            ->groupBy(fn (FinancialTransaction $transaction): string => strtoupper((string) $transaction->currency))
-            ->map(fn (Collection $transactions): int => $transactions->sum(fn (FinancialTransaction $transaction): int => (int) $transaction->amount))
+            ->selectRaw('UPPER(financial_transactions.currency) AS currency, SUM(financial_transactions.amount) AS total')
+            ->groupByRaw('UPPER(financial_transactions.currency)')
+            ->get()
+            ->mapWithKeys(fn (object $row): array => [(string) $row->currency => (int) $row->total])
             ->all();
     }
 
     /** @return EloquentCollection<int, Obligation> */
-    private function obligations(FinancialProfile $profile): EloquentCollection
+    private function obligations(FinancialProfile $profile, bool $withPartyContext, bool $withTransactions): EloquentCollection
     {
-        return Obligation::query()
+        $profileId = (string) $profile->getKey();
+        $cacheKey = $profileId.'|'.(int) $withPartyContext.'|'.(int) $withTransactions;
+        if (isset($this->obligationsCache[$cacheKey])) {
+            return $this->obligationsCache[$cacheKey];
+        }
+
+        $with = [];
+        if ($withPartyContext) {
+            $with = [
+                'record:id,profile_id,title',
+                'record.partyLinks:id,record_id,party_id,role,is_primary',
+                'record.partyLinks.party:id,preferred_name',
+            ];
+        }
+        if ($withTransactions) {
+            $with[] = 'transactions:id,obligation_id,status,entry_type,currency,amount,occurred_on';
+        }
+
+        return $this->obligationsCache[$cacheKey] = Obligation::query()
             ->whereHas('record', fn ($query) => $query
                 ->where('profile_id', $profile->getKey())
                 ->where('is_archived', false))
             ->where('status', 'active')
-            ->with(['record.partyLinks.party', 'transactions'])
+            ->select([
+                'id', 'record_id', 'direction', 'obligation_kind', 'title', 'currency',
+                'current_total_balance', 'currency_balances', 'minimum_payment_amount', 'next_due_on',
+            ])
+            ->with($with)
             ->get();
+    }
+
+    /** @return array<string, array{currency: string, payable: int, receivable: int, minimum: int, planned: int, paid: int, actual_paid: int, remaining: int}> */
+    private function baseSummaryRows(FinancialProfile $profile): array
+    {
+        $rows = [];
+        foreach ($this->obligations($profile, false, false) as $obligation) {
+            $this->addObligationToSummaryRows($rows, $obligation);
+        }
+
+        return $rows;
+    }
+
+    /** @return array{currency: string, payable: int, receivable: int, minimum: int, planned: int, paid: int, actual_paid: int, remaining: int} */
+    private function emptySummaryRow(string $currency): array
+    {
+        return [
+            'currency' => $currency,
+            'payable' => 0,
+            'receivable' => 0,
+            'minimum' => 0,
+            'planned' => 0,
+            'paid' => 0,
+            'actual_paid' => 0,
+            'remaining' => 0,
+        ];
+    }
+
+    /** @return array<string, array<string, int>> */
+    private function paidByAllocation(RepaymentPlan $plan, BudgetPeriod $period): array
+    {
+        $allocationIds = $plan->allocations->modelKeys();
+        if ($allocationIds === []) {
+            return [];
+        }
+
+        $paidByAllocation = [];
+        DB::table('financial_transactions')
+            ->whereIn('repayment_plan_allocation_id', $allocationIds)
+            ->where('status', 'confirmed')
+            ->where('entry_type', 'payment')
+            ->whereBetween('occurred_on', [
+                CarbonImmutable::parse((string) $period->starts_on)->toDateString(),
+                CarbonImmutable::parse((string) $period->ends_on)->toDateString(),
+            ])
+            ->select('repayment_plan_allocation_id')
+            ->selectRaw('UPPER(currency) AS currency, SUM(amount) AS total')
+            ->groupBy('repayment_plan_allocation_id')
+            ->groupByRaw('UPPER(currency)')
+            ->get()
+            ->each(function (object $row) use (&$paidByAllocation): void {
+                $paidByAllocation[(string) $row->repayment_plan_allocation_id][(string) $row->currency] = (int) $row->total;
+            });
+
+        return $paidByAllocation;
     }
 
     /** @return array<string, int> */

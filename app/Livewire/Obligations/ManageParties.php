@@ -49,7 +49,7 @@ class ManageParties extends Component
         $party = Party::query()
             ->whereKey($validated['partyId'])
             ->where('profile_id', $this->obligation->record->profile_id)
-            ->whereNull('archived_at')
+            ->where('status', 'active')
             ->firstOrFail();
 
         ObligationParty::query()->updateOrCreate(
@@ -77,7 +77,11 @@ class ManageParties extends Component
     {
         Gate::authorize('view', $this->obligation);
         $obligation = $this->obligation->load(['record.profile', 'partyLinks.party']);
-        $parties = $obligation->record->profile->parties()->whereNull('archived_at')->orderBy('preferred_name')->get();
+        $parties = $obligation->record->profile->parties()
+            ->select(['id', 'profile_id', 'preferred_name', 'status'])
+            ->where('status', 'active')
+            ->orderBy('preferred_name')
+            ->get();
 
         return view('livewire.obligations.manage-parties', compact('obligation', 'parties'));
     }

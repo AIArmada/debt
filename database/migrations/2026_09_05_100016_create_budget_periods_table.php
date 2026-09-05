@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('status', 30)->default('open');
             $table->timestamps();
             $table->unique(['profile_id', 'starts_on', 'ends_on']);
+            $table->index(['profile_id', 'status', 'starts_on']);
         });
     }
 

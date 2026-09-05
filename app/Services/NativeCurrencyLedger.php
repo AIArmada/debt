@@ -8,7 +8,10 @@ use Illuminate\Database\Eloquent\Collection;
 
 class NativeCurrencyLedger
 {
-    /** @return array<string, int> */
+    /**
+     * @param  Collection<int, FinancialTransaction>  $transactions
+     * @return array<string, int>
+     */
     public function openingBalances(Obligation $obligation, Collection $transactions): array
     {
         $stored = $this->normaliseMap($obligation->getAttribute('currency_opening_balances'));
@@ -83,7 +86,10 @@ class NativeCurrencyLedger
         return ['before' => $before, 'after' => $after];
     }
 
-    /** @return list<string> */
+    /**
+     * @param  Collection<int, FinancialTransaction>  $transactions
+     * @return list<string>
+     */
     public function recalculate(Obligation $obligation, Collection $transactions, ?int $openingPrincipal = null): array
     {
         $opening = $this->openingBalances($obligation, $transactions);
@@ -148,7 +154,10 @@ class NativeCurrencyLedger
             : $principal - min($amount, max(0, $principal));
     }
 
-    /** @param array<string, mixed> $attributes */
+    /**
+     * @param  array<string, mixed>  $attributes
+     * @param  array<string, int>  $balances
+     */
     private function applyStatus(Obligation $obligation, array &$attributes, array $balances): void
     {
         $settled = collect($balances)->every(fn (mixed $balance): bool => (int) $balance === 0);
@@ -156,6 +165,7 @@ class NativeCurrencyLedger
         $attributes['settled_at'] = $settled ? now() : null;
     }
 
+    /** @param Collection<int, FinancialTransaction> $transactions */
     public function openingPrincipal(Obligation $obligation, Collection $transactions): ?int
     {
         $principal = $obligation->current_principal_balance;

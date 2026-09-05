@@ -14,6 +14,7 @@ return new class extends Migration
             $table->string('channel', 30);
             $table->string('status', 30)->default('open');
             $table->timestamps();
+            $table->index('obligation_id');
         });
     }
 

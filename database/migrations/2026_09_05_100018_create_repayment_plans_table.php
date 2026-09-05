@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -27,7 +28,14 @@ return new class extends Migration
             $table->timestamps();
             $table->index(['profile_id', 'status']);
             $table->index(['profile_id', 'budget_period_id', 'currency', 'status'], 'repayment_plans_activation_scope_index');
+            $table->index(['budget_period_id', 'status', 'generated_at']);
         });
+
+        DB::statement(
+            "CREATE UNIQUE INDEX repayment_plans_one_active_scope_unique
+            ON repayment_plans (profile_id, budget_period_id, currency)
+            WHERE status = 'active'",
+        );
     }
 
     public function down(): void

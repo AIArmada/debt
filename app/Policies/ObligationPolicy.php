@@ -63,6 +63,11 @@ class ObligationPolicy
         return $this->canAccess($user, $obligation, ['owner', 'editor']);
     }
 
+    public function managePaymentInstructions(User $user, Obligation $obligation): bool
+    {
+        return $this->canAccess($user, $obligation, ['owner', 'editor', 'payment_manager']);
+    }
+
     /** @param list<string> $roles */
     private function canAccess(User $user, Obligation $obligation, array $roles): bool
     {

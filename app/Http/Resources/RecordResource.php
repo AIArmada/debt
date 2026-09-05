@@ -2,7 +2,9 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Document;
 use App\Models\Record;
+use App\Models\RecordParty;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -20,7 +22,7 @@ class RecordResource extends JsonResource
             'sensitivity' => $this->sensitivity,
             'is_archived' => $this->is_archived,
             'state' => $this->stateLabel(),
-            'parties' => $this->whenLoaded('partyLinks', fn (): array => $this->partyLinks->map(fn ($link): array => [
+            'parties' => $this->whenLoaded('partyLinks', fn (): array => $this->partyLinks->map(fn (RecordParty $link): array => [
                 'id' => $link->party_id,
                 'name' => $link->party?->preferred_name,
                 'kind' => $link->party?->kind,
@@ -29,7 +31,7 @@ class RecordResource extends JsonResource
                 'status' => $link->status,
             ])->values()->all()),
             'obligations' => ObligationResource::collection($this->whenLoaded('obligations')),
-            'documents' => $this->whenLoaded('documents', fn () => $this->documents->map(fn ($document): array => [
+            'documents' => $this->whenLoaded('documents', fn (): array => $this->documents->map(fn (Document $document): array => [
                 'id' => $document->getKey(),
                 'evidence_type' => $document->evidence_type,
                 'title' => $document->title,

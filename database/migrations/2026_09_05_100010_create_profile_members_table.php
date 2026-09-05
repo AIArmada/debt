@@ -19,6 +19,7 @@ return new class extends Migration
             $table->timestamps();
             $table->unique(['profile_id', 'user_id']);
             $table->index(['user_id', 'revoked_at']);
+            $table->index(['user_id', 'accepted_at', 'revoked_at', 'profile_id']);
         });
     }
 

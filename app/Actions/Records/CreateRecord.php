@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * @phpstan-import-type ObligationData from CreateObligation
+ */
 class CreateRecord
 {
     public function __construct(
@@ -19,7 +22,10 @@ class CreateRecord
         private readonly CreateObligation $createObligation,
     ) {}
 
-    /** @param array<string, mixed> $recordData @param array<string, mixed> $obligationData */
+    /**
+     * @param  array<string, mixed>  $recordData
+     * @param  ObligationData  $obligationData
+     */
     public function handle(User $user, FinancialProfile $profile, array $recordData, array $obligationData): Record
     {
         Gate::forUser($user)->authorize('createObligation', $profile);
@@ -79,7 +85,7 @@ class CreateRecord
             $party = Party::query()
                 ->whereKey($partyId)
                 ->where('profile_id', $profile->getKey())
-                ->whereNull('archived_at')
+                ->where('status', 'active')
                 ->first();
 
             if ($party === null) {
