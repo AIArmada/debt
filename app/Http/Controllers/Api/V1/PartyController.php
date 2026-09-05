@@ -75,8 +75,9 @@ class PartyController extends Controller
         return new PartyResource($party->load($this->partyRelations(true)));
     }
 
-    public function show(Party $party): PartyResource
+    public function show(Request $request, Party $party): PartyResource
     {
+        $party = $this->accessibleParty($request, $party);
         Gate::authorize('view', $party->profile);
 
         return new PartyResource($party->load($this->partyRelations(true)));
@@ -84,6 +85,7 @@ class PartyController extends Controller
 
     public function update(Request $request, Party $party): PartyResource
     {
+        $party = $this->accessibleParty($request, $party);
         Gate::authorize('manageParties', $party->profile);
         $validated = $request->validate([
             'preferred_name' => ['sometimes', 'required', 'string', 'max:255'],
@@ -97,6 +99,7 @@ class PartyController extends Controller
 
     public function addContactRoute(Request $request, Party $party): JsonResponse
     {
+        $party = $this->accessibleParty($request, $party);
         Gate::authorize('manageParties', $party->profile);
         $validated = $request->validate([
             'via_party_id' => ['required', 'uuid', 'different:party_id'],
@@ -126,6 +129,7 @@ class PartyController extends Controller
 
     public function addPaymentDestination(Request $request, Party $party): JsonResponse
     {
+        $party = $this->accessibleParty($request, $party);
         Gate::authorize('manageParties', $party->profile);
         $validated = $request->validate([
             'method' => ['required', Rule::in(['bank_account', 'cash', 'e_wallet', 'payment_provider', 'crypto_wallet', 'other'])],
@@ -172,5 +176,13 @@ class PartyController extends Controller
         }
 
         return $relations;
+    }
+
+    private function accessibleParty(Request $request, Party $party): Party
+    {
+        return Party::query()
+            ->whereKey($party->getKey())
+            ->whereIn('profile_id', app(ProfileAccess::class)->accessibleProfiles($request->user())->select('id'))
+            ->firstOrFail();
     }
 }

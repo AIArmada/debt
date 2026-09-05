@@ -10,15 +10,20 @@ class NotificationController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $limit = min(max((int) $request->integer('limit', 20), 1), 50);
+        $perPage = min(100, max(1, $request->integer('per_page', 25)));
         $notifications = $request->user()->notifications()
             ->select(['id', 'notifiable_type', 'notifiable_id', 'type', 'data', 'read_at', 'created_at'])
             ->latest()
-            ->limit($limit)
-            ->get();
+            ->paginate($perPage);
 
         return response()->json([
-            'data' => $notifications->map(fn ($notification): array => $this->payload($notification))->values(),
+            'data' => $notifications->getCollection()->map(fn ($notification): array => $this->payload($notification))->values(),
+            'meta' => [
+                'current_page' => $notifications->currentPage(),
+                'per_page' => $notifications->perPage(),
+                'total' => $notifications->total(),
+                'last_page' => $notifications->lastPage(),
+            ],
             'unread_count' => $request->user()->unreadNotifications()->count(),
         ]);
     }

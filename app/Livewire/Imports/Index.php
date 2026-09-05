@@ -79,6 +79,20 @@ class Index extends Component
         $obligation = Obligation::query()->whereKey($obligationId)->where('obligation_kind', 'money')->whereHas('record', function ($query) use ($row): void {
             $query->where('profile_id', $row->bankImport->profile_id)->where('is_archived', false);
         })->firstOrFail();
+
+        if (strtoupper((string) $row->currency) !== strtoupper((string) $obligation->currency)) {
+            $this->addError('file', 'This bank row is in '.$row->currency.' but the obligation is in '.$obligation->currency.'. Match rows only within the same currency.');
+
+            return;
+        }
+
+        $expectedDirection = $row->suggested_direction === 'receivable' ? 'receivable' : 'payable';
+        if ($obligation->currencyPosition(strtoupper((string) $row->currency))['direction'] !== $expectedDirection) {
+            $this->addError('file', 'This bank row looks like '.($expectedDirection === 'receivable' ? 'money in' : 'money out').', but the obligation position in that currency is the opposite. Match it to an obligation with the same direction.');
+
+            return;
+        }
+
         $row->update(['obligation_id' => $obligation->getKey(), 'status' => 'matched']);
     }
 
@@ -162,6 +176,10 @@ class Index extends Component
 
     private function row(string $rowId): BankImportRow
     {
-        return BankImportRow::query()->with(['bankImport.profile', 'obligation'])->whereKey($rowId)->firstOrFail();
+        return BankImportRow::query()
+            ->with(['bankImport.profile', 'obligation'])
+            ->whereKey($rowId)
+            ->whereHas('bankImport', fn ($query) => $query->whereIn('profile_id', $this->accessibleProfilesCollection()->modelKeys()))
+            ->firstOrFail();
     }
 }

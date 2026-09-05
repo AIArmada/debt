@@ -2,10 +2,18 @@
 
 namespace App\Domain\Calculations;
 
+use InvalidArgumentException;
+
 class InstallmentCalculator
 {
     public function projectedTotal(int $installmentAmount, int $numberOfInstallments): int
     {
-        return $installmentAmount * max(0, $numberOfInstallments);
+        $periods = max(0, $numberOfInstallments);
+
+        if ($installmentAmount !== 0 && abs($periods) > intdiv(PHP_INT_MAX, abs($installmentAmount))) {
+            throw new InvalidArgumentException('The projected total is too large.');
+        }
+
+        return $installmentAmount * $periods;
     }
 }

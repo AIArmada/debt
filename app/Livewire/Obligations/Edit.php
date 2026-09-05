@@ -106,6 +106,8 @@ class Edit extends Component
     #[Validate('nullable|date')]
     public ?string $conditionTriggeredOn = null;
 
+    public bool $hadRecordedCondition = false;
+
     public function mount(Obligation $obligation): void
     {
         Gate::authorize('update', $obligation);
@@ -144,6 +146,7 @@ class Edit extends Component
         $this->isConditional = $obligation->is_conditional ?? false;
         $this->conditionDescription = $obligation->condition_description ?? '';
         $this->conditionTriggeredOn = $this->dateAttribute($obligation, 'condition_triggered_on');
+        $this->hadRecordedCondition = filled($obligation->condition_description) || $obligation->condition_triggered_on !== null;
     }
 
     public function save(UpdateObligation $updateObligation): void

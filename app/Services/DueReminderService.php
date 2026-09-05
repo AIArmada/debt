@@ -20,8 +20,9 @@ class DueReminderService
             ->whereHas('records.obligations', fn ($query) => $query
                 ->where('status', 'active')
                 ->whereNotNull('next_due_on')
-                ->whereBetween('next_due_on', [$from->toDateString(), $until->toDateString()]))
-            ->select(['id', 'owner_user_id'])
+                ->whereBetween('next_due_on', [$from->toDateString(), $until->toDateString()])
+                ->where(fn ($query) => $query->where('is_conditional', false)->orWhereNotNull('condition_triggered_on')))
+            ->select(['id', 'owner_user_id', 'timezone'])
             ->with([
                 'owner:id,name,email,email_verified_at',
                 'owner.notificationPreference',
@@ -35,10 +36,11 @@ class DueReminderService
                     ->where('status', 'active')
                     ->whereNotNull('next_due_on')
                     ->whereBetween('next_due_on', [$from->toDateString(), $until->toDateString()])
+                    ->notDormant()
                     ->select(['id', 'record_id', 'next_due_on']),
                 'records.obligations.record:id,profile_id',
             ])
-            ->chunkById(50, function (Collection $profiles) use ($from, &$sent): void {
+            ->chunkById(50, function (Collection $profiles) use (&$sent): void {
                 $heirMembers = $profiles
                     ->flatMap(fn (FinancialProfile $profile) => $profile->members->where('role', 'heir'));
                 $activatedHeirs = $heirMembers->isEmpty()
@@ -57,6 +59,7 @@ class DueReminderService
                         ->mapWithKeys(fn ($request): array => [(string) $request->profile_id.'|'.(string) $request->user_id => true]);
 
                 foreach ($profiles as $profile) {
+                    $today = CarbonImmutable::now($profile->timezone ?? 'UTC')->startOfDay();
                     $recipients = collect([$profile->owner])
                         ->merge($profile->members
                             ->filter(fn ($member): bool => $member->user !== null
@@ -69,14 +72,32 @@ class DueReminderService
                         if ($preference === null) {
                             $preference = $user->notificationPreference()->firstOrCreate(['user_id' => $user->getKey()], ['email_enabled' => true, 'in_app_enabled' => true, 'push_enabled' => false, 'generic_push' => true, 'due_reminder_days' => 3]);
                         }
+                        if (! $preference->in_app_enabled
+                            && ! ($preference->email_enabled && $user->email_verified_at !== null)
+                            && ! $preference->push_enabled) {
+                            continue;
+                        }
                         $days = (int) $preference->due_reminder_days;
                         foreach ($profile->records->flatMap(fn ($record) => $record->obligations) as $obligation) {
                             $dueOn = $obligation->next_due_on?->toDateString();
-                            $recipientUntil = $from->addDays($days)->toDateString();
-                            if (is_string($dueOn) && $dueOn >= $from->toDateString() && $dueOn <= $recipientUntil) {
-                                $user->notify(new DebtDueNotification($obligation));
-                                $sent++;
+                            $recipientUntil = $today->addDays($days)->toDateString();
+                            if (! is_string($dueOn) || $dueOn < $today->toDateString() || $dueOn > $recipientUntil) {
+                                continue;
                             }
+                            $deduplicationKey = 'due:'.$obligation->getKey().':'.$today->toDateString();
+                            // Compare in UTC instants: created_at is stored in UTC while
+                            // the profile day can straddle two UTC dates near midnight.
+                            $dayStartUtc = $today->copy()->setTimezone('UTC');
+                            $alreadySent = $user->notifications()
+                                ->where('type', DebtDueNotification::class)
+                                ->whereBetween('created_at', [$dayStartUtc->toDateTimeString(), $dayStartUtc->addDay()->toDateTimeString()])
+                                ->where('data', 'like', '%'.$deduplicationKey.'%')
+                                ->exists();
+                            if ($alreadySent) {
+                                continue;
+                            }
+                            $user->notify(new DebtDueNotification($obligation));
+                            $sent++;
                         }
                     }
                 }

@@ -1,18 +1,18 @@
 <div class="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-7">
     @if (session('record-updated'))<div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200">{{ session('record-updated') }}</div>@endif
     <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
+        <div class="min-w-0">
             <a wire:navigate href="{{ route('records.index') }}" class="text-sm text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200">← Back to records</a>
             @php($recordStateTone = match ($record->stateLabel()) { 'All obligations settled' => 'success', 'Partly resolved' => 'warning', 'Open' => 'info', default => 'neutral' })
             <div class="mt-5 flex flex-wrap items-center gap-3">
                 <span class="app-eyebrow">{{ $record->profile->name }}</span>
                 <x-status-badge :tone="$recordStateTone" :label="$record->stateLabel()" />
             </div>
-            <div class="mt-2 flex items-start gap-3"><span class="app-section-icon hidden shrink-0 sm:inline-flex"><flux:icon name="document-text" class="size-5" /></span><flux:heading size="xl" class="text-3xl tracking-tight">{{ $record->title }}</flux:heading></div>
-            <flux:text class="mt-1">{{ $record->primaryParty()?->preferred_name ?? 'No party recorded yet' }} · {{ $record->obligations->count() }} obligation{{ $record->obligations->count() === 1 ? '' : 's' }} · {{ $record->sensitivity === 'shared' ? 'Shared with profile collaborators' : 'Private to profile access' }}</flux:text>
+            <div class="mt-2 flex min-w-0 items-start gap-3"><span class="app-section-icon hidden shrink-0 sm:inline-flex"><flux:icon name="document-text" class="size-5" /></span><flux:heading size="xl" class="min-w-0 break-words text-3xl tracking-tight">{{ $record->title }}</flux:heading></div>
+            <flux:text class="mt-1 break-words">{{ $record->primaryParty()?->preferred_name ?? 'No party recorded yet' }} · {{ $record->obligations->count() }} obligation{{ $record->obligations->count() === 1 ? '' : 's' }} · {{ $record->sensitivity === 'shared' ? 'Shared with profile collaborators' : 'Private to profile access' }}</flux:text>
         </div>
 
-        <div class="flex flex-wrap gap-2">
+        <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap">
             @can('update', $record)
                 <flux:button variant="ghost" :href="route('records.edit', $record)" wire:navigate>Edit record</flux:button>
             @endcan
@@ -40,12 +40,17 @@
         </div>
 
         @forelse ($record->obligations as $obligation)
-            <article class="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+            <article class="min-w-0 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
                 <div class="flex flex-col gap-4 border-b border-zinc-200 px-5 py-5 sm:flex-row sm:items-start sm:justify-between dark:border-zinc-700">
-                    <div>
+                    <div class="min-w-0">
                         <div class="flex flex-wrap items-center gap-2">
                             <flux:heading size="lg">{{ $obligation->title }}</flux:heading>
                             <x-obligation-badge :kind="$obligation->obligation_kind" :label="$obligation->kindLabel()" />
+                            @if ($obligation->isDormantCondition())
+                                <x-status-badge tone="neutral" label="Conditional — awaiting trigger" />
+                            @elseif ($obligation->is_conditional)
+                                <x-status-badge tone="info" label="Conditional — triggered" />
+                            @endif
                             @if ($obligation->obligation_kind === 'money')
                                 <x-direction-badge :direction="$obligation->currentPositionDirection()" :reversed="$obligation->isPositionReversed()" :label="$obligation->isPositionReversed() ? 'Position changed — review' : $obligation->effectiveDirectionLabel()" />
                             @else
@@ -59,9 +64,12 @@
                                 <span>Due {{ $obligation->next_due_on->format('d M Y') }}</span>
                             @endif
                         </div>
+                        @if ($obligation->is_conditional)
+                            <p class="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-300">Only applies after: {{ $obligation->condition_description ?: 'condition not described' }}@if ($obligation->condition_triggered_on) (triggered {{ $obligation->condition_triggered_on->format('d M Y') }})@else (not yet triggered — excluded from plans, schedules, and reminders)@endif</p>
+                        @endif
                     </div>
 
-                    <div class="flex flex-wrap gap-2">
+                    <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                         @can('update', $obligation)
                             <flux:button size="sm" variant="ghost" :href="route('records.obligations.edit', [$record, $obligation])" wire:navigate>Edit obligation</flux:button>
                         @endcan
@@ -107,7 +115,7 @@
                                 <div class="mt-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs leading-5 text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-200">Quantity needs review: {{ $obligation->quantityMode()->isCountable() ? 'whole-unit items cannot be fractional' : 'check the quantity and unit' }}.</div>
                             @endif
                         @else
-                            <div class="mt-2"><x-status-badge :tone="$obligation->status === 'settled' || $obligation->status === 'fulfilled' ? 'success' : 'info'" :label="$obligation->status === 'settled' || $obligation->status === 'fulfilled' ? 'Completed' : 'In progress'" /></div>
+                            <div class="mt-2"><x-status-badge :tone="in_array($obligation->status, ['settled', 'waived'], true) ? 'success' : 'info'" :label="$obligation->status === 'settled' ? 'Settled' : ($obligation->status === 'waived' ? 'Waived' : 'In progress')" /></div>
                             <div class="mt-1 text-sm text-zinc-500">Commitment progress is recorded as dated updates.</div>
                         @endif
                     </div>
@@ -130,6 +138,7 @@
                                 <flux:modal.trigger name="scenarios-{{ $obligation->id }}">
                                     <flux:button size="sm" variant="outline">Scenarios</flux:button>
                                 </flux:modal.trigger>
+                                @if (! $obligation->isDormantCondition())
                                 @can('manageSchedule', $obligation)
                                     @if ($obligation->currentPositionDirection() === 'receivable')
                                         <flux:modal.trigger name="collection-schedule-{{ $obligation->id }}">
@@ -146,6 +155,7 @@
                                         <flux:button size="sm" variant="outline">Payment instructions</flux:button>
                                     </flux:modal.trigger>
                                 @endcan
+                                @endif
                             @endif
                             @if ($obligation->isPawnCategory())
                                 @can('manageAssets', $obligation)
@@ -170,7 +180,7 @@
                     </div>
                 </div>
 
-                @if ($obligation->obligation_kind === 'money' && isset($calculationPreviews[$obligation->id]))
+                @if ($obligation->obligation_kind === 'money' && ! $obligation->isDormantCondition() && isset($calculationPreviews[$obligation->id]))
                     @php($preview = $calculationPreviews[$obligation->id])
                     <div class="border-t border-zinc-200 px-5 py-4 dark:border-zinc-700">
                         <div class="text-sm font-semibold">{{ $preview['label'] }}</div>
@@ -196,6 +206,9 @@
                                         @php($transactionStatusTone = match ($transaction->status) { 'confirmed', 'recorded', 'completed' => 'success', 'pending', 'draft' => 'warning', 'failed', 'reversed' => 'danger', default => 'neutral' })
                                         <div class="flex flex-wrap items-center gap-2 font-medium"><span>{{ \Illuminate\Support\Str::headline($transaction->entry_type) }} · {{ \App\Domain\Money\MoneyAmount::format($transaction->amount, $transaction->currency) }}</span><x-status-badge :tone="$transactionStatusTone" :label="\Illuminate\Support\Str::headline($transaction->status)" /></div>
                                         <div class="mt-1 text-xs text-zinc-500">{{ $transaction->occurred_on?->format('d M Y') ?? 'Date not recorded' }}@if ($transaction->note) · {{ $transaction->note }}@endif</div>
+                                        @if ($transaction->paymentInstruction)
+                                            <div class="mt-1 text-xs text-zinc-500">Via {{ $transaction->paymentInstruction->paymentDestination?->label ?? 'saved destination' }}@if ($transaction->paymentInstruction->reference) · {{ $transaction->paymentInstruction->reference }}@endif</div>
+                                        @endif
                                         @if ($transaction->documents->isNotEmpty())
                                             <div class="mt-2 text-xs text-sky-700 dark:text-sky-300">{{ $transaction->documents->count() }} evidence item{{ $transaction->documents->count() === 1 ? '' : 's' }} attached</div>
                                         @endif
@@ -268,8 +281,8 @@
 
     @if ($record->documents->isNotEmpty())
         <section class="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-700 dark:bg-zinc-900">
-            <div class="flex items-center justify-between gap-3">
-                <div>
+            <div class="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div class="min-w-0">
                     <flux:heading size="lg">Shared evidence</flux:heading>
                     <flux:text class="mt-1 text-sm">Evidence that supports the arrangement as a whole.</flux:text>
                 </div>
@@ -291,8 +304,8 @@
         </section>
     @elseif ($record->obligations->first())
         <section class="rounded-2xl border border-dashed border-zinc-300 p-5 dark:border-zinc-700">
-            <div class="flex items-center justify-between gap-3">
-                <div>
+            <div class="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div class="min-w-0">
                     <flux:heading size="lg">Shared evidence</flux:heading>
                     <flux:text class="mt-1 text-sm">Attach an agreement, message, receipt, photo, link, or note to the arrangement.</flux:text>
                 </div>

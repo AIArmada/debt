@@ -45,7 +45,7 @@ class ObligationPolicy
 
     public function manageCommunication(User $user, Obligation $obligation): bool
     {
-        return $this->canAccess($user, $obligation, ['owner', 'editor']);
+        return $this->canAccess($user, $obligation, ['owner', 'editor', 'payment_manager']);
     }
 
     public function manageSchedule(User $user, Obligation $obligation): bool

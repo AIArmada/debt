@@ -5,6 +5,7 @@ namespace App\Notifications;
 use App\Models\Obligation;
 use App\Models\User;
 use App\Notifications\Channels\PushChannel;
+use Carbon\CarbonImmutable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -37,7 +38,9 @@ class DebtDueNotification extends Notification implements ShouldQueue
     /** @return array<string, mixed> */
     public function toArray(User $notifiable): array
     {
-        return ['title' => 'A record needs your attention', 'message' => 'You have an upcoming due date in Debt Management.', 'profile_id' => $this->obligation->record->profile_id, 'record_id' => $this->obligation->record_id, 'obligation_id' => $this->obligation->getKey(), 'due_on' => $this->obligation->next_due_on?->toDateString(), 'action_url' => route('records.show', $this->obligation->record), 'deduplication_key' => 'due:'.$this->obligation->getKey().':'.today()->toDateString()];
+        $today = CarbonImmutable::now($this->obligation->record->profile->timezone ?? 'UTC')->startOfDay()->toDateString();
+
+        return ['title' => 'A record needs your attention', 'message' => 'You have an upcoming due date in Debt Management.', 'profile_id' => $this->obligation->record->profile_id, 'record_id' => $this->obligation->record_id, 'obligation_id' => $this->obligation->getKey(), 'due_on' => $this->obligation->next_due_on?->toDateString(), 'action_url' => route('records.show', $this->obligation->record), 'deduplication_key' => 'due:'.$this->obligation->getKey().':'.$today];
     }
 
     public function toMail(User $notifiable): MailMessage

@@ -8,6 +8,7 @@ use App\Models\ObligationPaymentInstruction;
 use App\Models\Party;
 use App\Models\PartyPaymentDestination;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -42,6 +43,10 @@ class ManagePaymentInstructions extends Component
             throw ValidationException::withMessages(['obligation' => 'Payment instructions can only be recorded for money obligations.']);
         }
 
+        if ($this->obligation->isDormantCondition()) {
+            throw ValidationException::withMessages(['paymentDestinationId' => 'Payment instructions can be saved only after the condition has been triggered.']);
+        }
+
         $validated = $this->validate([
             'paymentDestinationId' => ['required', 'uuid'],
             'beneficiaryPartyId' => ['nullable', 'uuid'],
@@ -54,7 +59,7 @@ class ManagePaymentInstructions extends Component
         $destination = PartyPaymentDestination::query()
             ->whereKey($validated['paymentDestinationId'])
             ->where('status', 'active')
-            ->whereHas('party', fn ($query) => $query->where('profile_id', $profile->getKey()))
+            ->whereHas('party', fn ($query) => $query->where('profile_id', $profile->getKey())->where('status', 'active'))
             ->firstOrFail();
         $beneficiary = $validated['beneficiaryPartyId'] === null
             ? null
@@ -93,8 +98,38 @@ class ManagePaymentInstructions extends Component
     public function archive(string $instructionId): void
     {
         Gate::authorize('managePaymentInstructions', $this->obligation);
-        $instruction = $this->obligation->paymentInstructions()->whereKey($instructionId)->where('status', 'active')->firstOrFail();
-        $instruction->update(['status' => 'archived', 'superseded_at' => now()]);
+
+        DB::transaction(function () use ($instructionId): void {
+            $locked = $this->obligation->paymentInstructions()->whereKey($instructionId)->lockForUpdate()->first();
+
+            if ($locked === null || $locked->status !== 'active') {
+                throw ValidationException::withMessages(['paymentDestinationId' => 'This instruction was already archived. Refresh to see the current list.']);
+            }
+            $locked->update(['status' => 'archived', 'superseded_at' => now()]);
+        });
+    }
+
+    public function supersede(string $instructionId): void
+    {
+        Gate::authorize('managePaymentInstructions', $this->obligation);
+
+        $instruction = DB::transaction(function () use ($instructionId): ObligationPaymentInstruction {
+            $locked = $this->obligation->paymentInstructions()->whereKey($instructionId)->lockForUpdate()->first();
+
+            if ($locked === null || $locked->status !== 'active') {
+                throw ValidationException::withMessages(['paymentDestinationId' => 'This instruction was already archived. Refresh to see the current list.']);
+            }
+            $locked->update(['status' => 'archived', 'superseded_at' => now()]);
+
+            return $locked;
+        });
+
+        $this->paymentDestinationId = null;
+        $this->beneficiaryPartyId = $instruction->beneficiary_party_id;
+        $this->payeePartyId = $instruction->payee_party_id;
+        $this->currency = $instruction->currency ?? $this->obligation->currency ?? '';
+        $this->reference = $instruction->reference ?? '';
+        session()->flash('payment-instruction-created', 'The old instruction was archived with its snapshot intact. Choose a replacement destination below to complete the supersede.');
     }
 
     public function render(): View
@@ -118,7 +153,7 @@ class ManagePaymentInstructions extends Component
             'instructionsList' => $this->obligation->paymentInstructions()
                 ->select(['id', 'obligation_id', 'payment_destination_id', 'beneficiary_party_id', 'payee_party_id', 'currency', 'reference', 'status'])
                 ->with([
-                    'paymentDestination' => fn ($query) => $query->select(['id', 'label', 'method', 'provider']),
+                    'paymentDestination' => fn ($query) => $query->select(['id', 'label', 'method', 'provider', 'status']),
                     'beneficiary' => fn ($query) => $query->select(['id', 'preferred_name']),
                     'payee' => fn ($query) => $query->select(['id', 'preferred_name']),
                 ])

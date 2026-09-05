@@ -20,6 +20,9 @@ class AddPledgedAsset
     public function handle(Obligation $obligation, array $data): PledgedAsset
     {
         Gate::authorize('manageAssets', $obligation);
+        if ($obligation->isDormantCondition()) {
+            throw ValidationException::withMessages(['asset_type' => 'Pledged assets can be added only after the condition has been triggered.']);
+        }
         if (filled($data['estimated_value']) && ! Currency::isSupported($data['currency'])) {
             throw ValidationException::withMessages(['currency' => 'Choose a supported currency for the estimated value.']);
         }

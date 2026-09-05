@@ -36,9 +36,22 @@ class ImportBankStatement
         if ($contents === false) {
             throw ValidationException::withMessages(['file' => 'The statement could not be read.']);
         }
-        $rows = $this->parseCsv($contents, strtoupper($currency));
+        // Strip a UTF-8 BOM so exported spreadsheets do not break header matching.
+        $contents = ltrim($contents, "\xEF\xBB\xBF");
 
-        return DB::transaction(function () use ($user, $profile, $file, $currency, $rows): BankImport {
+        $checksum = hash_file('sha256', $file->getRealPath());
+        if ($profile->bankImports()->whereHas('media', fn ($query) => $query->whereJsonContains('custom_properties->checksum', $checksum))->exists()) {
+            throw ValidationException::withMessages(['file' => 'This statement was already imported. Upload a different file.']);
+        }
+
+        $parsed = $this->parseCsv($contents, strtoupper($currency));
+        $rows = $parsed['rows'];
+
+        if ($rows === []) {
+            throw ValidationException::withMessages(['file' => 'No usable rows were found in this statement. Check the amount column.']);
+        }
+
+        return DB::transaction(function () use ($user, $profile, $file, $currency, $rows, $parsed, $checksum): BankImport {
             $import = $profile->bankImports()->create([
                 'uploaded_by_user_id' => $user->getKey(),
                 'format' => 'csv',
@@ -46,6 +59,9 @@ class ImportBankStatement
                 'status' => 'processed',
                 'row_count' => count($rows),
                 'matched_count' => 0,
+                'error_message' => $parsed['skipped'] === 0
+                    ? null
+                    : $parsed['skipped'].' row'.($parsed['skipped'] === 1 ? ' was' : 's were').' skipped because the amount could not be read.',
             ]);
             $originalFilename = SafeUpload::sanitizedFilename($file);
             $import->addMedia($file)
@@ -53,7 +69,7 @@ class ImportBankStatement
                 ->usingFileName($originalFilename)
                 ->withCustomProperties([
                     'original_filename' => $originalFilename,
-                    'checksum' => hash_file('sha256', $file->getRealPath()),
+                    'checksum' => $checksum,
                 ])
                 ->toMediaCollection(BankImport::MEDIA_COLLECTION);
             $import->rows()->createMany($rows);
@@ -70,7 +86,7 @@ class ImportBankStatement
         });
     }
 
-    /** @return list<array<string, mixed>> */
+    /** @return array{rows: list<array<string, mixed>>, skipped: int} */
     private function parseCsv(string $contents, string $currency): array
     {
         $handle = fopen('php://temp', 'w+b');
@@ -97,12 +113,15 @@ class ImportBankStatement
             }
 
             $parsed = [];
+            $skipped = 0;
             $rowNumber = 1;
             while (($values = fgetcsv($handle)) !== false) {
                 $rowNumber++;
                 $values = array_pad($values, count($headers), null);
                 $amount = $this->parseAmount((string) ($values[$amountColumn] ?? ''), $currency);
                 if ($amount === null || $amount === 0) {
+                    $skipped++;
+
                     continue;
                 }
                 $date = $dateColumn === null ? null : $this->parseDate($values[$dateColumn] ?? null);
@@ -123,7 +142,7 @@ class ImportBankStatement
                 ];
             }
 
-            return $parsed;
+            return ['rows' => $parsed, 'skipped' => $skipped];
         } finally {
             fclose($handle);
         }

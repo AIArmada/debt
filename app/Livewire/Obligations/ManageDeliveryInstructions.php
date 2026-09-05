@@ -10,6 +10,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
 class ManageDeliveryInstructions extends Component
@@ -35,6 +36,11 @@ class ManageDeliveryInstructions extends Component
     public function save(): void
     {
         Gate::authorize('manageDelivery', $this->obligation);
+
+        if ($this->obligation->isDormantCondition()) {
+            throw ValidationException::withMessages(['label' => 'Delivery instructions can be saved only after the condition has been triggered.']);
+        }
+
         $validated = $this->validate([
             'addressId' => ['nullable', 'uuid'],
             'recipientPartyId' => ['nullable', 'uuid'],

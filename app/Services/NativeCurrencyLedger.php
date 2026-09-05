@@ -160,7 +160,18 @@ class NativeCurrencyLedger
      */
     private function applyStatus(Obligation $obligation, array &$attributes, array $balances): void
     {
-        $settled = collect($balances)->every(fn (mixed $balance): bool => (int) $balance === 0);
+        // Waived is a terminal human decision, not a balance state: ledger
+        // recalculation must never flip it back to settled or active.
+        if ($obligation->status === 'waived') {
+            $attributes['status'] = 'waived';
+
+            return;
+        }
+        // Settlement follows the primary native balance — the same figure the
+        // position, planner, and reminders read. Secondary exposures stay
+        // visible separately instead of holding the obligation open forever.
+        $primary = strtoupper((string) $obligation->currency);
+        $settled = ((int) ($balances[$primary] ?? 0)) === 0;
         $attributes['status'] = $settled ? 'settled' : 'active';
         $attributes['settled_at'] = $settled ? now() : null;
     }

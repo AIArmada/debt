@@ -22,6 +22,10 @@ class CreateCollectionSchedule
     {
         Gate::forUser($user)->authorize('manageSchedule', $obligation);
 
+        if ($obligation->isDormantCondition()) {
+            throw ValidationException::withMessages(['amount' => 'Collection schedules are available only after the condition has been triggered.']);
+        }
+
         if ($obligation->obligation_kind !== 'money') {
             throw ValidationException::withMessages(['amount' => 'Collection schedules are available only for money obligations.']);
         }

@@ -28,7 +28,10 @@ final class MoneyAmount
         $value = is_float($amount)
             ? rtrim(rtrim(sprintf('%.14F', $amount), '0'), '.')
             : (string) $amount;
-        $value = str_replace([',', ' ', 'RM', '$', '€', '£', '¥'], '', trim($value));
+        // Strip thousand separators, spaces, and any currency symbols or
+        // letters, keeping only the numeric core for strict validation below.
+        $value = preg_replace('/[^\d.,+\-]/u', '', trim($value)) ?? '';
+        $value = str_replace(',', '', $value);
 
         if (preg_match('/^([+-]?)(\d+)(?:\.(\d+))?$/D', $value, $matches) !== 1) {
             throw new InvalidArgumentException('Enter a valid monetary amount.');

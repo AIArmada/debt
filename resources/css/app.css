@@ -60,11 +60,23 @@
         font-size: 0.95rem;
         font-feature-settings: 'cv11' 1, 'ss01' 1;
         text-rendering: optimizeLegibility;
+        overflow-x: clip;
     }
 
     ::selection {
         background: #cfe7db;
         color: #173c31;
+    }
+}
+
+@layer components {
+    .app-main {
+        min-width: 0;
+    }
+
+    .app-main > * {
+        min-width: 0;
+        max-width: 100%;
     }
 }
 
@@ -504,6 +516,44 @@
 [data-flux-button]:focus-visible {
     outline: 2px solid rgba(40, 102, 83, 0.55);
     outline-offset: 2px;
+}
+
+@media (max-width: 639px) {
+    [data-flux-main].app-main {
+        padding: 1rem;
+    }
+
+    [data-flux-main] [data-flux-modal] > dialog:not([data-flux-modal-overflow]) {
+        width: calc(100vw - 1rem);
+        min-width: 0;
+        max-width: calc(100vw - 1rem);
+        max-height: calc(100dvh - 1rem);
+        margin: 0.5rem;
+        overflow-y: auto;
+    }
+
+    [data-flux-main] [data-flux-button] {
+        min-width: 0;
+        max-width: 100%;
+        white-space: normal;
+    }
+
+    [data-flux-main] [class~="flex"][class~="items-start"][class~="justify-between"],
+    [data-flux-main] [class~="flex"][class~="items-center"][class~="justify-between"] {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
 }
 
 [data-flux-button] [data-flux-icon],

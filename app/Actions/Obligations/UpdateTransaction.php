@@ -8,6 +8,7 @@ use App\Domain\Planning\RepaymentPlanContinuity;
 use App\Models\CollectionSchedule;
 use App\Models\FinancialTransaction;
 use App\Models\Obligation;
+use App\Models\ObligationPaymentInstruction;
 use App\Services\ActivityNotifier;
 use App\Services\AuditLogger;
 use App\Services\CollectionScheduleSafety;
@@ -67,6 +68,7 @@ class UpdateTransaction
             $before = $lockedTransaction->only([
                 'status', 'amount', 'currency', 'entry_type', 'balance_effect',
                 'balance_before', 'balance_after', 'occurred_on', 'external_reference', 'note',
+                'payment_instruction_id',
             ]);
             $previousPosition = $lockedObligation->currentPositionDirection();
             $openingPrincipal = $this->nativeCurrencyLedger->openingPrincipal($lockedObligation, $transactions);
@@ -95,6 +97,8 @@ class UpdateTransaction
                 }
             }
 
+            $paymentInstruction = $this->resolvePaymentInstruction($lockedObligation, $data['payment_instruction_id'] ?? null, $entryType);
+
             $amount = $this->normaliseAmount($data['amount'], $currency, $data['amount_minor'] ?? null);
             $status = $data['status'];
             $linkedAllocation = $lockedTransaction->repaymentPlanAllocation()->with('plan.budgetPeriod')->first();
@@ -120,6 +124,7 @@ class UpdateTransaction
 
             $lockedTransaction->fill([
                 'collection_schedule_id' => $collectionScheduleId,
+                'payment_instruction_id' => $paymentInstruction?->getKey(),
                 'entry_type' => $entryType,
                 'balance_effect' => $balanceEffect,
                 'status' => $status,
@@ -165,6 +170,7 @@ class UpdateTransaction
             $after = $lockedTransaction->fresh()->only([
                 'status', 'amount', 'currency', 'entry_type', 'balance_effect',
                 'balance_before', 'balance_after', 'occurred_on', 'external_reference', 'note',
+                'payment_instruction_id',
             ]);
 
             $this->auditLogger->record(
@@ -267,6 +273,34 @@ class UpdateTransaction
         }
 
         return in_array($entryType, ['advance', 'interest', 'fee', 'opening_balance'], true) ? 'increase' : 'decrease';
+    }
+
+    private function resolvePaymentInstruction(Obligation $obligation, ?string $instructionId, string $entryType): ?ObligationPaymentInstruction
+    {
+        if ($instructionId === null) {
+            return null;
+        }
+
+        if (! in_array($entryType, ['payment', 'collection'], true)) {
+            throw ValidationException::withMessages(['payment_instruction_id' => 'A payment instruction can only be attached to a payment or collection movement.']);
+        }
+
+        $instruction = ObligationPaymentInstruction::query()
+            ->whereKey($instructionId)
+            ->where('obligation_id', $obligation->getKey())
+            ->where('status', 'active')
+            ->with('paymentDestination:id,status')
+            ->first();
+
+        if ($instruction === null) {
+            throw ValidationException::withMessages(['payment_instruction_id' => 'Choose an active payment instruction for this obligation.']);
+        }
+
+        if ($instruction->paymentDestination?->status !== 'active') {
+            throw ValidationException::withMessages(['payment_instruction_id' => 'This instruction points to an archived destination. Supersede it with a current destination before recording a new movement.']);
+        }
+
+        return $instruction;
     }
 
     private function directionWithoutTransaction(Obligation $obligation, FinancialTransaction $transaction, string $currency): ?string

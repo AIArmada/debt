@@ -6,7 +6,7 @@
     @if (session('collection-account-created'))<div class="mx-5 mt-5 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{{ session('collection-account-created') }}</div>@endif
     <div class="divide-y divide-zinc-100 dark:divide-zinc-800">
         @forelse ($accounts as $account)
-            <div class="flex items-center justify-between gap-3 px-5 py-4"><div><div class="font-medium">{{ $account->label }}</div><div class="mt-1 text-sm text-zinc-500">{{ ucfirst(str_replace('_', ' ', $account->method)) }}@if ($account->provider) · {{ $account->provider }}@endif · {{ $account->currency ?: 'Currency not set' }} · {{ $account->maskedIdentifier() }}</div></div><flux:button size="sm" variant="ghost" wire:click="archive('{{ $account->id }}')" wire:confirm="Archive this receiving account? Existing collection history will stay intact.">Archive</flux:button></div>
+            <div class="flex flex-col items-start gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"><div class="min-w-0"><div class="font-medium">{{ $account->label }}</div><div class="mt-1 text-sm text-zinc-500">{{ ucfirst(str_replace('_', ' ', $account->method)) }}@if ($account->provider) · {{ $account->provider }}@endif · {{ $account->currency ?: 'Currency not set' }} · {{ $account->maskedIdentifier() }}</div></div><flux:button size="sm" variant="ghost" wire:click="archive('{{ $account->id }}')" wire:confirm="Archive this receiving account? Existing collection history will stay intact.">Archive</flux:button></div>
         @empty
             <div class="px-5 py-6 text-sm text-zinc-500">No receiving accounts saved yet.</div>
         @endforelse

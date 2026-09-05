@@ -56,13 +56,16 @@ class Show extends Component
                 'obligation_kind', 'currency', 'current_total_balance', 'currency_balances', 'minimum_payment_amount',
                 'subject_name', 'current_subject_quantity', 'subject_unit', 'quantity_mode', 'completion_criteria',
                 'due_on', 'next_due_on', 'created_at',
+                'is_conditional', 'condition_description', 'condition_triggered_on',
             ]),
             'obligations.record' => fn ($query) => $query->select(['id', 'profile_id', 'title', 'sensitivity', 'is_archived']),
             'obligations.record.profile' => fn ($query) => $query->select(['id', 'owner_user_id', 'name', 'base_currency', 'is_archived']),
             'obligations.transactions' => fn ($query) => $query->select([
                 'id', 'obligation_id', 'entry_type', 'balance_effect', 'status', 'amount', 'currency', 'occurred_on',
-                'external_reference', 'note',
+                'external_reference', 'note', 'payment_instruction_id',
             ]),
+            'obligations.transactions.paymentInstruction' => fn ($query) => $query->select(['id', 'currency', 'reference']),
+            'obligations.transactions.paymentInstruction.paymentDestination' => fn ($query) => $query->select(['id', 'label']),
             'obligations.transactions.documents' => fn ($query) => $query->select([
                 'documents.id', 'documents.profile_id', 'documents.evidence_type', 'documents.title', 'documents.source',
                 'documents.external_url', 'documents.content', 'documents.captured_on', 'documents.category',

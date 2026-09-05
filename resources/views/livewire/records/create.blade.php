@@ -1,7 +1,7 @@
 <div class="mx-auto w-full max-w-4xl">
-    <div class="mb-7 flex items-start gap-4">
+    <div class="mb-7 flex min-w-0 items-start gap-4">
         <span class="app-page-icon hidden shrink-0 sm:inline-flex"><flux:icon name="document-plus" class="size-6" /></span>
-        <div>
+        <div class="min-w-0">
             <div class="app-eyebrow">New arrangement</div>
             <flux:heading size="xl" class="mt-2 text-3xl tracking-tight">Create a record</flux:heading>
             <flux:text class="mt-2 max-w-2xl leading-6">Start one case or arrangement, then keep every obligation inside it clear and independently trackable.</flux:text>

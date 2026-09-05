@@ -107,6 +107,10 @@ class CreateObligation
                 ? Quantity::normalise($data['subject_quantity'], $quantityMode)
                 : null;
 
+            if ($data['is_conditional'] && blank($data['condition_description'])) {
+                throw ValidationException::withMessages(['condition_description' => 'Describe what must happen before this obligation is due.']);
+            }
+
             $obligation = $record->obligations()->create([
                 'direction' => $data['direction'],
                 'tracking_mode' => $kind->isMoney() ? $trackingMode : 'snapshot',

@@ -25,7 +25,9 @@ class SecurityHeaders
                 "base-uri 'self'",
                 "object-src 'none'",
                 "frame-ancestors 'none'",
-                "script-src 'self' 'unsafe-inline'".(app()->isProduction() ? '' : " 'unsafe-eval' http://localhost:5173"),
+                // Livewire and Alpine evaluate expressions at runtime, so
+                // 'unsafe-eval' is required in every environment.
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval'".(app()->isProduction() ? '' : ' http://localhost:5173'),
                 "style-src 'self' 'unsafe-inline'".(app()->isProduction() ? '' : ' http://localhost:5173'),
                 "img-src 'self' data: blob: https:",
                 "font-src 'self' data: https:",

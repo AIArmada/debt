@@ -10,6 +10,7 @@ use App\Models\Obligation;
 use DateTimeInterface;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
@@ -35,6 +36,8 @@ class EditTransaction extends Component
 
     public string $note = '';
 
+    public ?string $paymentInstructionId = null;
+
     public function mount(Obligation $obligation, FinancialTransaction $transaction): void
     {
         Gate::authorize('recordTransaction', $obligation);
@@ -56,6 +59,7 @@ class EditTransaction extends Component
             : today()->toDateString();
         $this->externalReference = (string) ($transaction->external_reference ?? '');
         $this->note = (string) ($transaction->note ?? '');
+        $this->paymentInstructionId = $transaction->payment_instruction_id;
     }
 
     public function save(UpdateTransactionAction $updateTransaction): void
@@ -71,10 +75,17 @@ class EditTransaction extends Component
             'occurredOn' => 'required|date',
             'externalReference' => 'nullable|string|max:255',
             'note' => 'nullable|string|max:4000',
+            'paymentInstructionId' => 'nullable|uuid',
         ]);
 
         if ($validated['entryType'] === 'adjustment' && ! in_array($validated['balanceEffect'], ['increase', 'decrease'], true)) {
             $this->addError('balanceEffect', 'Choose whether this adjustment increases or decreases the balance.');
+
+            return;
+        }
+
+        if (! $this->hasValidPrecision($validated['amount'], $validated['currency'])) {
+            $this->addError('amount', $this->precisionMessage($validated['amount'], $validated['currency']));
 
             return;
         }
@@ -89,11 +100,12 @@ class EditTransaction extends Component
                 'note' => $validated['note'] ?: null,
                 'entry_type' => $validated['entryType'],
                 'balance_effect' => $validated['balanceEffect'],
+                'payment_instruction_id' => filled($this->paymentInstructionId) ? $this->paymentInstructionId : null,
             ]);
         } catch (ValidationException $exception) {
             foreach ($exception->errors() as $field => $messages) {
                 foreach ($messages as $message) {
-                    $this->addError($field, $message);
+                    $this->addError(Str::camel($field), $message);
                 }
             }
 
@@ -109,6 +121,35 @@ class EditTransaction extends Component
     {
         Gate::authorize('recordTransaction', $this->obligation);
 
-        return view('livewire.obligations.edit-transaction', ['currencies' => Currency::options()]);
+        return view('livewire.obligations.edit-transaction', [
+            'currencies' => Currency::options(),
+            'paymentInstructions' => $this->obligation->paymentInstructions()->where('status', 'active')->with('paymentDestination:id,label,status')->latest()->get(),
+        ]);
+    }
+
+    private function hasValidPrecision(?string $amount, string $currency): bool
+    {
+        if ($amount === null) {
+            return true;
+        }
+
+        try {
+            MoneyAmount::fromMajor($amount, $currency);
+        } catch (\InvalidArgumentException) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function precisionMessage(?string $amount, string $currency): string
+    {
+        try {
+            MoneyAmount::fromMajor($amount, $currency);
+        } catch (\InvalidArgumentException $exception) {
+            return $exception->getMessage();
+        }
+
+        return 'Enter a valid amount.';
     }
 }

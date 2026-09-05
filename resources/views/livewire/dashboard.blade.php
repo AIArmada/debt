@@ -1,14 +1,14 @@
 <div class="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-8">
         <div class="grid gap-5 md:grid-cols-[minmax(0,1fr)_18rem] md:items-stretch">
-            <div class="app-page-intro flex items-start gap-4 rounded-2xl border border-emerald-100/80 bg-white/45 p-5 shadow-sm dark:border-emerald-900/50 dark:bg-zinc-900/35 sm:p-6">
+            <div class="app-page-intro flex min-w-0 items-start gap-4 rounded-2xl border border-emerald-100/80 bg-white/45 p-5 shadow-sm dark:border-emerald-900/50 dark:bg-zinc-900/35 sm:p-6">
                 <span class="app-page-icon hidden shrink-0 sm:inline-flex"><flux:icon name="wallet" class="size-6" /></span>
-                <div>
+                <div class="min-w-0">
                     <div class="app-eyebrow">Personal command centre</div>
                     <flux:heading size="xl" class="mt-2 text-3xl tracking-tight">Financial overview</flux:heading>
                     <flux:text class="mt-2 max-w-xl leading-6">A calm snapshot of what is owed, what is due, and what you have already recorded for {{ $profile->name }}.</flux:text>
                 </div>
             </div>
-            <div class="app-action-panel flex flex-col justify-between gap-5 rounded-2xl p-5">
+            <div class="app-action-panel flex min-w-0 flex-col justify-between gap-5 rounded-2xl p-5">
                 <div class="flex items-start justify-between gap-3">
                     <div>
                         <div class="app-eyebrow text-emerald-700 dark:text-emerald-300">Start here</div>
@@ -122,13 +122,13 @@
 
         @if ($pawnRisks->isNotEmpty())
             <section class="app-card overflow-hidden rounded-2xl border-amber-200/80 bg-amber-50/60">
-                <div class="flex items-start justify-between gap-4 border-b border-amber-200/80 px-5 py-5"><div><div class="app-eyebrow text-amber-700">Needs a little attention</div><flux:heading size="lg" class="mt-1">Pawn & Ar-Rahnu watch</flux:heading><flux:text class="mt-1 text-sm">Maturity dates and redemption estimates that may need attention.</flux:text></div><x-status-badge tone="warning" :label="$pawnRisks->count().' active'" /></div>
-                <div class="divide-y divide-amber-200/70">@foreach ($pawnRisks as $risk)<a wire:navigate href="{{ route('records.show', $risk['obligation']->record) }}" class="flex items-center justify-between gap-4 px-5 py-4 transition hover:bg-amber-100/60"><div><div class="font-medium text-zinc-900">{{ $risk['obligation']->title }}</div><div class="mt-2"><x-risk-badge :days="$risk['days']" :label="$risk['label']" /></div><div class="mt-1 text-sm text-amber-900/70">{{ $risk['asset_count'] }} asset{{ $risk['asset_count'] === 1 ? '' : 's' }}</div></div><div class="text-right"><div class="font-semibold text-zinc-900">{{ $risk['redemption_total'] !== null && $risk['redemption_currency'] !== null ? \App\Domain\Money\MoneyAmount::format($risk['redemption_total'], $risk['redemption_currency']) : '—' }}</div><div class="mt-1 text-xs text-amber-900/70">{{ $risk['redemption_label'] }}</div></div></a>@endforeach</div>
+                <div class="flex flex-col gap-3 border-b border-amber-200/80 px-5 py-5 sm:flex-row sm:items-start sm:justify-between"><div class="min-w-0"><div class="app-eyebrow text-amber-700">Needs a little attention</div><flux:heading size="lg" class="mt-1">Pawn & Ar-Rahnu watch</flux:heading><flux:text class="mt-1 text-sm">Maturity dates and redemption estimates that may need attention.</flux:text></div><x-status-badge tone="warning" :label="$pawnRisks->count().' active'" /></div>
+                <div class="divide-y divide-amber-200/70">@foreach ($pawnRisks as $risk)<a wire:navigate href="{{ route('records.show', $risk['obligation']->record) }}" class="flex flex-col items-start gap-3 px-5 py-4 transition hover:bg-amber-100/60 sm:flex-row sm:items-center sm:justify-between"><div class="min-w-0"><div class="font-medium text-zinc-900">{{ $risk['obligation']->title }}</div><div class="mt-2"><x-risk-badge :days="$risk['days']" :label="$risk['label']" /></div><div class="mt-1 text-sm text-amber-900/70">{{ $risk['asset_count'] }} asset{{ $risk['asset_count'] === 1 ? '' : 's' }}</div></div><div class="w-full text-left sm:w-auto sm:text-right"><div class="font-semibold text-zinc-900">{{ $risk['redemption_total'] !== null && $risk['redemption_currency'] !== null ? \App\Domain\Money\MoneyAmount::format($risk['redemption_total'], $risk['redemption_currency']) : '—' }}</div><div class="mt-1 text-xs text-amber-900/70">{{ $risk['redemption_label'] }}</div></div></a>@endforeach</div>
             </section>
         @endif
 
         <section class="app-card overflow-hidden rounded-2xl">
-            <div class="app-card-header flex items-center justify-between gap-4 px-5 py-5">
+            <div class="app-card-header flex flex-col gap-3 px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-start gap-3">
                     <span class="app-section-icon"><flux:icon name="calendar-days" class="size-5" /></span>
                     <div>
@@ -139,12 +139,12 @@
             </div>
             <div class="divide-y divide-zinc-200/80">
                 @forelse ($upcoming as $obligation)
-                    <a wire:navigate href="{{ route('records.show', $obligation->record) }}" class="flex items-center justify-between gap-4 px-5 py-5 transition hover:bg-zinc-50/80">
+                    <a wire:navigate href="{{ route('records.show', $obligation->record) }}" class="flex flex-col items-start gap-3 px-5 py-5 transition hover:bg-zinc-50/80 sm:flex-row sm:items-center sm:justify-between">
                         <div class="min-w-0">
                             <div class="font-medium">{{ $obligation->title }}</div>
                             <div class="mt-2 flex flex-wrap items-center gap-2"><x-obligation-badge :kind="$obligation->obligation_kind" :label="$obligation->kindLabel()" /><x-direction-badge :direction="$obligation->obligation_kind === 'money' ? $obligation->currentPositionDirection() : $obligation->direction" :label="$obligation->obligation_kind === 'money' ? $obligation->effectiveDirectionLabel() : ($obligation->direction === 'payable' ? 'You owe / must do' : 'They owe / must do')" /><span class="text-sm text-zinc-500">{{ $obligation->record->primaryParty()?->preferred_name ?? 'No party recorded' }}</span></div>
                         </div>
-                        <div class="shrink-0 text-right">
+                        <div class="w-full text-left sm:w-auto sm:shrink-0 sm:text-right">
                             <div class="font-medium">
                                 @if ($obligation->obligation_kind === 'money')
                                     {{ \App\Domain\Money\MoneyAmount::format($obligation->currentPositionAmount(), $obligation->currency) }}

@@ -443,6 +443,7 @@ class ExportUserDataController extends Controller
                             'currency' => $transaction->currency,
                             'repayment_plan_allocation_id' => $transaction->repayment_plan_allocation_id,
                             'collection_schedule_id' => $transaction->collection_schedule_id,
+                            'payment_instruction_id' => $transaction->payment_instruction_id,
                             'occurred_on' => $this->dateString($transaction->getAttribute('occurred_on')),
                             'external_reference' => $transaction->external_reference,
                             'note' => $transaction->note,

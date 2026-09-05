@@ -1,18 +1,18 @@
 <div class="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-7">
     <div class="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-        <div class="flex items-start gap-4">
+        <div class="flex min-w-0 items-start gap-4">
             <span class="app-page-icon hidden shrink-0 sm:inline-flex"><flux:icon name="rectangle-stack" class="size-6" /></span>
-            <div>
+            <div class="min-w-0">
                 <span class="app-eyebrow">{{ $profile->name }}</span>
                 <flux:heading size="xl" class="mt-2 text-3xl tracking-tight">Records</flux:heading>
                 <flux:text class="mt-2 max-w-2xl leading-6">One arrangement can hold several kinds of obligation, each with its own balance, progress, participants, and evidence.</flux:text>
             </div>
         </div>
-        <div class="flex items-center gap-3">
-            <flux:select wire:model.live="profileId" class="w-48" aria-label="Financial profile">
+        <div class="flex w-full flex-col items-stretch gap-3 sm:w-auto sm:flex-row sm:items-center">
+            <flux:select wire:model.live="profileId" class="w-full sm:w-48" aria-label="Financial profile">
                 @foreach ($profiles as $item)<flux:select.option :value="$item->id">{{ $item->name }}</flux:select.option>@endforeach
             </flux:select>
-            <flux:button variant="primary" :href="route('records.create')" wire:navigate><flux:icon name="plus" class="size-4" /> New record</flux:button>
+            <flux:button variant="primary" class="w-full sm:w-auto" :href="route('records.create')" wire:navigate><flux:icon name="plus" class="size-4" /> New record</flux:button>
         </div>
     </div>
 
@@ -35,15 +35,15 @@
 
     <section class="grid gap-4 lg:grid-cols-2">
         @forelse ($records as $record)
-            <a wire:key="record-card-{{ $record->id }}" wire:navigate href="{{ route('records.show', $record) }}" class="app-card group rounded-2xl p-5 hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md dark:hover:border-emerald-700">
+            <a wire:key="record-card-{{ $record->id }}" wire:navigate href="{{ route('records.show', $record) }}" class="app-card group min-w-0 rounded-2xl p-5 hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md dark:hover:border-emerald-700">
                 @php($primaryParty = $record->partyLinks->first(fn ($link) => $link->is_primary && $link->role === 'other_party')?->party)
                 @php($recordStateTone = match ($record->stateLabel()) { 'All obligations settled' => 'success', 'Partly resolved' => 'warning', 'Open' => 'info', default => 'neutral' })
-                <div class="flex items-start justify-between gap-4">
-                    <div>
+                <div class="flex flex-col items-start gap-2 sm:flex-row sm:justify-between">
+                    <div class="min-w-0">
                         <div class="text-lg font-semibold tracking-tight text-zinc-900 group-hover:text-accent-content dark:text-zinc-100 dark:group-hover:text-accent-content">{{ $record->title }}</div>
                         <div class="mt-1 text-sm text-zinc-500">{{ $primaryParty?->preferred_name ?? 'No party recorded yet' }} · {{ $record->obligations->count() }} obligation{{ $record->obligations->count() === 1 ? '' : 's' }}</div>
                     </div>
-                    <x-status-badge :tone="$recordStateTone" :label="$record->stateLabel()" />
+                    <x-status-badge class="shrink-0" :tone="$recordStateTone" :label="$record->stateLabel()" />
                 </div>
                 <div class="mt-5 flex flex-wrap gap-2">
                     @foreach ($record->obligations as $obligation)
@@ -55,10 +55,14 @@
                                 <x-direction-badge :direction="$obligation->currentPositionDirection()" :reversed="$obligation->isPositionReversed()" :label="$obligation->isPositionReversed() ? 'Position changed — review' : $obligation->effectiveDirectionLabel()" />
                                 <span>{{ \App\Domain\Money\MoneyAmount::format($obligation->currentPositionAmount(), $obligation->currency) }}</span>
                             @elseif ($obligation->isQuantityBased())
-                                <x-status-badge tone="info" label="In progress" />
+                                @if ($obligation->status === 'waived')
+                                    <x-status-badge tone="success" label="Waived" />
+                                @else
+                                    <x-status-badge tone="info" label="In progress" />
+                                @endif
                                 <span>{{ \App\Domain\Money\Decimal::display($obligation->current_subject_quantity) }} {{ $obligation->subject_unit }} outstanding</span>
                             @else
-                                <x-status-badge :tone="$obligation->status === 'settled' || $obligation->status === 'fulfilled' ? 'success' : 'info'" :label="$obligation->status === 'settled' || $obligation->status === 'fulfilled' ? 'Completed' : 'In progress'" />
+                                <x-status-badge :tone="in_array($obligation->status, ['settled', 'waived'], true) ? 'success' : 'info'" :label="$obligation->status === 'settled' ? 'Settled' : ($obligation->status === 'waived' ? 'Waived' : 'In progress')" />
                             @endif
                         </div>
                         @if ($obligation->obligation_kind === 'money' && $obligation->isPositionReversed())

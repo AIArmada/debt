@@ -26,6 +26,7 @@ use App\Models\PartyAddress;
 use App\Models\Record;
 use App\Models\RecordParty;
 use App\Services\ProfileAccess;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -52,8 +53,9 @@ class RecordController extends Controller
         return RecordResource::collection($records)->response();
     }
 
-    public function show(Record $record): RecordResource
+    public function show(Request $request, Record $record): RecordResource
     {
+        $record = $this->accessibleRecord($request, $record);
         Gate::authorize('view', $record);
 
         return new RecordResource($record->load($this->recordDetailRelations()));
@@ -90,6 +92,7 @@ class RecordController extends Controller
 
     public function addObligation(Request $request, Record $record, CreateObligation $createObligation): JsonResponse
     {
+        $record = $this->accessibleRecord($request, $record);
         Gate::authorize('update', $record);
         $validated = $request->validate(['obligation' => ['required', 'array']]);
         $createObligation->handle($request->user(), $record, $this->validatedObligation($validated['obligation']));
@@ -99,6 +102,7 @@ class RecordController extends Controller
 
     public function addParty(Request $request, Record $record): JsonResponse
     {
+        $record = $this->accessibleRecord($request, $record);
         Gate::authorize('update', $record);
         $validated = $request->validate([
             'party_id' => ['required', 'uuid'],
@@ -117,8 +121,9 @@ class RecordController extends Controller
         return response()->json(['data' => ['id' => $link->getKey(), 'party_id' => $party->getKey(), 'name' => $party->preferred_name, 'role' => $link->role, 'is_primary' => $link->is_primary]], 201);
     }
 
-    public function removeParty(Record $record, RecordParty $recordParty): JsonResponse
+    public function removeParty(Request $request, Record $record, RecordParty $recordParty): JsonResponse
     {
+        $record = $this->accessibleRecord($request, $record);
         Gate::authorize('update', $record);
         abort_unless($recordParty->record_id === $record->getKey(), 404);
         $recordParty->delete();
@@ -128,6 +133,7 @@ class RecordController extends Controller
 
     public function addObligationParty(Request $request, Record $record, Obligation $obligation): JsonResponse
     {
+        $record = $this->accessibleRecord($request, $record);
         $this->ensureChild($record, $obligation);
         Gate::authorize('update', $obligation);
         $validated = $request->validate([
@@ -147,6 +153,7 @@ class RecordController extends Controller
 
     public function transaction(Request $request, Record $record, Obligation $obligation, RecordTransaction $recordTransaction): JsonResponse
     {
+        $record = $this->accessibleRecord($request, $record);
         $this->ensureChild($record, $obligation);
         Gate::authorize('recordTransaction', $obligation);
         if (! $obligation->kind()->isMoney()) {
@@ -159,8 +166,28 @@ class RecordController extends Controller
         return response()->json(['data' => $this->transactionPayload($transaction, $updated)], 201);
     }
 
+    public function transactions(Request $request, Record $record, Obligation $obligation): JsonResponse
+    {
+        $record = $this->accessibleRecord($request, $record);
+        $this->ensureChild($record, $obligation);
+        Gate::authorize('view', $obligation);
+
+        $perPage = min(100, max(1, $request->integer('per_page', 25)));
+        $transactions = FinancialTransaction::query()
+            ->where('obligation_id', $obligation->getKey())
+            ->latest('occurred_on')
+            ->latest('id')
+            ->paginate($perPage);
+
+        return response()->json([
+            'data' => $transactions->getCollection()->map(fn (FinancialTransaction $transaction): array => $this->transactionPayload($transaction, $obligation))->values(),
+            'meta' => $this->paginationMeta($transactions),
+        ]);
+    }
+
     public function collectionSchedule(Request $request, Record $record, Obligation $obligation, CreateCollectionSchedule $createCollectionSchedule): CollectionScheduleResource
     {
+        $record = $this->accessibleRecord($request, $record);
         $this->ensureChild($record, $obligation);
         Gate::authorize('manageSchedule', $obligation);
         $validated = $request->validate([
@@ -190,6 +217,7 @@ class RecordController extends Controller
 
     public function deliveryInstruction(Request $request, Record $record, Obligation $obligation): DeliveryInstructionResource
     {
+        $record = $this->accessibleRecord($request, $record);
         $this->ensureChild($record, $obligation);
         Gate::authorize('manageDelivery', $obligation);
         $validated = $request->validate([
@@ -216,6 +244,7 @@ class RecordController extends Controller
 
     public function updateTransaction(Request $request, Record $record, Obligation $obligation, FinancialTransaction $transaction, UpdateTransaction $updateTransaction): JsonResponse
     {
+        $record = $this->accessibleRecord($request, $record);
         $this->ensureChild($record, $obligation);
         abort_unless($transaction->obligation_id === $obligation->getKey(), 404);
         Gate::authorize('recordTransaction', $obligation);
@@ -227,6 +256,7 @@ class RecordController extends Controller
 
     public function event(Request $request, Record $record, Obligation $obligation, RecordObligationEvent $recordObligationEvent): JsonResponse
     {
+        $record = $this->accessibleRecord($request, $record);
         $this->ensureChild($record, $obligation);
         Gate::authorize('recordEvent', $obligation);
         $validated = $request->validate(['event_type' => ['required', 'string'], 'quantity' => ['nullable', 'numeric', 'gt:0'], 'occurred_on' => ['nullable', 'date'], 'note' => ['nullable', 'string', 'max:4000']]);
@@ -246,7 +276,7 @@ class RecordController extends Controller
             'obligations.partyLinks:id,obligation_id,party_id,role,share_basis,share_percent,share_currency',
             'obligations.partyLinks.party:id,kind,preferred_name',
             'obligations.events:id,obligation_id,event_type,quantity,quantity_effect,unit,occurred_on,note',
-            'obligations.transactions:id,obligation_id,repayment_plan_allocation_id,collection_schedule_id,entry_type,balance_effect,status,amount,currency,balance_before,balance_after,occurred_on,external_reference,note',
+            'obligations.transactions:id,obligation_id,repayment_plan_allocation_id,collection_schedule_id,payment_instruction_id,entry_type,balance_effect,status,amount,currency,balance_before,balance_after,occurred_on,external_reference,note',
             'obligations.collectionSchedules:id,obligation_id,collection_account_id,mode,status,amount,currency,frequency,starts_on,ends_on,next_due_on,collection_method,grace_days,note',
             'obligations.deliveryInstructions:id,obligation_id,address_id,recipient_party_id,method,label,instructions,status,verification_status,shown_snapshot',
         ];
@@ -326,7 +356,7 @@ class RecordController extends Controller
     /** @return array<string, string|array<int, mixed>> */
     private function transactionRules(bool $entryRequired): array
     {
-        return ['amount' => ['required_without:amount_minor', 'nullable', 'numeric', 'gt:0'], 'amount_minor' => ['required_without:amount', 'nullable', 'integer', 'gt:0'], 'currency' => ['nullable', Rule::in(Currency::codes())], 'status' => ['required', 'in:planned,submitted,confirmed,failed,cancelled'], 'entry_type' => [$entryRequired ? 'required' : 'nullable', 'in:payment,collection,advance,interest,fee,adjustment,write_off,opening_balance'], 'balance_effect' => ['nullable', 'in:increase,decrease'], 'occurred_on' => ['nullable', 'date'], 'external_reference' => ['nullable', 'string', 'max:255'], 'note' => ['nullable', 'string', 'max:4000'], 'repayment_plan_allocation_id' => ['nullable', 'uuid'], 'collection_schedule_id' => ['nullable', 'uuid']];
+        return ['amount' => ['required_without:amount_minor', 'nullable', 'numeric', 'gt:0', 'prohibits:amount_minor'], 'amount_minor' => ['required_without:amount', 'nullable', 'integer', 'gt:0', 'prohibits:amount'], 'currency' => ['nullable', Rule::in(Currency::codes())], 'status' => ['required', 'in:planned,submitted,confirmed,failed,cancelled'], 'entry_type' => [$entryRequired ? 'required' : 'nullable', 'in:payment,collection,advance,interest,fee,adjustment,write_off,opening_balance'], 'balance_effect' => ['nullable', 'in:increase,decrease'], 'occurred_on' => ['nullable', 'date'], 'external_reference' => ['nullable', 'string', 'max:255'], 'note' => ['nullable', 'string', 'max:4000'], 'repayment_plan_allocation_id' => ['nullable', 'uuid'], 'collection_schedule_id' => ['nullable', 'uuid'], 'payment_instruction_id' => ['nullable', 'uuid']];
     }
 
     /**
@@ -335,7 +365,7 @@ class RecordController extends Controller
      */
     private function transactionData(array $validated, Obligation $obligation): array
     {
-        return ['status' => $validated['status'], 'amount' => (string) ($validated['amount'] ?? '0'), 'amount_minor' => $validated['amount_minor'] ?? null, 'currency' => $validated['currency'] ?? $obligation->currency, 'occurred_on' => $validated['occurred_on'] ?? null, 'external_reference' => $validated['external_reference'] ?? null, 'note' => $validated['note'] ?? null, 'entry_type' => $validated['entry_type'] ?? null, 'balance_effect' => $validated['balance_effect'] ?? null, 'repayment_plan_allocation_id' => $validated['repayment_plan_allocation_id'] ?? null, 'collection_schedule_id' => $validated['collection_schedule_id'] ?? null];
+        return ['status' => $validated['status'], 'amount' => (string) ($validated['amount'] ?? '0'), 'amount_minor' => $validated['amount_minor'] ?? null, 'currency' => $validated['currency'] ?? $obligation->currency, 'occurred_on' => $validated['occurred_on'] ?? null, 'external_reference' => $validated['external_reference'] ?? null, 'note' => $validated['note'] ?? null, 'entry_type' => $validated['entry_type'] ?? null, 'balance_effect' => $validated['balance_effect'] ?? null, 'repayment_plan_allocation_id' => $validated['repayment_plan_allocation_id'] ?? null, 'collection_schedule_id' => $validated['collection_schedule_id'] ?? null, 'payment_instruction_id' => $validated['payment_instruction_id'] ?? null];
     }
 
     /** @return array<string, mixed> */
@@ -345,6 +375,7 @@ class RecordController extends Controller
             'id' => $transaction->getKey(),
             'repayment_plan_allocation_id' => $transaction->repayment_plan_allocation_id,
             'collection_schedule_id' => $transaction->collection_schedule_id,
+            'payment_instruction_id' => $transaction->payment_instruction_id,
             'entry_type' => $transaction->entry_type,
             'balance_effect' => $transaction->balance_effect,
             'status' => $transaction->status,
@@ -369,5 +400,27 @@ class RecordController extends Controller
     {
         abort_unless($obligation->record_id === $record->getKey(), 404);
         Gate::authorize('view', $record);
+    }
+
+    private function accessibleRecord(Request $request, Record $record): Record
+    {
+        return Record::query()
+            ->whereKey($record->getKey())
+            ->whereIn('profile_id', app(ProfileAccess::class)->accessibleProfiles($request->user())->select('id'))
+            ->firstOrFail();
+    }
+
+    /**
+     * @param  LengthAwarePaginator<int, mixed>  $paginator
+     * @return array{current_page: int, per_page: int, total: int, last_page: int}
+     */
+    private function paginationMeta($paginator): array
+    {
+        return [
+            'current_page' => $paginator->currentPage(),
+            'per_page' => $paginator->perPage(),
+            'total' => $paginator->total(),
+            'last_page' => $paginator->lastPage(),
+        ];
     }
 }

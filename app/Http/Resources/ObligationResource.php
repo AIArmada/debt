@@ -90,6 +90,7 @@ class ObligationResource extends JsonResource
                 'id' => $transaction->getKey(),
                 'repayment_plan_allocation_id' => $transaction->repayment_plan_allocation_id,
                 'collection_schedule_id' => $transaction->collection_schedule_id,
+                'payment_instruction_id' => $transaction->payment_instruction_id,
                 'entry_type' => $transaction->entry_type,
                 'balance_effect' => $transaction->balance_effect,
                 'status' => $transaction->status,

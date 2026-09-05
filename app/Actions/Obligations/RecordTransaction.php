@@ -8,6 +8,7 @@ use App\Domain\Planning\RepaymentPlanContinuity;
 use App\Models\CollectionSchedule;
 use App\Models\FinancialTransaction;
 use App\Models\Obligation;
+use App\Models\ObligationPaymentInstruction;
 use App\Models\RepaymentPlanAllocation;
 use App\Services\ActivityNotifier;
 use App\Services\AuditLogger;
@@ -31,7 +32,8 @@ use Illuminate\Validation\ValidationException;
  *     balance_effect?: string|null,
  *     amount_minor?: int|null,
  *     repayment_plan_allocation_id?: string|null,
- *     collection_schedule_id?: string|null
+ *     collection_schedule_id?: string|null,
+ *     payment_instruction_id?: string|null
  * }
  */
 class RecordTransaction
@@ -73,7 +75,8 @@ class RecordTransaction
      *     balance_effect?: string|null,
      *     amount_minor?: int|null,
      *     repayment_plan_allocation_id?: string|null,
-     *     collection_schedule_id?: string|null
+     *     collection_schedule_id?: string|null,
+     *     payment_instruction_id?: string|null
      * } $data
      */
     private function record(Obligation $obligation, array $data, bool $authorise): FinancialTransaction
@@ -118,6 +121,7 @@ class RecordTransaction
                 $status,
             );
             $collectionSchedule = $this->resolveCollectionSchedule($lockedObligation, $data['collection_schedule_id'] ?? null, $currency, $entryType);
+            $paymentInstruction = $this->resolvePaymentInstruction($lockedObligation, $data['payment_instruction_id'] ?? null, $entryType);
 
             $previousPosition = $lockedObligation->currentPositionDirection();
 
@@ -126,6 +130,7 @@ class RecordTransaction
                 'obligation_id' => $lockedObligation->getKey(),
                 'repayment_plan_allocation_id' => $allocation?->getKey(),
                 'collection_schedule_id' => $collectionSchedule?->getKey(),
+                'payment_instruction_id' => $paymentInstruction?->getKey(),
                 'entry_type' => $entryType,
                 'balance_effect' => $balanceEffect,
                 'status' => $status,
@@ -275,6 +280,34 @@ class RecordTransaction
         }
 
         return $schedule;
+    }
+
+    private function resolvePaymentInstruction(Obligation $obligation, ?string $instructionId, string $entryType): ?ObligationPaymentInstruction
+    {
+        if ($instructionId === null) {
+            return null;
+        }
+
+        if (! in_array($entryType, ['payment', 'collection'], true)) {
+            throw ValidationException::withMessages(['payment_instruction_id' => 'A payment instruction can only be attached to a payment or collection movement.']);
+        }
+
+        $instruction = ObligationPaymentInstruction::query()
+            ->whereKey($instructionId)
+            ->where('obligation_id', $obligation->getKey())
+            ->where('status', 'active')
+            ->with('paymentDestination:id,status')
+            ->first();
+
+        if ($instruction === null) {
+            throw ValidationException::withMessages(['payment_instruction_id' => 'Choose an active payment instruction for this obligation.']);
+        }
+
+        if ($instruction->paymentDestination?->status !== 'active') {
+            throw ValidationException::withMessages(['payment_instruction_id' => 'This instruction points to an archived destination. Supersede it with a current destination before recording a new movement.']);
+        }
+
+        return $instruction;
     }
 
     private function validatePlanAllocation(

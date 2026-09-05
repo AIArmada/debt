@@ -10,9 +10,10 @@ use App\Models\Obligation;
 use App\Models\RepaymentPlan;
 use App\Services\AuditLogger;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use InvalidArgumentException;
+use Illuminate\Validation\ValidationException;
 
 class GenerateRepaymentPlan
 {
@@ -31,7 +32,7 @@ class GenerateRepaymentPlan
         $selectedIds = collect($obligationIds)->map(fn ($id): string => (string) $id)->filter()->values();
 
         if ($selectedIds->isEmpty()) {
-            throw new InvalidArgumentException('A repayment plan must include at least one obligation.');
+            throw ValidationException::withMessages(['selectedObligationIds' => 'A repayment plan must include at least one obligation.']);
         }
 
         $obligations = Obligation::query()
@@ -39,6 +40,7 @@ class GenerateRepaymentPlan
             ->whereIn('id', $selectedIds->all())
             ->where('obligation_kind', 'money')
             ->where('status', 'active')
+            ->notDormant()
             ->whereHas('record', fn ($query) => $query
                 ->where('profile_id', $budgetPeriod->profile_id)
                 ->where('is_archived', false))
@@ -46,6 +48,7 @@ class GenerateRepaymentPlan
             ->filter(function ($obligation) use ($budgetPeriod, $selectedIds): bool {
                 $isEligible = $obligation->obligation_kind === 'money'
                     && $obligation->status === 'active'
+                    && ! $obligation->isDormantCondition()
                     && ! $obligation->record->is_archived
                     && strtoupper((string) $obligation->currency) === strtoupper((string) $budgetPeriod->currency)
                     && $obligation->currentPositionDirection() === 'payable';
@@ -55,7 +58,7 @@ class GenerateRepaymentPlan
             ->values();
 
         if ($obligations->isEmpty()) {
-            throw new InvalidArgumentException('The selected obligations are not eligible for this repayment plan.');
+            throw ValidationException::withMessages(['selectedObligationIds' => 'The selected obligations are not eligible for this repayment plan.']);
         }
 
         $result = $this->planner->plan(
@@ -77,6 +80,31 @@ class GenerateRepaymentPlan
                 ->lockForUpdate()
                 ->firstOrFail();
 
+            // Balances and statuses can change between selection and write.
+            // Re-check eligibility under lock and drop stale allocations.
+            $eligibleIds = Obligation::query()
+                ->whereIn('id', collect($allocations)->pluck('obligation_id')->map(fn ($id): string => (string) $id)->all())
+                ->where('obligation_kind', 'money')
+                ->where('status', 'active')
+                ->notDormant()
+                ->whereHas('record', fn ($query) => $query
+                    ->where('profile_id', $budgetPeriod->profile_id)
+                    ->where('is_archived', false))
+                ->lockForUpdate()
+                ->get()
+                ->filter(fn ($obligation): bool => strtoupper((string) $obligation->currency) === strtoupper((string) $budgetPeriod->currency)
+                    && $obligation->currentPositionDirection() === 'payable')
+                ->map(fn ($obligation): string => (string) $obligation->getKey())
+                ->all();
+            $allocations = collect($allocations)
+                ->where(fn (array $allocation): bool => in_array((string) $allocation['obligation_id'], $eligibleIds, true))
+                ->values()
+                ->all();
+
+            if ($allocations === []) {
+                throw ValidationException::withMessages(['selectedObligationIds' => 'The selected obligations are no longer eligible for this repayment plan. Refresh and try again.']);
+            }
+
             $previousActivePlan = RepaymentPlan::query()
                 ->where('profile_id', $budgetPeriod->profile_id)
                 ->where('budget_period_id', $budgetPeriod->getKey())
@@ -94,16 +122,20 @@ class GenerateRepaymentPlan
                 ])->save();
             }
 
-            $plan = $budgetPeriod->profile->repaymentPlans()->create([
-                'budget_period_id' => $budgetPeriod->getKey(),
-                'name' => 'Plan for '.CarbonImmutable::parse((string) $budgetPeriod->getAttribute('starts_on'))->format('d M Y'),
-                'strategy' => $strategy,
-                'available_amount' => $availableAmount,
-                'currency' => $budgetPeriod->currency,
-                'status' => 'active',
-                'activated_at' => now(),
-                'generated_at' => now(),
-            ]);
+            try {
+                $plan = $budgetPeriod->profile->repaymentPlans()->create([
+                    'budget_period_id' => $budgetPeriod->getKey(),
+                    'name' => 'Plan for '.CarbonImmutable::parse((string) $budgetPeriod->getAttribute('starts_on'))->format('d M Y'),
+                    'strategy' => $strategy,
+                    'available_amount' => $availableAmount,
+                    'currency' => $budgetPeriod->currency,
+                    'status' => 'active',
+                    'activated_at' => now(),
+                    'generated_at' => now(),
+                ]);
+            } catch (QueryException) {
+                throw ValidationException::withMessages(['selectedObligationIds' => 'Another active plan was created at the same time. Refresh and try again.']);
+            }
 
             $plan->allocations()->createMany($allocations);
 

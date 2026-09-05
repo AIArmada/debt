@@ -21,6 +21,7 @@ class FinancialTransaction extends Model
 
     protected $fillable = [
         'obligation_id', 'repayment_plan_allocation_id', 'repayment_installment_id', 'payment_schedule_id', 'collection_schedule_id',
+        'payment_instruction_id',
         'status', 'amount', 'currency',
         'entry_type', 'balance_effect', 'balance_before', 'balance_after',
         'principal_amount', 'interest_amount', 'fee_amount', 'occurred_on',
@@ -54,6 +55,12 @@ class FinancialTransaction extends Model
     public function collectionSchedule(): BelongsTo
     {
         return $this->belongsTo(CollectionSchedule::class, 'collection_schedule_id');
+    }
+
+    /** @return BelongsTo<ObligationPaymentInstruction, $this> */
+    public function paymentInstruction(): BelongsTo
+    {
+        return $this->belongsTo(ObligationPaymentInstruction::class, 'payment_instruction_id');
     }
 
     /** @return HasMany<FinancialTransactionParty, $this> */

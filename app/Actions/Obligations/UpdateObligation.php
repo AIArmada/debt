@@ -111,6 +111,12 @@ class UpdateObligation
                 ]);
             }
 
+            if ($data['is_conditional'] && blank($data['condition_description'])) {
+                throw ValidationException::withMessages(['condition_description' => 'Describe what must happen before this obligation is due.']);
+            }
+
+            $wasDormant = $lockedObligation->isDormantCondition();
+
             $currentTotalBalance = $kind->isMoney()
                 ? ($data['tracking_mode'] === 'snapshot'
                     ? $this->parseMoney($data['current_total_balance'], $currency, 'current_total_balance')
@@ -163,7 +169,7 @@ class UpdateObligation
                 ]);
             }
 
-            if ($kind->isMoney()) {
+            if ($kind->isMoney() && $lockedObligation->status !== 'waived') {
                 if ($currentTotalBalance === 0) {
                     $lockedObligation->status = 'settled';
                     $lockedObligation->settled_at = now();
@@ -184,6 +190,18 @@ class UpdateObligation
                 before: $before,
                 after: $lockedObligation->only(array_keys($before)),
             );
+
+            if ($wasDormant && $lockedObligation->is_conditional && $lockedObligation->condition_triggered_on !== null) {
+                $this->auditLogger->record(
+                    $lockedObligation->record->profile,
+                    null,
+                    Obligation::class,
+                    $lockedObligation->getKey(),
+                    'condition_triggered',
+                    before: ['condition_triggered_on' => null],
+                    after: ['condition_triggered_on' => $data['condition_triggered_on']],
+                );
+            }
 
             return $lockedObligation->refresh();
         });

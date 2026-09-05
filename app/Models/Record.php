@@ -64,19 +64,19 @@ class Record extends Model
     /** @return HasMany<Obligation, $this> */
     public function openObligations(): HasMany
     {
-        return $this->obligations()->where('status', '!=', 'settled');
+        return $this->obligations()->where('status', 'active');
     }
 
     public function stateLabel(): string
     {
         $obligations = $this->relationLoaded('obligations') ? $this->obligations : $this->obligations()->get();
-        $open = $obligations->where('status', '!=', 'settled')->count();
-        $settled = $obligations->where('status', 'settled')->count();
+        $open = $obligations->where('status', 'active')->count();
+        $resolved = $obligations->whereIn('status', ['settled', 'waived'])->count();
 
         return match (true) {
             $obligations->isEmpty() => 'No obligations yet',
-            $open === 0 => 'All obligations settled',
-            $settled > 0 => 'Partly resolved',
+            $open === 0 => 'All obligations resolved',
+            $resolved > 0 => 'Partly resolved',
             default => 'Open',
         };
     }

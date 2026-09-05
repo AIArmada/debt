@@ -7,7 +7,9 @@ use App\Models\ProfileInvitation;
 use App\Models\User;
 use App\Services\AuditLogger;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class InviteProfileMember
 {
@@ -17,6 +19,13 @@ class InviteProfileMember
     public function handle(User $user, FinancialProfile $profile, string $email, string $role): array
     {
         Gate::forUser($user)->authorize('inviteMember', $profile);
+
+        $throttleKey = 'invite:'.$user->getKey();
+        if (RateLimiter::tooManyAttempts($throttleKey, 10)) {
+            throw ValidationException::withMessages(['email' => 'Too many invitations were sent recently. Try again later.']);
+        }
+        RateLimiter::hit($throttleKey, 600);
+
         $token = Str::random(64);
         $invitation = $profile->invitations()->create([
             'invited_by_user_id' => $user->getKey(),

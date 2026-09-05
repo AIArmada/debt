@@ -13,9 +13,9 @@
             <div class="border-b border-zinc-200 px-5 py-4 dark:border-zinc-700"><flux:heading size="lg">Your profiles</flux:heading></div>
             <div class="divide-y divide-zinc-200 dark:divide-zinc-700">
                 @foreach ($profiles as $profile)
-                    <div class="flex items-center justify-between gap-4 px-5 py-4">
-                        <div><div class="font-medium">{{ $profile->name }}</div><div class="mt-1 text-sm text-zinc-500">{{ ucfirst($profile->type) }} · {{ $profile->base_currency }} · {{ $profile->active_records_count }} records</div><div class="mt-1 text-xs text-zinc-500">{{ $roles[$profile->id] === 'owner' ? 'Owner' : ucfirst(str_replace('_', ' ', (string) $roles[$profile->id])) }}</div>@if ($profile->is_islamic_mode_enabled)<div class="mt-1 text-xs text-zinc-500">Islamic Mode enabled</div>@endif</div>
-                        <div class="flex items-center gap-2"><flux:button size="sm" variant="ghost" :href="route('dashboard', ['profile' => $profile->id])" wire:navigate>Open</flux:button>@if (($roles[$profile->id] ?? null) === 'owner')<flux:button size="sm" variant="ghost" :href="route('financial-profiles.edit', $profile)" wire:navigate>Edit</flux:button>@endif</div>
+                    <div class="flex flex-col items-start gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div class="min-w-0"><div class="font-medium">{{ $profile->name }}</div><div class="mt-1 text-sm text-zinc-500">{{ ucfirst($profile->type) }} · {{ $profile->base_currency }} · {{ $profile->active_records_count }} records</div><div class="mt-1 text-xs text-zinc-500">{{ $roles[$profile->id] === 'owner' ? 'Owner' : ucfirst(str_replace('_', ' ', (string) $roles[$profile->id])) }}</div>@if ($profile->is_islamic_mode_enabled)<div class="mt-1 text-xs text-zinc-500">Islamic Mode enabled</div>@endif</div>
+                        <div class="flex w-full gap-2 sm:w-auto"><flux:button size="sm" variant="ghost" class="flex-1 sm:flex-none" :href="route('dashboard', ['profile' => $profile->id])" wire:navigate>Open</flux:button>@if (($roles[$profile->id] ?? null) === 'owner')<flux:button size="sm" variant="ghost" class="flex-1 sm:flex-none" :href="route('financial-profiles.edit', $profile)" wire:navigate>Edit</flux:button>@endif</div>
                     </div>
                 @endforeach
             </div>

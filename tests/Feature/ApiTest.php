@@ -109,7 +109,7 @@ test('api rejects unauthenticated and cross user access', function () {
     $owner = User::factory()->create();
     $obligation = createApiObligation($owner->financialProfiles()->firstOrFail(), 'Private API balance');
     $this->getJson(route('api.v1.records.index'))->assertUnauthorized();
-    $this->actingAs(User::factory()->create())->getJson(route('api.v1.records.show', $obligation->record))->assertForbidden();
+    $this->actingAs(User::factory()->create())->getJson(route('api.v1.records.show', $obligation->record))->assertNotFound();
 });
 
 test('api does not expose records to a pending heir without activated emergency access', function () {

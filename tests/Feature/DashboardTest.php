@@ -15,5 +15,8 @@ test('authenticated users can visit the dashboard', function () {
     $this->actingAs($user);
 
     $response = $this->get(route('dashboard'));
-    $response->assertOk();
+    $response->assertOk()
+        ->assertSee('app-main')
+        ->assertSee('md:grid-cols-4')
+        ->assertSee('max-w-full');
 });

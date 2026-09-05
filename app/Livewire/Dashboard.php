@@ -52,7 +52,7 @@ class Dashboard extends Component
             ->active();
 
         $activeRecords = (clone $active)
-            ->select(['id', 'record_id', 'direction', 'obligation_kind', 'currency', 'current_total_balance', 'currency_balances', 'minimum_payment_amount', 'next_due_on'])
+            ->select(['id', 'record_id', 'direction', 'obligation_kind', 'currency', 'current_total_balance', 'currency_balances', 'minimum_payment_amount', 'next_due_on', 'is_conditional', 'condition_triggered_on'])
             ->lazyById(500);
         $reversedObligations = collect();
         $payableByCurrency = [];
@@ -71,6 +71,10 @@ class Dashboard extends Component
             if ($record->obligation_kind !== 'money') {
                 $nonMonetaryCount++;
 
+                continue;
+            }
+
+            if ($record->isDormantCondition()) {
                 continue;
             }
 
@@ -96,14 +100,16 @@ class Dashboard extends Component
             ? collect()
             : Obligation::query()
                 ->whereKey($reversedIds)
-                ->select(['id', 'record_id', 'direction', 'obligation_kind', 'currency', 'current_total_balance', 'currency_balances', 'next_due_on', 'title'])
+                ->select(['id', 'record_id', 'direction', 'obligation_kind', 'currency', 'current_total_balance', 'currency_balances', 'next_due_on', 'title', 'is_conditional', 'condition_triggered_on'])
                 ->with('record:id,title')
                 ->get()
+                ->reject(fn (Obligation $obligation): bool => $obligation->isDormantCondition())
                 ->sortBy(fn (Obligation $obligation): string => $obligation->next_due_on?->toDateString() ?? '9999-12-31')
                 ->values();
         $upcoming = (clone $active)
-            ->select(['id', 'record_id', 'direction', 'obligation_kind', 'currency', 'current_total_balance', 'currency_balances', 'subject_unit', 'current_subject_quantity', 'next_due_on', 'title'])
+            ->select(['id', 'record_id', 'direction', 'obligation_kind', 'currency', 'current_total_balance', 'currency_balances', 'subject_unit', 'current_subject_quantity', 'next_due_on', 'title', 'is_conditional', 'condition_triggered_on'])
             ->whereNotNull('next_due_on')
+            ->notDormant()
             ->orderBy('next_due_on')
             ->with([
                 'record:id,title',

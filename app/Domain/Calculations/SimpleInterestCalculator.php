@@ -9,12 +9,17 @@ class SimpleInterestCalculator
         $rate = $this->precise($annualRate);
         $monthlyCharge = bcdiv(bcdiv(bcmul((string) $principal, $rate, 12), '100', 12), '12', 12);
 
-        return $this->roundMoney($monthlyCharge);
+        return $this->roundMoney($this->precise($monthlyCharge));
     }
 
+    /** @param numeric-string $value */
     private function roundMoney(string $value): int
     {
-        return (int) bcadd($this->precise($value), '0.5', 0);
+        if (bccomp($value, '0', 12) < 0) {
+            return (int) bcsub($value, '0.5', 0);
+        }
+
+        return (int) bcadd($value, '0.5', 0);
     }
 
     /** @return numeric-string */

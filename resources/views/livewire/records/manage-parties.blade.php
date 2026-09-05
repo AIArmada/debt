@@ -1,6 +1,6 @@
 <section class="app-card rounded-2xl p-5">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
+        <div class="min-w-0">
             <div class="flex items-center gap-2"><span class="app-icon-badge size-9"><flux:icon name="user-group" class="size-4" /></span><flux:heading size="lg">Participants</flux:heading></div>
             <flux:text class="mt-2 text-sm">One record may involve several parties. Add their role here; add their specific share or obligation role inside the relevant obligation.</flux:text>
         </div>
@@ -12,8 +12,8 @@
     <div class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         @forelse ($record->partyLinks as $link)
             <div class="rounded-xl border border-zinc-200/80 bg-zinc-50/70 p-4 dark:border-zinc-700 dark:bg-zinc-800/50">
-                <div class="flex items-start justify-between gap-3">
-                    <div><div class="font-medium">{{ $link->party->preferred_name }}</div><div class="mt-1 text-xs text-zinc-500">{{ str_replace('_', ' ', ucfirst($link->role)) }}@if ($link->is_primary) · Primary @endif</div></div>
+                <div class="flex flex-col items-start gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <div class="min-w-0"><div class="font-medium">{{ $link->party->preferred_name }}</div><div class="mt-1 text-xs text-zinc-500">{{ str_replace('_', ' ', ucfirst($link->role)) }}@if ($link->is_primary) · Primary @endif</div></div>
                     @can('update', $record)<flux:button size="sm" variant="ghost" wire:click="remove('{{ $link->id }}')" wire:confirm="Remove this participant from the record?">Remove</flux:button>@endcan
                 </div>
                 @if ($link->notes)<p class="mt-3 text-sm text-zinc-600 dark:text-zinc-300">{{ $link->notes }}</p>@endif

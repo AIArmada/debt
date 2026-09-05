@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Api\V1\ImportController;
 use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\PartyController;
+use App\Http\Controllers\Api\V1\PlanningController;
 use App\Http\Controllers\Api\V1\RecordController;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Session\Middleware\StartSession;
@@ -22,6 +24,7 @@ Route::middleware([StartSession::class, PreventRequestForgery::class, 'auth', 'v
     Route::delete('records/{record}/parties/{recordParty}', [RecordController::class, 'removeParty'])->name('api.v1.records.parties.destroy');
     Route::post('records/{record}/obligations/{obligation}/parties', [RecordController::class, 'addObligationParty'])->name('api.v1.records.obligation-parties.store');
     Route::post('records/{record}/obligations/{obligation}/transactions', [RecordController::class, 'transaction'])->name('api.v1.records.transactions.store');
+    Route::get('records/{record}/obligations/{obligation}/transactions', [RecordController::class, 'transactions'])->name('api.v1.records.transactions.index');
     Route::post('records/{record}/obligations/{obligation}/collection-schedules', [RecordController::class, 'collectionSchedule'])->name('api.v1.records.collection-schedules.store');
     Route::post('records/{record}/obligations/{obligation}/delivery-instructions', [RecordController::class, 'deliveryInstruction'])->name('api.v1.records.delivery-instructions.store');
     Route::match(['put', 'patch'], 'records/{record}/obligations/{obligation}/transactions/{transaction}', [RecordController::class, 'updateTransaction'])->name('api.v1.records.transactions.update');
@@ -30,4 +33,7 @@ Route::middleware([StartSession::class, PreventRequestForgery::class, 'auth', 'v
     Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('api.v1.notifications.unread-count');
     Route::patch('notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('api.v1.notifications.read');
     Route::post('notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('api.v1.notifications.read-all');
+    Route::get('budget-periods', [PlanningController::class, 'budgets'])->name('api.v1.budget-periods.index');
+    Route::get('repayment-plans', [PlanningController::class, 'plans'])->name('api.v1.repayment-plans.index');
+    Route::get('bank-imports', [ImportController::class, 'index'])->name('api.v1.bank-imports.index');
 });

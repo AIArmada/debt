@@ -47,7 +47,7 @@ class ManageSchedule extends Component
     {
         Gate::authorize('manageSchedule', $this->obligation);
         if (! $this->canSchedulePayments()) {
-            $this->addError('amount', 'This obligation currently shows money to receive or is settled. Review the position before scheduling a payment.');
+            $this->addError('amount', 'This obligation currently shows money to receive or is resolved. Review the position before scheduling a payment.');
 
             return;
         }
@@ -71,6 +71,7 @@ class ManageSchedule extends Component
             return;
         }
         $this->reset('amount', 'perPaymentLimit');
+        $this->obligation->refresh();
         session()->flash('schedule-created', 'The schedule was saved. It will not move money automatically.');
     }
 
@@ -79,6 +80,7 @@ class ManageSchedule extends Component
         Gate::authorize('manageSchedule', $this->obligation);
         $schedule = $this->obligation->paymentSchedules()->whereKey($scheduleId)->firstOrFail();
         $pausePaymentSchedule->handle($this->obligation, $schedule);
+        $this->obligation->refresh();
         session()->flash('schedule-paused', 'The schedule was paused.');
     }
 
@@ -97,12 +99,14 @@ class ManageSchedule extends Component
             return;
         }
 
+        $this->obligation->refresh();
         session()->flash('schedule-resumed', 'The schedule was resumed.');
     }
 
     public function canSchedulePayments(): bool
     {
-        return $this->obligation->currentPositionDirection() === 'payable';
+        return ! $this->obligation->isDormantCondition()
+            && $this->obligation->currentPositionDirection() === 'payable';
     }
 
     public function authorise(string $scheduleId, AuthorisePaymentSchedule $authorisePaymentSchedule): void

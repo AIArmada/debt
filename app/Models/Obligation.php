@@ -155,6 +155,24 @@ class Obligation extends Model
         $query->where('status', 'active');
     }
 
+    /**
+     * A conditional obligation with no trigger date is dormant: recorded as
+     * context, but not yet applying. Only the trigger date drives behavior;
+     * the flag and description are display context.
+     */
+    public function isDormantCondition(): bool
+    {
+        return (bool) $this->is_conditional && $this->condition_triggered_on === null;
+    }
+
+    /** @param Builder<Obligation> $query */
+    public function scopeNotDormant(Builder $query): void
+    {
+        $query->where(fn ($query) => $query
+            ->where('is_conditional', false)
+            ->orWhereNotNull('condition_triggered_on'));
+    }
+
     public function kind(): ObligationKind
     {
         return ObligationKind::from($this->obligation_kind);

@@ -4,10 +4,12 @@ namespace App\Livewire\Obligations;
 
 use App\Actions\Obligations\RecordTransaction as RecordTransactionAction;
 use App\Domain\Money\Currency;
+use App\Domain\Money\MoneyAmount;
 use App\Models\Obligation;
 use App\Models\RepaymentPlanAllocation;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -23,6 +25,9 @@ class RecordTransaction extends Component
     public ?RepaymentPlanAllocation $repaymentPlanAllocation = null;
 
     public ?string $collectionScheduleId = null;
+
+    #[Validate('nullable|uuid')]
+    public ?string $paymentInstructionId = null;
 
     #[Validate('required|in:payment,collection,advance,interest,fee,adjustment,write_off,opening_balance')]
     public string $entryType = 'payment';
@@ -70,7 +75,13 @@ class RecordTransaction extends Component
     {
         Gate::authorize('recordTransaction', $this->obligation);
         $validated = $this->validate();
-        $promotesSnapshotToLedger = $this->obligation->tracking_mode === 'snapshot';
+        $promotesSnapshotToLedger = $this->obligation->tracking_mode === 'snapshot' && $validated['status'] === 'confirmed';
+
+        if (! $this->hasValidPrecision($validated['amount'], $validated['currency'])) {
+            $this->addError('amount', $this->precisionMessage($validated['amount'], $validated['currency']));
+
+            return;
+        }
 
         if ($validated['entryType'] === 'adjustment' && ! in_array($validated['balanceEffect'], ['increase', 'decrease'], true)) {
             $this->addError('balanceEffect', 'Choose whether this adjustment increases or decreases the balance.');
@@ -89,19 +100,20 @@ class RecordTransaction extends Component
                 'entry_type' => $validated['entryType'],
                 'balance_effect' => $validated['balanceEffect'],
                 'repayment_plan_allocation_id' => $this->repaymentPlanAllocationId,
-                'collection_schedule_id' => $this->collectionScheduleId,
+                'collection_schedule_id' => filled($this->collectionScheduleId) ? $this->collectionScheduleId : null,
+                'payment_instruction_id' => filled($this->paymentInstructionId) ? $this->paymentInstructionId : null,
             ]);
         } catch (ValidationException $exception) {
             foreach ($exception->errors() as $field => $messages) {
                 foreach ($messages as $message) {
-                    $this->addError($field, $message);
+                    $this->addError(Str::camel($field), $message);
                 }
             }
 
             return;
         }
 
-        $this->reset('amount', 'externalReference', 'note', 'collectionScheduleId');
+        $this->reset('amount', 'externalReference', 'note', 'collectionScheduleId', 'paymentInstructionId');
         $this->status = 'confirmed';
         $this->currency = (string) $this->obligation->currency;
         $this->entryType = $this->defaultDecreaseEntryType();
@@ -125,6 +137,7 @@ class RecordTransaction extends Component
         return view('livewire.obligations.record-transaction', [
             'currencies' => Currency::options(),
             'collectionSchedules' => $this->obligation->collectionSchedules()->where('status', 'active')->where('currency', strtoupper($this->currency))->get(),
+            'paymentInstructions' => $this->obligation->paymentInstructions()->where('status', 'active')->with('paymentDestination:id,label,status')->latest()->get(),
         ]);
     }
 
@@ -133,6 +146,32 @@ class RecordTransaction extends Component
         if (in_array($this->entryType, ['payment', 'collection'], true)) {
             $this->entryType = $this->decreaseEntryTypeFor($currency);
         }
+    }
+
+    private function hasValidPrecision(?string $amount, string $currency): bool
+    {
+        if ($amount === null) {
+            return true;
+        }
+
+        try {
+            MoneyAmount::fromMajor($amount, $currency);
+        } catch (\InvalidArgumentException) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function precisionMessage(?string $amount, string $currency): string
+    {
+        try {
+            MoneyAmount::fromMajor($amount, $currency);
+        } catch (\InvalidArgumentException $exception) {
+            return $exception->getMessage();
+        }
+
+        return 'Enter a valid amount.';
     }
 
     private function defaultDecreaseEntryType(): string

@@ -1,14 +1,14 @@
 <div class="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-7">
     <div class="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-        <div class="flex items-start gap-4">
+        <div class="flex min-w-0 items-start gap-4">
             <span class="app-page-icon hidden shrink-0 sm:inline-flex"><flux:icon name="user-group" class="size-6" /></span>
-            <div>
+            <div class="min-w-0">
                 <span class="app-eyebrow">{{ $profile->name }}</span>
                 <flux:heading size="xl" class="mt-2 text-3xl tracking-tight">Parties</flux:heading>
                 <flux:text class="mt-2 max-w-2xl leading-6">Keep people, organisations, households, estates, and other parties in one trusted directory. A party can appear in many records with different roles.</flux:text>
             </div>
         </div>
-        <flux:select wire:model.live="profileId" class="w-48" aria-label="Financial profile">
+        <flux:select wire:model.live="profileId" class="w-full sm:w-48" aria-label="Financial profile">
             @foreach ($profiles as $item)<flux:select.option :value="$item->id">{{ $item->name }}</flux:select.option>@endforeach
         </flux:select>
     </div>
@@ -74,9 +74,9 @@
 
     <section class="grid gap-4 lg:grid-cols-2">
         @forelse ($parties as $party)
-            <article class="app-card rounded-2xl p-5">
+            <article class="app-card min-w-0 rounded-2xl p-5">
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
+                    <div class="min-w-0">
                         <div class="flex items-center gap-2">
                             <flux:icon name="user-circle" class="size-5 text-emerald-700" />
                             <flux:heading size="lg">{{ $party->preferred_name }}</flux:heading>
@@ -93,8 +93,8 @@
                 @if ($canManage && $party->contacts->isNotEmpty())
                     <div class="mt-4 space-y-2 border-t border-zinc-100 pt-4 dark:border-zinc-800">
                         @foreach ($party->contacts as $contact)
-                            <div class="flex items-center justify-between gap-3 text-sm text-zinc-600 dark:text-zinc-300">
-                                <div class="flex items-center gap-2"><flux:icon name="{{ $contact->type === 'email' ? 'envelope' : 'phone' }}" class="size-4 text-zinc-400" /> <span>{{ $contact->label }} · {{ ucfirst($contact->type) }} · {{ $contact->value }}</span></div>
+                            <div class="flex flex-col items-start gap-2 text-sm text-zinc-600 dark:text-zinc-300 sm:flex-row sm:items-center sm:justify-between">
+                                <div class="flex min-w-0 items-start gap-2"><flux:icon name="{{ $contact->type === 'email' ? 'envelope' : 'phone' }}" class="mt-0.5 size-4 shrink-0 text-zinc-400" /> <span class="break-words">{{ $contact->label }} · {{ ucfirst($contact->type) }} · {{ $contact->value }}</span></div>
                                 <flux:button type="button" size="sm" variant="ghost" wire:click="editContact('{{ $contact->id }}')"><flux:icon name="pencil" class="app-button-icon size-4" /> Edit contact</flux:button>
                             </div>
                         @endforeach
@@ -121,8 +121,8 @@
                             <flux:button type="button" size="sm" variant="outline" class="min-w-max" wire:click="beginContact('{{ $party->id }}')"><flux:icon name="plus" class="app-button-icon size-4" /> Add contact detail</flux:button>
                         @else
                             <div class="rounded-xl border border-zinc-200 bg-zinc-50/70 p-4 dark:border-zinc-700 dark:bg-zinc-800/50">
-                                <div class="flex items-start justify-between gap-3">
-                                    <div>
+                                <div class="flex flex-col items-start gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                    <div class="min-w-0">
                                         <div class="font-medium">{{ $editingContactId ? 'Edit contact detail' : 'Add contact detail' }}</div>
                                         <p class="mt-1 text-xs text-zinc-500">Use a label such as Work mobile or Personal email so routes remain easy to understand.</p>
                                     </div>
@@ -175,8 +175,8 @@
                         @endforelse
                         @if ($paymentPartyId === $party->id)
                             <div class="mt-4 rounded-xl border border-emerald-200 bg-emerald-50/60 p-4 dark:border-emerald-900/60 dark:bg-emerald-950/20">
-                                <div class="flex items-start justify-between gap-3">
-                                    <div>
+                                <div class="flex flex-col items-start gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                    <div class="min-w-0">
                                         <div class="font-medium text-emerald-950 dark:text-emerald-100">{{ $editingPaymentDestinationId ? 'Edit payment destination' : 'Add payment destination' }}</div>
                                         <p class="mt-1 text-xs text-emerald-900/70 dark:text-emerald-100/70">Use a recognisable label so you can choose the right destination later. Identifiers are encrypted and only the last four characters are shown after saving.</p>
                                     </div>

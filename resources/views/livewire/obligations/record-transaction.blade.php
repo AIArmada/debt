@@ -28,6 +28,15 @@
             </flux:select>
             <p class="-mt-3 text-xs text-zinc-500">Link this received payment to the expected collection schedule for reconciliation.</p>
         @endif
+        @if (in_array($entryType, ['payment', 'collection'], true) && $paymentInstructions->isNotEmpty())
+            <flux:select wire:model="paymentInstructionId" label="Payment instruction (optional)">
+                <flux:select.option value="">No saved instruction</flux:select.option>
+                @foreach ($paymentInstructions as $instruction)
+                    <flux:select.option value="{{ $instruction->id }}">{{ $instruction->paymentDestination?->label ?? 'Saved destination' }}{{ $instruction->currency ? ' · '.$instruction->currency : '' }}{{ $instruction->reference ? ' · '.$instruction->reference : '' }}{{ $instruction->paymentDestination?->status !== 'active' ? ' — destination archived' : '' }}</flux:select.option>
+                @endforeach
+            </flux:select>
+            <p class="-mt-3 text-xs text-zinc-500">Record which saved destination this money used. The instruction snapshot is kept as proof.</p>
+        @endif
         @if ($entryType === 'adjustment')
             <flux:select wire:model="balanceEffect" label="Adjustment effect">
                 <flux:select.option value="">Choose an effect</flux:select.option>

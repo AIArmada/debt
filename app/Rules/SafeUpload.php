@@ -53,11 +53,6 @@ final class SafeUpload implements ValidationRule
         'text/x-shellscript',
     ];
 
-    public static function allowedExtensions(): string
-    {
-        return implode(',', self::ALLOWED_EXTENSIONS);
-    }
-
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         if (! $value instanceof UploadedFile || ! $value->isValid()) {

@@ -126,7 +126,8 @@ class ManageCollectionSchedule extends Component
 
     public function canScheduleCollections(): bool
     {
-        return $this->obligation->obligation_kind === 'money'
+        return ! $this->obligation->isDormantCondition()
+            && $this->obligation->obligation_kind === 'money'
             && $this->obligation->currencyPosition($this->currency)['direction'] === 'receivable';
     }
 

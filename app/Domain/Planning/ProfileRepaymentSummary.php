@@ -33,6 +33,7 @@ final class ProfileRepaymentSummary
         return $this->obligations($budgetPeriod->profile, true, true)->toBase()
             ->filter(fn (Obligation $obligation): bool => strtoupper((string) $obligation->currency) === $currency
                 && $obligation->currentPositionDirection() === 'payable'
+                && ! $obligation->isDormantCondition()
             )
             ->map(fn (Obligation $obligation): array => $this->candidateRow($obligation, $budgetPeriod, $plannedByObligation, $currency))
             ->sortBy([
@@ -52,6 +53,7 @@ final class ProfileRepaymentSummary
         $budgetCurrency = strtoupper((string) $budgetPeriod->currency);
 
         return $this->obligations($budgetPeriod->profile, true, true)->toBase()
+            ->reject(fn (Obligation $obligation): bool => $obligation->isDormantCondition())
             ->flatMap(fn (Obligation $obligation): array => $this->excludedRowsForObligation($obligation, $budgetCurrency))
             ->sortBy([
                 ['currency', 'asc'],
@@ -149,7 +151,7 @@ final class ProfileRepaymentSummary
      */
     public function addObligationToSummaryRows(array &$rows, Obligation $obligation): void
     {
-        if ($obligation->obligation_kind !== 'money') {
+        if ($obligation->obligation_kind !== 'money' || $obligation->isDormantCondition()) {
             return;
         }
 
@@ -269,6 +271,7 @@ final class ProfileRepaymentSummary
             ->select([
                 'id', 'record_id', 'direction', 'obligation_kind', 'title', 'currency',
                 'current_total_balance', 'currency_balances', 'minimum_payment_amount', 'next_due_on',
+                'is_conditional', 'condition_triggered_on',
             ])
             ->with($with)
             ->get();

@@ -19,6 +19,10 @@ class CreatePaymentSchedule
     {
         Gate::authorize('manageSchedule', $obligation);
 
+        if ($obligation->isDormantCondition()) {
+            throw ValidationException::withMessages(['amount' => 'Payment schedules are available only after the condition has been triggered.']);
+        }
+
         if ($obligation->currentPositionDirection() !== 'payable') {
             throw ValidationException::withMessages(['amount' => 'Payment schedules are available only while the current position is something you need to pay.']);
         }

@@ -12,7 +12,7 @@
             <flux:button type="submit" variant="primary" class="w-full">Run estimate</flux:button>
         </form>
     @else
-        <div class="mx-5 my-5 rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-4 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100">Payment scenarios are paused because this obligation currently shows money to receive or is settled. Review the current position before planning another payment.</div>
+        <div class="mx-5 my-5 rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-4 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100">Payment scenarios are paused because this obligation currently shows money to receive or is resolved. Review the current position before planning another payment.</div>
     @endif
     <div class="border-t border-zinc-200 px-5 py-4 dark:border-zinc-700">
         <div class="text-sm font-medium">Saved estimates</div>

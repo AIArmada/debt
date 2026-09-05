@@ -1,14 +1,14 @@
 <div class="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-8">
     <div class="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-        <div class="flex items-start gap-4">
+        <div class="flex min-w-0 items-start gap-4">
             <span class="app-page-icon hidden shrink-0 sm:inline-flex"><flux:icon name="chart-bar" class="size-6" /></span>
-            <div>
+            <div class="min-w-0">
                 <div class="app-eyebrow">Plan with clarity</div>
                 <flux:heading size="xl" class="mt-2 text-3xl tracking-tight">Budget & repayment plans</flux:heading>
                 <flux:text class="mt-2 max-w-2xl leading-6">Turn your actual money obligations into a realistic plan, then record payments against the plan so progress stays visible.</flux:text>
             </div>
         </div>
-        <flux:select wire:model.live="profileId" class="w-52" aria-label="Financial profile">
+        <flux:select wire:model.live="profileId" class="w-full sm:w-52" aria-label="Financial profile">
             @foreach ($profiles as $item)
                 <flux:select.option :value="$item->id">{{ $item->name }}</flux:select.option>
             @endforeach
@@ -24,9 +24,9 @@
     @if ($budget)
         <section class="app-card overflow-hidden rounded-2xl">
             <div class="flex flex-col gap-4 border-b border-zinc-200/80 px-5 py-5 sm:flex-row sm:items-start sm:justify-between dark:border-zinc-700/80">
-                <div class="flex items-start gap-3">
+                <div class="flex min-w-0 items-start gap-3">
                     <span class="app-section-icon"><flux:icon name="calendar-days" class="size-5" /></span>
-                    <div>
+                    <div class="min-w-0">
                         <flux:heading size="lg">Budget period</flux:heading>
                         <flux:text class="mt-1 text-sm">{{ $budget->starts_on->format('d M Y') }} – {{ $budget->ends_on->format('d M Y') }} · Planning in {{ $budget->currency }}</flux:text>
                     </div>
@@ -55,9 +55,9 @@
                 <section class="app-card overflow-hidden rounded-2xl">
                     <div class="border-b border-zinc-200/80 px-5 py-5 dark:border-zinc-700/80">
                         <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                            <div class="flex items-start gap-3">
+                            <div class="flex min-w-0 items-start gap-3">
                                 <span class="app-section-icon"><flux:icon name="list-bullet" class="size-5" /></span>
-                                <div>
+                                <div class="min-w-0">
                                     <flux:heading size="lg">Choose what this plan covers</flux:heading>
                                     <flux:text class="mt-1 text-sm leading-5">Select the money obligations you want this budget to help resolve. They are grouped by record and linked back to the full history.</flux:text>
                                 </div>
@@ -113,9 +113,9 @@
                         </div>
                         <div class="divide-y divide-sky-200/70 dark:divide-sky-900/50">
                             @foreach ($excludedCandidates as $excluded)
-                                <a wire:key="excluded-{{ $excluded['obligation_id'] }}-{{ $excluded['currency'] }}" wire:navigate href="{{ route('records.show', $excluded['record']) }}" class="flex items-center justify-between gap-4 px-5 py-4 transition hover:bg-sky-100/60 dark:hover:bg-sky-950/30">
+                                <a wire:key="excluded-{{ $excluded['obligation_id'] }}-{{ $excluded['currency'] }}" wire:navigate href="{{ route('records.show', $excluded['record']) }}" class="flex flex-col items-start gap-3 px-5 py-4 transition hover:bg-sky-100/60 sm:flex-row sm:items-center sm:justify-between dark:hover:bg-sky-950/30">
                                     <div class="min-w-0"><div class="truncate font-medium text-zinc-900 dark:text-zinc-100">{{ $excluded['title'] }}</div><div class="mt-2 flex flex-wrap items-center gap-2"><span class="text-sm text-sky-900/70 dark:text-sky-100/70">{{ $excluded['currency'] }}</span><x-direction-badge :direction="$excluded['direction']" :label="$excluded['direction'] === 'payable' ? 'You owe them' : 'They owe you'" /></div></div>
-                                    <div class="shrink-0 text-right font-semibold text-zinc-900 dark:text-zinc-100">{{ App\Domain\Money\MoneyAmount::format($excluded['amount'], $excluded['currency']) }}</div>
+                                    <div class="w-full text-left font-semibold text-zinc-900 sm:w-auto sm:shrink-0 sm:text-right dark:text-zinc-100">{{ App\Domain\Money\MoneyAmount::format($excluded['amount'], $excluded['currency']) }}</div>
                                 </a>
                             @endforeach
                         </div>
@@ -233,7 +233,7 @@
                     </div>
                     <div class="divide-y divide-zinc-200/80 dark:divide-zinc-700/80">
                         @forelse ($budget->cashFlowEntries as $entry)
-                            <div class="flex items-center justify-between gap-4 px-5 py-3"><div><div class="font-medium">{{ $entry->name }}</div><div class="mt-1 text-xs text-zinc-500">{{ ucfirst($entry->type) }} · {{ $entry->is_essential ? 'Essential' : 'Flexible' }}</div></div><div class="font-medium {{ $entry->type === 'income' ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300' }}">{{ $entry->type === 'income' ? '+' : '−' }} {{ App\Domain\Money\MoneyAmount::format($entry->amount, $budget->currency) }}</div></div>
+                            <div class="flex flex-col items-start gap-2 px-5 py-3 sm:flex-row sm:items-center sm:justify-between"><div class="min-w-0"><div class="font-medium">{{ $entry->name }}</div><div class="mt-1 text-xs text-zinc-500">{{ ucfirst($entry->type) }} · {{ $entry->is_essential ? 'Essential' : 'Flexible' }}</div></div><div class="font-medium {{ $entry->type === 'income' ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300' }}">{{ $entry->type === 'income' ? '+' : '−' }} {{ App\Domain\Money\MoneyAmount::format($entry->amount, $budget->currency) }}</div></div>
                         @empty
                             <div class="px-5 py-6 text-sm text-zinc-500">No cash-flow entries yet.</div>
                         @endforelse
@@ -261,7 +261,7 @@
         </div>
     @else
         <section class="app-card mx-auto w-full max-w-3xl rounded-2xl p-6 sm:p-8">
-            <div class="flex items-start gap-4"><span class="app-page-icon hidden shrink-0 sm:inline-flex"><flux:icon name="calendar-days" class="size-6" /></span><div><div class="app-eyebrow">Start with a time window</div><flux:heading size="xl" class="mt-2">Create a budget period</flux:heading><flux:text class="mt-2 leading-6">Use a month or another period that matches how you manage cash flow. Your profile’s base currency will be used, and money in other currencies will remain separate.</flux:text></div></div>
+            <div class="flex min-w-0 items-start gap-4"><span class="app-page-icon hidden shrink-0 sm:inline-flex"><flux:icon name="calendar-days" class="size-6" /></span><div class="min-w-0"><div class="app-eyebrow">Start with a time window</div><flux:heading size="xl" class="mt-2">Create a budget period</flux:heading><flux:text class="mt-2 leading-6">Use a month or another period that matches how you manage cash flow. Your profile’s base currency will be used, and money in other currencies will remain separate.</flux:text></div></div>
             <form wire:submit="createBudget" class="mt-7 grid gap-5 sm:grid-cols-3"><flux:input wire:model="startsOn" type="date" label="Starts" required /><flux:input wire:model="endsOn" type="date" label="Ends" required /><flux:input wire:model="emergencyReserveAmount" type="number" step="any" min="0" label="Emergency reserve" required /><div class="sm:col-span-3"><flux:button type="submit" variant="primary">Create budget period</flux:button></div></form>
         </section>
     @endif

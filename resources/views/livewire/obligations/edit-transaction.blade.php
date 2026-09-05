@@ -14,6 +14,14 @@
             <flux:select.option value="write_off">Write-off / waiver — reduce the balance</flux:select.option>
             <flux:select.option value="opening_balance">Opening balance — establish the starting amount</flux:select.option>
         </flux:select>
+        @if (in_array($entryType, ['payment', 'collection'], true) && $paymentInstructions->isNotEmpty())
+            <flux:select wire:model="paymentInstructionId" label="Payment instruction (optional)">
+                <flux:select.option value="">No saved instruction</flux:select.option>
+                @foreach ($paymentInstructions as $instruction)
+                    <flux:select.option value="{{ $instruction->id }}">{{ $instruction->paymentDestination?->label ?? 'Saved destination' }}{{ $instruction->currency ? ' · '.$instruction->currency : '' }}{{ $instruction->reference ? ' · '.$instruction->reference : '' }}{{ $instruction->paymentDestination?->status !== 'active' ? ' — destination archived' : '' }}</flux:select.option>
+                @endforeach
+            </flux:select>
+        @endif
         @if ($entryType === 'adjustment')
             <flux:select wire:model="balanceEffect" label="Adjustment effect">
                 <flux:select.option value="">Choose an effect</flux:select.option>

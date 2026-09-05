@@ -4,7 +4,7 @@
         <flux:text class="mt-1 text-sm">Use this for an expected incoming pattern, such as RM5 every day. It does not mark money as received until a confirmed collection is recorded.</flux:text>
     </div>
     @if (! $this->canScheduleCollections())
-        <div class="mx-5 mt-5 rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100">This obligation currently shows money to pay or is settled, so a collection schedule cannot be created or resumed.</div>
+        <div class="mx-5 mt-5 rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100">This obligation currently shows money to pay or is resolved, so a collection schedule cannot be created or resumed.</div>
     @endif
     @if (session('collection-schedule-created'))<div class="mx-5 mt-5 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{{ session('collection-schedule-created') }}</div>@endif
     @if (session('collection-schedule-paused'))<div class="mx-5 mt-5 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{{ session('collection-schedule-paused') }}</div>@endif

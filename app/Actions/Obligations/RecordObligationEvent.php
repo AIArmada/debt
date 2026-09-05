@@ -35,6 +35,10 @@ class RecordObligationEvent
 
             Gate::forUser($user)->authorize('recordEvent', $lockedObligation);
 
+            if ($lockedObligation->isDormantCondition()) {
+                throw ValidationException::withMessages(['event_type' => 'Fulfillment updates are available only after the condition has been triggered.']);
+            }
+
             $kind = $lockedObligation->kind();
             $eventType = $data['event_type'];
             $this->ensureAllowedEvent($kind, $eventType);
@@ -122,7 +126,7 @@ class RecordObligationEvent
         $current = $this->decimalString($obligation->current_subject_quantity)
             ?? $this->decimalString($obligation->subject_quantity);
 
-        if ($current !== null && ! Quantity::isValid($current, $obligation->quantityMode(), false)) {
+        if ($current !== null && bccomp($current, '0', 4) !== 0 && ! Quantity::isValid($current, $obligation->quantityMode(), false)) {
             throw ValidationException::withMessages([
                 'quantity' => 'Review the outstanding quantity first. Whole-unit items cannot have a fractional quantity.',
             ]);
@@ -132,6 +136,21 @@ class RecordObligationEvent
         $decreaseEvents = $kind === ObligationKind::Asset
             ? ['returned', 'partially_returned', 'replaced']
             : ['progress', 'fulfilled'];
+
+        if ($eventType === 'waived') {
+            if (in_array($obligation->status, ['settled', 'waived'], true)) {
+                throw ValidationException::withMessages(['event_type' => 'This obligation is already resolved.']);
+            }
+            $obligation->status = 'waived';
+            $obligation->settled_at = now();
+            // Record how much was waived, then clear the outstanding balance
+            // so totals treat the obligation as resolved.
+            $waivedQuantity = $current;
+            $obligation->current_subject_quantity = Decimal::normalise('0');
+            $obligation->save();
+
+            return [$waivedQuantity, 'waived'];
+        }
 
         if (in_array($eventType, $increaseEvents, true)) {
             if ($quantity === null) {

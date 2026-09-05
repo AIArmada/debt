@@ -1,6 +1,6 @@
 <div class="mx-auto w-full max-w-2xl" wire:poll.30s>
     <div class="mb-7">
-        <div class="flex items-start justify-between gap-4"><div class="flex items-start gap-4"><span class="app-page-icon hidden shrink-0 sm:inline-flex"><flux:icon name="bell" class="size-6" /></span><div><div class="app-eyebrow">Stay informed</div><flux:heading size="xl" class="mt-2 text-3xl tracking-tight">Notifications</flux:heading><flux:text class="mt-2 leading-6">Important record activity appears here and is also available through the API.</flux:text></div></div><x-status-badge tone="success" :label="$unreadCount.' unread'" /></div>
+        <div class="flex flex-col items-start gap-3 sm:flex-row sm:items-start sm:justify-between"><div class="flex min-w-0 items-start gap-4"><span class="app-page-icon hidden shrink-0 sm:inline-flex"><flux:icon name="bell" class="size-6" /></span><div class="min-w-0"><div class="app-eyebrow">Stay informed</div><flux:heading size="xl" class="mt-2 text-3xl tracking-tight">Notifications</flux:heading><flux:text class="mt-2 leading-6">Important record activity appears here and is also available through the API.</flux:text></div></div><x-status-badge tone="success" :label="$unreadCount.' unread'" /></div>
     </div>
 
     @if (session('notification-settings-saved'))
@@ -28,8 +28,8 @@
         <div class="border-b border-zinc-200 px-5 py-4 dark:border-zinc-700"><flux:heading size="lg">Recent notifications</flux:heading></div>
         <div class="divide-y divide-zinc-200 dark:divide-zinc-700">
             @forelse ($notifications as $notification)
-                <div class="flex items-center justify-between gap-4 px-5 py-4">
-                    <div>
+                <div class="flex flex-col items-start gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="min-w-0">
                         <div class="font-medium">{{ $notification->data['title'] ?? 'Private reminder' }}</div>
                         <div class="mt-1 text-sm text-zinc-500">{{ $notification->created_at->format('d M Y, H:i') }}</div>
                     </div>
