@@ -1,8 +1,10 @@
 <?php
 
+use App\Models\BankImport;
 use App\Models\FinancialProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 
 pest()->use(RefreshDatabase::class);
 
@@ -46,4 +48,31 @@ test('authenticated export contains owned data without private storage paths', f
 
 test('export requires authentication', function () {
     $this->get(route('data.export'))->assertRedirect(route('login'));
+});
+
+test('authenticated export includes bank import media metadata', function () {
+    $user = User::factory()->create();
+    $profile = FinancialProfile::query()->where('owner_user_id', $user->id)->firstOrFail();
+    $import = $profile->bankImports()->create([
+        'uploaded_by_user_id' => $user->id,
+        'format' => 'csv',
+        'currency' => 'MYR',
+        'status' => 'processed',
+        'row_count' => 0,
+        'matched_count' => 0,
+    ]);
+    $file = UploadedFile::fake()->createWithContent('statement.csv', "date,description,amount\n");
+    $import->addMedia($file)
+        ->usingFileName('statement.csv')
+        ->withCustomProperties(['original_filename' => 'statement.csv'])
+        ->toMediaCollection(BankImport::MEDIA_COLLECTION);
+    $media = $import->mediaFile();
+
+    $response = $this->actingAs($user)->get(route('data.export'));
+    $payload = json_decode($response->streamedContent(), true, 512, JSON_THROW_ON_ERROR);
+    $bankImport = $payload['profiles'][0]['bank_imports'][0];
+
+    expect($bankImport['original_filename'])->toBe('statement.csv')
+        ->and($bankImport['mime_type'])->toBe($media?->mime_type)
+        ->and($bankImport['size_bytes'])->toBe($media?->size);
 });

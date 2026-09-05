@@ -45,6 +45,16 @@ class BankImport extends Model implements HasMedia
         });
     }
 
+    protected function mimeType(): Attribute
+    {
+        return Attribute::get(fn (): ?string => $this->mediaFile()?->mime_type);
+    }
+
+    protected function sizeBytes(): Attribute
+    {
+        return Attribute::get(fn (): ?int => $this->mediaFile()?->size);
+    }
+
     /** @return BelongsTo<FinancialProfile, $this> */
     public function profile(): BelongsTo
     {
