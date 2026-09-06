@@ -3,13 +3,13 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Domain\Enums\MemberRole;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -54,21 +54,16 @@ class User extends Authenticatable implements PasskeyUser
     protected static function booted(): void
     {
         static::created(function (self $user): void {
-            $user->financialProfiles()->create([
+            $profile = $user->financialProfiles()->create([
                 'name' => 'Personal',
-                'type' => 'personal',
                 'base_currency' => 'MYR',
                 'timezone' => 'Asia/Kuala_Lumpur',
             ]);
-        });
-
-        static::deleting(function (self $user): void {
-            $profileIds = $user->financialProfiles()->pluck('id');
-            Document::query()->whereIn('profile_id', $profileIds)->lazyById(100)->each->delete();
-            BankImport::query()->whereIn('profile_id', $profileIds)->lazyById(100)->each->delete();
-            $user->notifications()->delete();
-            $user->pushSubscriptions()->delete();
-            $user->notificationPreference()->delete();
+            $profile->members()->forceCreate([
+                'user_id' => $user->getKey(),
+                'role' => MemberRole::Owner,
+                'accepted_at' => now(),
+            ]);
         });
     }
 
@@ -76,18 +71,6 @@ class User extends Authenticatable implements PasskeyUser
     public function financialProfiles(): HasMany
     {
         return $this->hasMany(FinancialProfile::class, 'owner_user_id');
-    }
-
-    /** @return HasOne<NotificationPreference, $this> */
-    public function notificationPreference(): HasOne
-    {
-        return $this->hasOne(NotificationPreference::class);
-    }
-
-    /** @return HasMany<PushSubscription, $this> */
-    public function pushSubscriptions(): HasMany
-    {
-        return $this->hasMany(PushSubscription::class);
     }
 
     /**

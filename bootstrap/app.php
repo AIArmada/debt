@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\HandleApiToken;
 use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
@@ -15,12 +16,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withSchedule(function (Schedule $schedule): void {
-        $schedule->command('debt:run-schedules')->everyTenMinutes();
-        $schedule->command('debt:send-reminders')->dailyAt('08:00');
+        $schedule->command('reminders:send-due')->dailyAt('08:00');
     })
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->preventRequestForgery(except: ['webhooks/payments/*']);
         $middleware->append(SecurityHeaders::class);
+        $middleware->alias(['api.token' => HandleApiToken::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

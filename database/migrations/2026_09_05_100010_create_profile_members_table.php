@@ -13,7 +13,6 @@ return new class extends Migration
             $table->foreignUuid('profile_id')->constrained('financial_profiles')->cascadeOnDelete();
             $table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
             $table->string('role', 40);
-            $table->jsonb('permissions')->nullable();
             $table->timestamp('accepted_at')->nullable();
             $table->timestamp('revoked_at')->nullable();
             $table->timestamps();

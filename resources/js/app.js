@@ -1,67 +1,44 @@
-const base64UrlToUint8Array = (value) => {
-    const padding = '='.repeat((4 - (value.length % 4)) % 4);
-    const normalized = (value + padding).replace(/-/g, '+').replace(/_/g, '/');
-    const rawData = window.atob(normalized);
+window.dirtyForm = (state) => ({
+    state,
+    original: null,
+    initialized: false,
 
-    return Uint8Array.from([...rawData].map((character) => character.charCodeAt(0)));
-};
+    init() {
+        this.original = this.snapshot();
+        this.initialized = true;
+        this.beforeUnload = this.beforeUnload.bind(this);
+        this.confirmNavigation = this.confirmNavigation.bind(this);
 
-const registerPushSubscription = async (button) => {
-    if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
-        button.textContent = 'Push is not supported in this browser';
-        button.disabled = true;
+        this.$watch('state', () => this.syncWarning(), { deep: true });
+        window.addEventListener('beforeunload', this.beforeUnload);
+        document.addEventListener('livewire:navigate', this.confirmNavigation);
+        this.syncWarning();
+    },
 
-        return;
-    }
+    snapshot() {
+        return JSON.stringify(Object.fromEntries(
+            Object.entries(this.state).map(([key, value]) => [key, value ?? '']),
+        ));
+    },
 
-    button.disabled = true;
-    const originalText = button.textContent;
-    button.textContent = 'Enabling push…';
+    isDirty() {
+        return this.initialized && this.snapshot() !== this.original;
+    },
 
-    try {
-        const permission = await Notification.requestPermission();
-        if (permission !== 'granted') {
-            throw new Error('Notification permission was not granted.');
+    syncWarning() {
+        this.$root.dataset.dirty = this.isDirty() ? 'true' : 'false';
+    },
+
+    beforeUnload(event) {
+        if (this.isDirty()) {
+            event.preventDefault();
+            event.returnValue = '';
         }
+    },
 
-        const registration = await navigator.serviceWorker.register('/service-worker.js');
-        const subscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: base64UrlToUint8Array(button.dataset.pushPublicKey),
-        });
-        const response = await fetch(button.dataset.pushSubscribeUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                Accept: 'application/json',
-            },
-            body: JSON.stringify(subscription.toJSON()),
-        });
-        if (!response.ok) {
-            throw new Error('The browser subscription could not be saved.');
+    confirmNavigation(event) {
+        if (this.isDirty() && !window.confirm('You have unsaved changes. Leave this page?')) {
+            event.preventDefault();
         }
-
-        button.textContent = 'This browser is enabled';
-    } catch (error) {
-        button.textContent = error instanceof Error ? error.message : 'Push could not be enabled';
-        button.disabled = false;
-        setTimeout(() => {
-            button.textContent = originalText;
-        }, 4500);
-    }
-};
-
-const wirePushSubscriptionButton = () => {
-    document.querySelectorAll('[data-push-subscribe]').forEach((button) => {
-        if (button.dataset.pushWired === 'true') {
-            return;
-        }
-
-        button.dataset.pushWired = 'true';
-        button.addEventListener('click', () => registerPushSubscription(button));
-    });
-};
-
-document.addEventListener('DOMContentLoaded', wirePushSubscriptionButton);
-document.addEventListener('livewire:navigated', wirePushSubscriptionButton);
+    },
+});

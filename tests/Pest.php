@@ -3,7 +3,7 @@
 use Tests\TestCase;
 
 pest()->extend(TestCase::class)
-    ->in('Feature', 'Unit');
+    ->in('Feature');
 
 pest()->tia()
     ->defaultBranch('main')

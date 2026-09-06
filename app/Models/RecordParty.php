@@ -2,19 +2,27 @@
 
 namespace App\Models;
 
+use App\Domain\Enums\PartyRole;
+use Database\Factories\RecordPartyFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property PartyRole $role
+ * @property-read Party|null $party
+ */
 class RecordParty extends Model
 {
-    use HasUuids;
+    /** @use HasFactory<RecordPartyFactory> */
+    use HasFactory, HasUuids;
 
-    protected $fillable = ['record_id', 'party_id', 'created_by_user_id', 'role', 'is_primary', 'responsibility_scope', 'status', 'notes', 'valid_from', 'valid_to', 'visibility'];
+    protected $fillable = ['record_id', 'party_id', 'role', 'is_primary'];
 
     protected function casts(): array
     {
-        return ['is_primary' => 'boolean', 'valid_from' => 'date', 'valid_to' => 'date'];
+        return ['role' => PartyRole::class, 'is_primary' => 'boolean'];
     }
 
     /** @return BelongsTo<Record, $this> */

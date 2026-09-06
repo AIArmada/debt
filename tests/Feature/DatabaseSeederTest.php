@@ -1,5 +1,7 @@
 <?php
 
+use App\Domain\Enums\Direction;
+use App\Domain\Enums\ObligationStatus;
 use App\Models\FinancialProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -16,5 +18,6 @@ test('database seeder provides a ready to use demo account', function () {
     expect($user->name)->toBe('Test User')
         ->and(Hash::check('password', $user->password))->toBeTrue()
         ->and($profile->records()->count())->toBe(2)
-        ->and($profile->records()->where('title', 'Home financing')->firstOrFail()->obligations()->where('direction', 'payable')->value('title'))->toBe('Home financing balance');
+        ->and($profile->records()->where('title', 'Home financing')->firstOrFail()->obligations()->where('direction', Direction::Payable->value)->value('title'))->toBe('Home financing')
+        ->and($profile->records()->where('title', 'Home financing')->firstOrFail()->obligations()->firstOrFail()->status)->toBe(ObligationStatus::Open);
 });

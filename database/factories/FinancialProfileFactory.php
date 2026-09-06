@@ -21,11 +21,8 @@ class FinancialProfileFactory extends Factory
         return [
             'owner_user_id' => User::factory(),
             'name' => fake()->company().' financial profile',
-            'type' => 'personal',
             'base_currency' => 'MYR',
             'timezone' => 'Asia/Kuala_Lumpur',
-            'locale' => 'en-MY',
-            'is_islamic_mode_enabled' => false,
             'is_archived' => false,
         ];
     }

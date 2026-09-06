@@ -21,8 +21,7 @@ class RecordFactory extends Factory
         return [
             'profile_id' => FinancialProfile::factory(),
             'title' => fake()->sentence(3),
-            'description' => fake()->optional()->sentence(),
-            'sensitivity' => 'private',
+            'note' => fake()->optional()->sentence(),
             'is_archived' => false,
         ];
     }

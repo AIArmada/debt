@@ -6,38 +6,47 @@
     <body class="app-body min-h-screen antialiased">
         <flux:sidebar sticky collapsible="mobile" class="border-e border-zinc-200/80 bg-white/80 shadow-[4px_0_24px_rgba(42,67,56,0.035)] backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-950/80 dark:shadow-[4px_0_24px_rgba(0,0,0,0.18)]">
             <flux:sidebar.header>
-                <x-app-logo :sidebar="true" href="{{ route('dashboard') }}" wire:navigate />
+                <x-app-logo :sidebar="true" href="{{ route('home') }}" wire:navigate />
                 <div class="ms-auto flex items-center gap-1">
-                    <livewire:notifications.bell />
                     <flux:sidebar.collapse class="lg:hidden" />
                 </div>
             </flux:sidebar.header>
 
+            @php($currentProfile = request()->route('profile'))
+            @php($accessibleProfiles = app(\App\Services\ProfileAccess::class)->accessibleProfiles(auth()->user())->get())
+            <div class="px-3 py-3">
+                <flux:dropdown align="start">
+                    <flux:button variant="subtle" class="w-full justify-between" data-test="profile-switcher">
+                        <span class="truncate">{{ $currentProfile instanceof \App\Models\FinancialProfile ? $currentProfile->name : 'Your profiles' }}</span>
+                        <flux:icon name="chevron-down" class="size-4" />
+                    </flux:button>
+                    <flux:menu>
+                        @foreach ($accessibleProfiles as $accessibleProfile)
+                            <flux:menu.item :href="route('promises.index', ['profile' => $accessibleProfile])" wire:navigate>{{ $accessibleProfile->name }}</flux:menu.item>
+                        @endforeach
+                    </flux:menu>
+                </flux:dropdown>
+            </div>
+
             <flux:sidebar.nav>
                 <flux:sidebar.group :heading="__('Platform')" class="grid">
-                    <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
-                        {{ __('Dashboard') }}
+                    <flux:sidebar.item icon="home" :href="route('home')" :current="request()->routeIs('promises.*')" wire:navigate>
+                        {{ __('Home') }}
                     </flux:sidebar.item>
-                    <flux:sidebar.item icon="wallet" :href="route('records.index')" :current="request()->routeIs('records.*')" wire:navigate>
-                        {{ __('Records') }}
+                    <flux:sidebar.item icon="user-group" :href="$currentProfile ? route('people.index', ['profile' => $currentProfile]) : route('home')" :current="request()->routeIs('people.*')" wire:navigate>
+                        {{ __('People') }}
                     </flux:sidebar.item>
-                    <flux:sidebar.item icon="user-group" :href="route('parties.index')" :current="request()->routeIs('parties.*')" wire:navigate>
-                        {{ __('Parties') }}
+                    <flux:sidebar.item icon="arrow-up-tray" :href="$currentProfile ? route('imports.index', ['profile' => $currentProfile]) : route('home')" :current="request()->routeIs('imports.*')" wire:navigate>
+                        {{ __('Imports') }}
                     </flux:sidebar.item>
-                    <flux:sidebar.item icon="squares-2x2" :href="route('financial-profiles.index')" :current="request()->routeIs('financial-profiles.*')" wire:navigate>
-                        {{ __('Profiles') }}
+                    <flux:sidebar.item icon="chart-bar" :href="$currentProfile ? route('plans.index', ['profile' => $currentProfile]) : route('home')" :current="request()->routeIs('plans.*')" wire:navigate>
+                        {{ __('Plans') }}
                     </flux:sidebar.item>
-                    <flux:sidebar.item icon="chart-bar" :href="route('plans.index')" :current="request()->routeIs('plans.*')" wire:navigate>
-                        {{ __('Budget & plans') }}
+                    <flux:sidebar.item icon="arrow-path-rounded-square" :href="$currentProfile ? route('exchange-rates.index', ['profile' => $currentProfile]) : route('home')" :current="request()->routeIs('exchange-rates.*')" wire:navigate>
+                        {{ __('Currency') }}
                     </flux:sidebar.item>
-                    <flux:sidebar.item icon="arrow-down-tray" :href="route('imports.index')" :current="request()->routeIs('imports.*')" wire:navigate>
-                        {{ __('Bank imports') }}
-                    </flux:sidebar.item>
-                    <flux:sidebar.item icon="bell" :href="route('notifications.settings')" :current="request()->routeIs('notifications.*')" wire:navigate>
-                        {{ __('Notifications') }}
-                    </flux:sidebar.item>
-                    <flux:sidebar.item icon="link" :href="route('integrations.index')" :current="request()->routeIs('integrations.*')" wire:navigate>
-                        {{ __('Connections') }}
+                    <flux:sidebar.item icon="cog" :href="$currentProfile instanceof \App\Models\FinancialProfile ? route('profile-settings.edit', ['profile' => $currentProfile]) : route('profile.edit')" :current="request()->routeIs('profile.edit', 'profile-settings.*', 'profile-tokens.*')" wire:navigate>
+                        {{ __('Settings') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>
@@ -52,8 +61,6 @@
             <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
 
             <flux:spacer />
-
-            <livewire:notifications.bell />
 
             <flux:dropdown position="top" align="end">
                 <flux:profile

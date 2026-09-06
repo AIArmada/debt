@@ -28,22 +28,4 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
-    'slack' => [
-        'notifications' => [
-            'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
-            'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
-        ],
-    ],
-
-    'payments' => [
-        'webhook_secret' => env('PAYMENT_WEBHOOK_SECRET'),
-        'default_provider' => env('PAYMENT_DEFAULT_PROVIDER', 'sandbox'),
-    ],
-
-    'push' => [
-        'gateway_url' => env('PUSH_GATEWAY_URL'),
-        'gateway_token' => env('PUSH_GATEWAY_TOKEN'),
-        'public_key' => env('PUSH_PUBLIC_KEY'),
-    ],
-
 ];

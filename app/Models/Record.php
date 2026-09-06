@@ -2,20 +2,24 @@
 
 namespace App\Models;
 
+use App\Domain\Enums\MovementStatus;
+use App\Domain\Enums\PartyRole;
 use Database\Factories\RecordFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Record extends Model
 {
     /** @use HasFactory<RecordFactory> */
     use HasFactory, HasUuids;
 
-    protected $fillable = ['title', 'description', 'sensitivity', 'is_archived'];
+    protected $fillable = ['title', 'note', 'is_archived'];
 
     protected function casts(): array
     {
@@ -35,18 +39,10 @@ class Record extends Model
     }
 
     /** @return HasManyThrough<Party, RecordParty, $this> */
-    public function parties(): HasManyThrough
+    public function counterparties(): HasManyThrough
     {
-        return $this->hasManyThrough(Party::class, RecordParty::class, 'record_id', 'id', 'id', 'party_id');
-    }
-
-    public function primaryParty(): ?Party
-    {
-        $link = $this->relationLoaded('partyLinks')
-            ? $this->partyLinks->first(fn (RecordParty $link): bool => $link->is_primary && $link->role === 'other_party')
-            : $this->partyLinks()->where('is_primary', true)->where('role', 'other_party')->with('party')->first();
-
-        return $link?->relationLoaded('party') ? $link->party : $link?->party()->first();
+        return $this->hasManyThrough(Party::class, RecordParty::class, 'record_id', 'id', 'id', 'party_id')
+            ->where('record_parties.role', PartyRole::Counterparty->value);
     }
 
     /** @return HasMany<Obligation, $this> */
@@ -55,29 +51,40 @@ class Record extends Model
         return $this->hasMany(Obligation::class)->oldest('created_at')->oldest('id');
     }
 
-    /** @return HasManyThrough<Document, DocumentLink, $this> */
-    public function documents(): HasManyThrough
+    /** @return MorphMany<Attachment, $this> */
+    public function attachments(): MorphMany
     {
-        return $this->hasManyThrough(Document::class, DocumentLink::class, 'record_id', 'id', 'id', 'document_id');
+        return $this->morphMany(Attachment::class, 'attachable');
     }
 
-    /** @return HasMany<Obligation, $this> */
-    public function openObligations(): HasMany
+    public function hasConfirmedMovements(): bool
     {
-        return $this->obligations()->where('status', 'active');
+        return $this->obligations()
+            ->whereHas('moneyMovements', fn (Builder $query): Builder => $query->where('status', MovementStatus::Confirmed->value))
+            ->exists()
+            || $this->obligations()
+                ->whereHas('quantityReturns', fn (Builder $query): Builder => $query->where('status', MovementStatus::Confirmed->value))
+                ->exists();
     }
 
-    public function stateLabel(): string
+    public function canBeDeleted(): bool
     {
-        $obligations = $this->relationLoaded('obligations') ? $this->obligations : $this->obligations()->get();
-        $open = $obligations->where('status', 'active')->count();
-        $resolved = $obligations->whereIn('status', ['settled', 'waived'])->count();
+        if ($this->hasConfirmedMovements()) {
+            return false;
+        }
 
-        return match (true) {
-            $obligations->isEmpty() => 'No obligations yet',
-            $open === 0 => 'All obligations resolved',
-            $resolved > 0 => 'Partly resolved',
-            default => 'Open',
-        };
+        if ($this->obligations()->whereHas('quantityReturns')->exists()) {
+            return false;
+        }
+
+        return ! $this->hasAnyAttachments();
+    }
+
+    private function hasAnyAttachments(): bool
+    {
+        return $this->attachments()->exists()
+            || $this->obligations()->whereHas('attachments')->exists()
+            || $this->obligations()->whereHas('moneyMovements', fn (Builder $query): Builder => $query->whereHas('attachments'))->exists()
+            || $this->obligations()->whereHas('quantityReturns', fn (Builder $query): Builder => $query->whereHas('attachments'))->exists();
     }
 }

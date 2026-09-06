@@ -12,8 +12,11 @@ test('guest root shows the product front page', function () {
         ->assertSee('Private by default');
 });
 
-test('authenticated user is sent to the dashboard', function () {
-    $this->actingAs(User::factory()->create())
+test('authenticated user is sent to their promises home', function () {
+    $user = User::factory()->create();
+    $profile = $user->financialProfiles()->firstOrFail();
+
+    $this->actingAs($user)
         ->get(route('home'))
-        ->assertRedirect(route('dashboard'));
+        ->assertRedirect(route('promises.index', ['profile' => $profile]));
 });

@@ -12,8 +12,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('profile_id')->constrained('financial_profiles')->cascadeOnDelete();
             $table->string('title');
-            $table->text('description')->nullable();
-            $table->string('sensitivity', 20)->default('private');
+            $table->text('note')->nullable();
             $table->boolean('is_archived')->default(false);
             $table->timestamps();
             $table->index(['profile_id', 'is_archived']);

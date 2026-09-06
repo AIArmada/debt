@@ -201,7 +201,7 @@ new #[Title('Security settings')] class extends Component {
             />
 
             <div class="flex items-center gap-4">
-                <flux:button variant="primary" type="submit" data-test="update-password-button">
+                <flux:button variant="primary" type="submit" wire:loading.attr="disabled" data-test="update-password-button">
                     {{ __('Save') }}
                 </flux:button>
             </div>
@@ -223,6 +223,7 @@ new #[Title('Security settings')] class extends Component {
                                 <flux:button
                                     variant="danger"
                                     wire:click="disable"
+                                    wire:loading.attr="disabled"
                                 >
                                     {{ __('Disable 2FA') }}
                                 </flux:button>
@@ -240,6 +241,7 @@ new #[Title('Security settings')] class extends Component {
                                 <flux:button
                                     variant="primary"
                                     wire:click="$dispatch('start-two-factor-setup')"
+                                    wire:loading.attr="disabled"
                                 >
                                     {{ __('Enable 2FA') }}
                                 </flux:button>
@@ -288,6 +290,7 @@ new #[Title('Security settings')] class extends Component {
                                     icon="trash"
                                     icon:variant="outline"
                                     wire:click="confirmDelete({{ $passkey['id'] }})"
+                                    wire:loading.attr="disabled"
                                     class="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50"
                                 />
                             </div>
@@ -326,12 +329,14 @@ new #[Title('Security settings')] class extends Component {
                 <flux:button
                     variant="outline"
                     wire:click="closeDeleteModal"
+                    wire:loading.attr="disabled"
                 >
                     {{ __('Cancel') }}
                 </flux:button>
                 <flux:button
                     variant="danger"
                     wire:click="deletePasskey"
+                    wire:loading.attr="disabled"
                 >
                     {{ __('Remove passkey') }}
                 </flux:button>

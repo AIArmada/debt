@@ -2,21 +2,21 @@
 
 namespace App\Providers;
 
-use App\Models\Document;
+use App\Domain\Queries\OutstandingBalance;
+use App\Models\Attachment;
 use App\Models\FinancialProfile;
 use App\Models\Obligation;
+use App\Models\Party;
 use App\Models\Record;
-use App\Policies\DocumentPolicy;
+use App\Policies\AttachmentPolicy;
 use App\Policies\FinancialProfilePolicy;
 use App\Policies\ObligationPolicy;
+use App\Policies\PartyPolicy;
 use App\Policies\RecordPolicy;
 use Carbon\CarbonImmutable;
-use Illuminate\Cache\RateLimiting\Limit;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -27,7 +27,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->scoped(OutstandingBalance::class);
     }
 
     /**
@@ -36,19 +36,11 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
-        Gate::policy(Document::class, DocumentPolicy::class);
         Gate::policy(FinancialProfile::class, FinancialProfilePolicy::class);
+        Gate::policy(Attachment::class, AttachmentPolicy::class);
         Gate::policy(Obligation::class, ObligationPolicy::class);
+        Gate::policy(Party::class, PartyPolicy::class);
         Gate::policy(Record::class, RecordPolicy::class);
-        RateLimiter::for('api', fn (Request $request): Limit => Limit::perMinute(60)->by(
-            (string) ($request->user()?->getAuthIdentifier() ?? $request->ip()),
-        ));
-        RateLimiter::for('exports', fn (Request $request): Limit => Limit::perMinutes(10, 3)->by(
-            (string) ($request->user()?->getAuthIdentifier() ?? $request->ip()),
-        ));
-        RateLimiter::for('invitations', fn (Request $request): Limit => Limit::perMinutes(10, 10)->by(
-            (string) ($request->user()?->getAuthIdentifier() ?? $request->ip()),
-        ));
     }
 
     /**

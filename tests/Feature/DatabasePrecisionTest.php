@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 pest()->use(RefreshDatabase::class);
 
-test('domain schema does not use floating point columns', function () {
+test('promise schema does not use floating point columns', function () {
     $floatingPointColumns = DB::select(
         "select columns.table_name, columns.column_name, columns.data_type as column_type
         from information_schema.columns
@@ -21,22 +21,34 @@ test('domain schema does not use floating point columns', function () {
     expect($floatingPointColumns)->toBeEmpty();
 });
 
-test('money columns are integer minor units', function () {
-    foreach ([
-        'obligations' => ['original_amount', 'current_principal_balance', 'current_total_balance', 'minimum_payment_amount'],
-        'financial_transactions' => ['amount', 'principal_amount', 'interest_amount', 'fee_amount', 'balance_before', 'balance_after'],
-        'payment_schedules' => ['amount', 'per_payment_limit', 'period_limit'],
-        'repayment_installments' => ['expected_amount', 'principal_amount', 'interest_amount', 'fee_amount'],
-        'budget_periods' => ['emergency_reserve_amount', 'available_for_obligations_amount'],
-        'cash_flow_entries' => ['amount'],
-    ] as $table => $columns) {
-        foreach ($columns as $column) {
-            expect(Schema::getColumnType($table, $column))->toBe('int8', "{$table}.{$column} must be stored as a PostgreSQL signed integer minor unit.");
-        }
-    }
+test('money is stored as integer minor units and quantities use fixed precision', function () {
+    expect(Schema::getColumnType('money_movements', 'amount_minor'))->toBe('int8')
+        ->and(Schema::getColumnType('quantity_subjects', 'total'))->toBe('numeric')
+        ->and(Schema::hasColumn('quantity_subjects', 'returned'))->toBeFalse()
+        ->and(Schema::getColumnType('quantity_returns', 'quantity'))->toBe('numeric');
 });
 
-test('financial transactions have one current entry type contract', function () {
-    expect(Schema::hasColumn('financial_transactions', 'entry_type'))->toBeTrue()
-        ->and(Schema::hasColumn('financial_transactions', 'type'))->toBeFalse();
+test('the schema contains only the from-scratch promise surface', function () {
+    foreach ([
+        'obligation_terms',
+        'payment_schedules',
+        'financial_transactions',
+        'documents',
+        'integrations',
+    ] as $legacyTable) {
+        expect(Schema::hasTable($legacyTable))->toBeFalse($legacyTable.' must not exist.');
+    }
+
+    foreach ([
+        ['financial_profiles', 'type'],
+        ['records', 'description'],
+        ['records', 'sensitivity'],
+        ['profile_members', 'permissions'],
+        ['record_parties', 'status'],
+        ['obligations', 'tracking_mode'],
+        ['obligations', 'current_total_balance'],
+        ['obligations', 'currency_balances'],
+    ] as [$table, $column]) {
+        expect(Schema::hasColumn($table, $column))->toBeFalse($table.'.'.$column.' must not exist.');
+    }
 });

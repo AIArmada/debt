@@ -12,11 +12,8 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('owner_user_id')->constrained('users')->cascadeOnDelete();
             $table->string('name');
-            $table->string('type', 40);
             $table->string('base_currency', 3);
             $table->string('timezone')->default('UTC');
-            $table->string('locale', 16)->nullable();
-            $table->boolean('is_islamic_mode_enabled')->default(false);
             $table->boolean('is_archived')->default(false);
             $table->timestamps();
             $table->index(['owner_user_id', 'is_archived']);

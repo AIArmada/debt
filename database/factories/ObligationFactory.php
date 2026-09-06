@@ -2,6 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Domain\Enums\Direction;
+use App\Domain\Enums\ObligationStatus;
+use App\Domain\Enums\SubjectType;
 use App\Models\Obligation;
 use App\Models\Record;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -20,21 +23,11 @@ class ObligationFactory extends Factory
     {
         return [
             'record_id' => Record::factory(),
-            'direction' => 'payable',
-            'obligation_kind' => 'money',
-            'category' => 'personal_loan',
+            'direction' => Direction::Payable,
             'title' => fake()->sentence(3),
-            'description' => fake()->optional()->sentence(),
-            'status' => 'active',
-            'tracking_mode' => 'snapshot',
-            'currency' => 'MYR',
-            'original_amount' => 100000,
-            'current_principal_balance' => 100000,
-            'current_total_balance' => 100000,
-            'currency_opening_balances' => ['MYR' => 100000],
-            'currency_balances' => ['MYR' => 100000],
-            'data_confidence' => 'partial',
-            'is_interest_bearing' => false,
+            'status' => ObligationStatus::Open,
+            'subject_type' => SubjectType::Money,
+            'due_on' => null,
         ];
     }
 }
