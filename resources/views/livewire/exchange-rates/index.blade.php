@@ -8,8 +8,8 @@
 
     <section class="app-card rounded-2xl p-5 sm:p-7">
         <div class="grid gap-4 sm:grid-cols-3">
-            <div><flux:text>To pay</flux:text>@forelse ($converted['to_pay'] as $currency => $position)<div class="mt-2 text-2xl font-semibold">{{ \App\Domain\Money\Money::formatMinor($position['amount_minor'], $currency) }}</div><div class="text-xs text-zinc-500">Rate {{ $position['rate'] }} on {{ $position['rated_on'] }}@if ($position['stale']) · stale @endif</div>@empty<div class="mt-2 text-2xl font-semibold">—</div>@endforelse</div>
-            <div><flux:text>To receive</flux:text>@forelse ($converted['to_receive'] as $currency => $position)<div class="mt-2 text-2xl font-semibold text-cyan-800">{{ \App\Domain\Money\Money::formatMinor($position['amount_minor'], $currency) }}</div><div class="text-xs text-zinc-500">Rate {{ $position['rate'] }} on {{ $position['rated_on'] }}@if ($position['stale']) · stale @endif</div>@empty<div class="mt-2 text-2xl font-semibold">—</div>@endforelse</div>
+            <div><flux:text>To pay</flux:text>@forelse ($converted['to_pay'] as $currency => $position)<div class="mt-2 text-2xl font-semibold">{{ \App\Domain\Money\Money::display($position['amount_minor'], $currency) }}</div><div class="text-xs text-zinc-500">Rate {{ $position['rate'] }} on {{ $position['rated_on'] }}@if ($position['stale']) · stale @endif</div>@empty<div class="mt-2 text-2xl font-semibold">—</div>@endforelse</div>
+            <div><flux:text>To receive</flux:text>@forelse ($converted['to_receive'] as $currency => $position)<div class="mt-2 text-2xl font-semibold text-cyan-800">{{ \App\Domain\Money\Money::display($position['amount_minor'], $currency) }}</div><div class="text-xs text-zinc-500">Rate {{ $position['rate'] }} on {{ $position['rated_on'] }}@if ($position['stale']) · stale @endif</div>@empty<div class="mt-2 text-2xl font-semibold">—</div>@endforelse</div>
             <div><flux:text>Target currency</flux:text><div class="mt-2 text-2xl font-semibold">{{ $converted['target_currency'] }}</div><div class="text-xs text-zinc-500">Currencies are converted only here.</div></div>
         </div>
     </section>

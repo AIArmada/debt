@@ -89,7 +89,7 @@
                 <div class="text-sm text-zinc-500">{{ $obligation->direction->label() }}</div>
                 @foreach ($positions as $position)
                     <div wire:key="position-{{ $position['currency'] }}" class="mt-2">
-                        <div class="text-3xl font-semibold tracking-tight">{{ \App\Domain\Money\Money::formatMinor($position['amount'], $position['currency']) }}</div>
+                        <div class="text-3xl font-semibold tracking-tight">{{ \App\Domain\Money\Money::display($position['amount'], $position['currency']) }}</div>
                         <div class="mt-1 text-sm {{ $position['direction'] === \App\Domain\Enums\Direction::Receivable ? 'text-cyan-700' : 'text-emerald-700' }}">{{ $position['label'] }} · {{ $position['currency'] }}</div>
                     </div>
                 @endforeach
@@ -253,7 +253,7 @@
                         @endif
                     </div>
                     <div class="flex items-center gap-4 sm:text-right">
-                        <div class="font-semibold">{{ \App\Domain\Money\Money::formatMinor($movement->amount_minor, $movement->currency) }}</div>
+                        <div class="font-semibold">{{ \App\Domain\Money\Money::display($movement->amount_minor, $movement->currency) }}</div>
                         @can('update', $record)
                             <button type="button" wire:click="prepareMovementEvidence('{{ $movement->id }}')" wire:loading.attr="disabled" class="text-xs font-semibold text-emerald-700 hover:underline">Attach</button>
                         @endcan

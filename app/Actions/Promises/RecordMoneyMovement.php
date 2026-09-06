@@ -8,6 +8,7 @@ use App\Domain\Enums\MovementStatus;
 use App\Domain\Enums\SubjectType;
 use App\Domain\Obligations\ObligationStatusMachine;
 use App\Domain\Queries\OutstandingBalance;
+use App\Domain\StringNormalizer;
 use App\Models\MoneyMovement;
 use App\Models\Obligation;
 use App\Models\User;
@@ -45,7 +46,7 @@ final class RecordMoneyMovement
                 throw ValidationException::withMessages(['amount' => 'Enter a positive amount.']);
             }
 
-            $currency = strtoupper($data->currency);
+            $currency = StringNormalizer::uppercase($data->currency);
             $balances = $this->outstandingBalance->forObligation($lockedObligation);
             $currentBalance = $balances[$currency] ?? 0;
             $entry = $data->entry ?? MoneyEntry::settlementFor($lockedObligation->direction, $currentBalance);

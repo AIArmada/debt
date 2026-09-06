@@ -16,6 +16,7 @@ use App\Models\User;
 use App\Services\ActivityLogger;
 use App\Services\ProfileAccess;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\DB;
 
 final class GeneratePlan
@@ -41,7 +42,7 @@ final class GeneratePlan
                 ->where('is_archived', false)
                 ->with('obligations')
                 ->get()
-                ->flatMap(static fn (Record $record) => $record->obligations)
+                ->flatMap(static fn (Record $record): EloquentCollection => $record->obligations)
                 ->filter(static fn (Obligation $obligation): bool => $obligation->subject_type === SubjectType::Money && $obligation->status === ObligationStatus::Open && $obligation->direction === Direction::Payable)
                 ->map(function (Obligation $obligation) use ($period): array {
                     $balance = $this->outstandingBalance->forObligation($obligation)[$period->currency] ?? 0;

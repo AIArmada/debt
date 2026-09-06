@@ -6,6 +6,7 @@ use App\Actions\Promises\Data\ImportCsvData;
 use App\Domain\Enums\MemberRole;
 use App\Domain\Money\Currency;
 use App\Domain\Queries\ImportMatcher;
+use App\Domain\StringNormalizer;
 use App\Models\FinancialProfile;
 use App\Models\ImportBatch;
 use App\Models\User;
@@ -50,11 +51,11 @@ final class ImportCsv
             $batch = ImportBatch::query()->create(['profile_id' => $profile->getKey(), 'source_hash' => $hash, 'filename' => $data->file->getClientOriginalName(), 'row_count' => 0]);
             $count = 0;
             while (($row = fgetcsv($handle)) !== false) {
-                if ($row === [null] || count(array_filter($row, static fn ($value): bool => $value !== null && trim((string) $value) !== '')) === 0) {
+                if ($row === [null] || count(array_filter($row, static fn (mixed $value): bool => $value !== null && StringNormalizer::trimmed((string) $value) !== '')) === 0) {
                     continue;
                 }
                 $amount = filter_var($row[$positions['amount_minor']] ?? null, FILTER_VALIDATE_INT);
-                $currency = strtoupper(trim((string) ($row[$positions['currency']] ?? '')));
+                $currency = StringNormalizer::uppercaseTrimmed((string) ($row[$positions['currency']] ?? ''));
                 if ($amount === false || $amount <= 0 || ! Currency::isSupported($currency)) {
                     throw ValidationException::withMessages(['file' => 'Every row needs a positive amount and supported currency.']);
                 }
@@ -62,7 +63,7 @@ final class ImportCsv
                     'occurred_on' => Carbon::parse((string) $row[$positions['occurred_on']])->toDateString(),
                     'amount_minor' => $amount,
                     'currency' => $currency,
-                    'description' => trim((string) ($row[$positions['description']] ?? '')) ?: null,
+                    'description' => StringNormalizer::optionalTrimmed($row[$positions['description']] ?? null),
                 ]);
                 $this->importMatcher->suggest($importRow);
                 $count++;

@@ -7,6 +7,11 @@ use Illuminate\Validation\ValidationException;
 
 final class QuantityValidator
 {
+    public static function isZero(string $quantity): bool
+    {
+        return preg_match('/^0+(?:\.0{1,4})?$/', $quantity) === 1;
+    }
+
     /**
      * @param  numeric-string  $remaining
      * @return numeric-string
@@ -17,7 +22,7 @@ final class QuantityValidator
             throw ValidationException::withMessages(['quantity' => 'Enter a valid quantity.']);
         }
 
-        if (preg_match('/^0+(?:\.0{1,4})?$/', $quantity) === 1) {
+        if (self::isZero($quantity)) {
             throw ValidationException::withMessages(['quantity' => 'Enter a positive quantity.']);
         }
 

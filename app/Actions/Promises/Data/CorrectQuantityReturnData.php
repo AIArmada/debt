@@ -2,6 +2,8 @@
 
 namespace App\Actions\Promises\Data;
 
+use App\Domain\Quantities\QuantityValidator;
+use App\Domain\StringNormalizer;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
@@ -33,9 +35,9 @@ final readonly class CorrectQuantityReturnData
         /** @var array{quantity:string, returnedOn:string, note:string|null, reason:string} $validated */
         $validated = Validator::make($input, self::rules())->validate();
         $quantity = $validated['quantity'];
-        $reason = trim($validated['reason']);
+        $reason = StringNormalizer::trimmed($validated['reason']);
 
-        if (preg_match('/^0+(?:\.0{1,4})?$/', $quantity) === 1) {
+        if (QuantityValidator::isZero($quantity)) {
             throw ValidationException::withMessages(['quantity' => 'Enter a positive quantity.']);
         }
 
@@ -46,7 +48,7 @@ final readonly class CorrectQuantityReturnData
         return new self(
             $quantity,
             $validated['returnedOn'],
-            filled($validated['note'] ?? null) ? trim((string) $validated['note']) : null,
+            StringNormalizer::optionalTrimmed($validated['note'] ?? null),
             $reason,
         );
     }

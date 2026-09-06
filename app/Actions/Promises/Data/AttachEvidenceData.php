@@ -3,6 +3,7 @@
 namespace App\Actions\Promises\Data;
 
 use App\Domain\Enums\AttachmentCategory;
+use App\Domain\StringNormalizer;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -39,7 +40,7 @@ final readonly class AttachEvidenceData
         /** @var array{file:UploadedFile|null, linkUrl:string|null, category:string} $validated */
         $validated = Validator::make(array_merge($input, ['file' => $file]), self::rules())->validate();
         $file = $validated['file'] ?? null;
-        $linkUrl = filled($validated['linkUrl'] ?? null) ? trim((string) $validated['linkUrl']) : null;
+        $linkUrl = StringNormalizer::optionalTrimmed($validated['linkUrl'] ?? null);
 
         if ($file === null && $linkUrl === null) {
             throw ValidationException::withMessages(['evidence' => 'Add a file or link.']);

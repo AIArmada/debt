@@ -4,6 +4,7 @@ namespace App\Domain\Queries;
 
 use App\Domain\Enums\Direction;
 use App\Domain\Money\Currency;
+use App\Domain\StringNormalizer;
 use App\Models\ExchangeRate;
 use App\Models\FinancialProfile;
 use Brick\Math\BigDecimal;
@@ -19,7 +20,7 @@ final class ConvertedView
      */
     public function forProfile(FinancialProfile $profile, string $target, ?string $rateId = null): array
     {
-        $target = strtoupper($target);
+        $target = StringNormalizer::uppercase($target);
         if (! Currency::isSupported($target)) {
             throw ValidationException::withMessages(['target' => 'Choose a supported target currency.']);
         }
@@ -32,7 +33,7 @@ final class ConvertedView
             }
             $bucket = Direction::from((string) $row->direction)->bucketForBalance($balance);
             $rate = $this->rate((string) $row->currency, $target, $rateId);
-            if ($rate === null && strtoupper((string) $row->currency) !== $target) {
+            if ($rate === null && StringNormalizer::uppercase((string) $row->currency) !== $target) {
                 throw ValidationException::withMessages(['rate' => "No saved rate exists for {$row->currency} to {$target}."]);
             }
             $rateValue = '1.00000000';
@@ -58,11 +59,11 @@ final class ConvertedView
 
     private function rate(string $from, string $to, ?string $rateId): ?ExchangeRate
     {
-        if (strtoupper($from) === $to) {
+        if (StringNormalizer::uppercase($from) === $to) {
             return null;
         }
 
-        $query = ExchangeRate::query()->where('from_currency', strtoupper($from))->where('to_currency', $to);
+        $query = ExchangeRate::query()->where('from_currency', StringNormalizer::uppercase($from))->where('to_currency', $to);
         if ($rateId !== null) {
             return $query->whereKey($rateId)->first();
         }

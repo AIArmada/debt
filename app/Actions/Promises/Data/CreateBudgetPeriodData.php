@@ -3,6 +3,7 @@
 namespace App\Actions\Promises\Data;
 
 use App\Domain\Money\Currency;
+use App\Domain\StringNormalizer;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -28,6 +29,6 @@ final readonly class CreateBudgetPeriodData
     {
         $validated = Validator::make($input, self::rules())->validate();
 
-        return new self((string) $validated['startsOn'], (string) $validated['endsOn'], (int) $validated['incomeMinor'], (int) $validated['essentialMinor'], (int) $validated['reserveMinor'], strtoupper((string) $validated['currency']));
+        return new self((string) $validated['startsOn'], (string) $validated['endsOn'], (int) $validated['incomeMinor'], (int) $validated['essentialMinor'], (int) $validated['reserveMinor'], StringNormalizer::uppercase((string) $validated['currency']));
     }
 }

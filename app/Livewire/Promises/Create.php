@@ -7,16 +7,18 @@ use App\Actions\Promises\Data\CreatePromiseData;
 use App\Domain\Enums\Direction;
 use App\Domain\Enums\PartyStatus;
 use App\Domain\Enums\SubjectType;
+use App\Domain\StringNormalizer;
 use App\Models\FinancialProfile;
 use App\Models\Party;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 
-class Create extends Component
+final class Create extends Component
 {
     public FinancialProfile $profile;
 
@@ -126,7 +128,7 @@ class Create extends Component
     /** @return Collection<int, Party> */
     private function partyMatches(): Collection
     {
-        $term = trim($this->partyName);
+        $term = StringNormalizer::trimmed($this->partyName);
         if ($term === '' || $this->partyId !== null) {
             return new Collection;
         }
@@ -134,7 +136,7 @@ class Create extends Component
         return $this->profile->parties()
             ->select(['id', 'profile_id', 'display_name', 'kind', 'status'])
             ->where('status', PartyStatus::Active->value)
-            ->where(function ($query) use ($term): void {
+            ->where(function (Builder $query) use ($term): void {
                 $query->where('display_name', 'like', "{$term}%");
             })
             ->orderBy('display_name')

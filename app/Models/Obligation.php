@@ -24,6 +24,7 @@ use Illuminate\Support\Carbon;
  * @property-read Collection<int, MoneyMovement> $moneyMovements
  * @property-read Collection<int, QuantityReturn> $quantityReturns
  * @property-read Collection<int, Attachment> $attachments
+ * @property-read Collection<int, Reminder> $reminders
  */
 class Obligation extends Model
 {

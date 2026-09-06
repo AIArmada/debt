@@ -36,6 +36,7 @@ use App\Domain\Enums\Direction;
 use App\Domain\Enums\SubjectType;
 use App\Domain\Queries\OutstandingBalance;
 use App\Domain\Queries\OutstandingQuantity;
+use App\Domain\Queries\PromiseShowData;
 use App\Domain\Queries\RecordActivity;
 use App\Domain\Queries\RecordStatusQuery;
 use App\Models\FinancialProfile;
@@ -43,14 +44,13 @@ use App\Models\Obligation;
 use App\Models\Record;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 
-class Show extends Component
+final class Show extends Component
 {
     use WithFileUploads;
 
@@ -168,11 +168,11 @@ class Show extends Component
         $this->redirectRoute('promises.index', ['profile' => $this->profile], navigate: true);
     }
 
-    public function restart(DeleteRecord $deleteRecord): void
+    public function restart(DeleteRecord $deleteRecord, PromiseShowData $promiseShowData): void
     {
         $user = Auth::user();
         abort_unless($user instanceof User, 401);
-        $query = $this->restartQuery();
+        $query = $promiseShowData->restartQuery($this->record);
         $deleteRecord->handle($user, $this->record);
         $this->redirectRoute('promises.create', ['profile' => $this->profile] + $query, navigate: true);
     }
@@ -209,11 +209,11 @@ class Show extends Component
         $this->evidenceReturnId = $returnId;
     }
 
-    public function saveEvidence(AttachEvidence $attachEvidence): void
+    public function saveEvidence(AttachEvidence $attachEvidence, PromiseShowData $promiseShowData): void
     {
         $user = Auth::user();
         abort_unless($user instanceof User, 401);
-        $attachEvidence->handle($user, $this->evidenceParent(), AttachEvidenceData::fromInput([
+        $attachEvidence->handle($user, $promiseShowData->evidenceParent($this->record, $this->evidenceMovementId, $this->evidenceReturnId), AttachEvidenceData::fromInput([
             'linkUrl' => $this->evidenceLinkUrl,
             'category' => $this->evidenceCategory,
         ], $this->evidenceFile));
@@ -359,11 +359,9 @@ class Show extends Component
         $this->record->refresh();
     }
 
-    public function render(OutstandingBalance $outstandingBalance, OutstandingQuantity $outstandingQuantity, RecordActivity $recordActivity, RecordStatusQuery $recordStatus): View
+    public function render(OutstandingBalance $outstandingBalance, OutstandingQuantity $outstandingQuantity, PromiseShowData $promiseShowData, RecordActivity $recordActivity, RecordStatusQuery $recordStatus): View
     {
-        $obligations = $this->record->obligations()
-            ->with(['moneySubject', 'quantitySubject', 'commitmentSubject', 'moneyMovements.recorder', 'moneyMovements.attachments', 'quantityReturns.recorder', 'quantityReturns.attachments', 'reminders'])
-            ->get();
+        $obligations = $promiseShowData->obligations($this->record);
         $this->record->loadMissing('attachments');
         $obligation = $obligations->firstOrFail();
         $balances = $obligation->subject_type === SubjectType::Money
@@ -373,7 +371,7 @@ class Show extends Component
             ? $outstandingQuantity->forObligation($obligation)
             : null;
         $positions = $obligation->subject_type === SubjectType::Money
-            ? $this->positions($obligation, $balances)
+            ? $promiseShowData->positions($obligation, $balances)
             : [];
 
         return view('livewire.promises.show', [
@@ -387,43 +385,6 @@ class Show extends Component
             'recordStatus' => $recordStatus->forRecord($this->record),
             'canDeleteRecord' => $this->record->canBeDeleted(),
         ])->layout('layouts.app', ['title' => $this->record->title]);
-    }
-
-    /** @return array<string, string> */
-    private function restartQuery(): array
-    {
-        $obligation = $this->record->obligations()
-            ->with(['quantitySubject', 'commitmentSubject', 'moneySubject'])
-            ->oldest('created_at')
-            ->oldest('id')
-            ->firstOrFail();
-        $party = $this->record->counterparties()->first();
-        $query = [
-            'partyName' => $party === null ? $this->record->title : $party->display_name,
-            'direction' => $obligation->direction->value,
-            'subjectType' => $obligation->subject_type->value,
-            'dueOn' => $obligation->due_on?->toDateString() ?? '',
-            'note' => (string) ($this->record->note ?? ''),
-        ];
-
-        if ($obligation->moneySubject !== null) {
-            $query['amount'] = '';
-        }
-
-        if ($obligation->quantitySubject !== null) {
-            $query += [
-                'quantityName' => $obligation->quantitySubject->name,
-                'quantityTotal' => (string) $obligation->quantitySubject->total,
-                'quantityUnit' => $obligation->quantitySubject->unit,
-                'isFractionable' => $obligation->quantitySubject->is_fractionable ? '1' : '0',
-            ];
-        }
-
-        if ($obligation->commitmentSubject !== null) {
-            $query['doneCriteria'] = $obligation->commitmentSubject->done_criteria;
-        }
-
-        return $query;
     }
 
     private function moneyObligation(): Obligation
@@ -453,51 +414,5 @@ class Show extends Component
             ->where('subject_type', SubjectType::Commitment->value)
             ->with('commitmentSubject')
             ->firstOrFail();
-    }
-
-    private function evidenceParent(): Model
-    {
-        if ($this->evidenceMovementId !== null) {
-            return $this->record->obligations()
-                ->whereHas('moneyMovements', fn ($query) => $query->whereKey($this->evidenceMovementId))
-                ->with('moneyMovements')
-                ->get()
-                ->flatMap(static fn (Obligation $obligation) => $obligation->moneyMovements)
-                ->where('id', $this->evidenceMovementId)
-                ->firstOrFail();
-        }
-
-        if ($this->evidenceReturnId !== null) {
-            return $this->record->obligations()
-                ->whereHas('quantityReturns', fn ($query) => $query->whereKey($this->evidenceReturnId))
-                ->with('quantityReturns')
-                ->get()
-                ->flatMap(static fn (Obligation $obligation) => $obligation->quantityReturns)
-                ->where('id', $this->evidenceReturnId)
-                ->firstOrFail();
-        }
-
-        return $this->record;
-    }
-
-    /**
-     * @param  array<string, int>  $balances
-     * @return array<int, array{currency: string, amount: int, direction: Direction|null, label: string}>
-     */
-    private function positions(Obligation $obligation, array $balances): array
-    {
-        return collect($balances)
-            ->map(function (int $balance, string $currency) use ($obligation): array {
-                $direction = $obligation->direction->forBalance($balance);
-
-                return [
-                    'currency' => $currency,
-                    'amount' => abs($balance),
-                    'direction' => $balance === 0 ? null : $direction,
-                    'label' => $balance === 0 ? 'Settled' : $direction->label(),
-                ];
-            })
-            ->values()
-            ->all();
     }
 }

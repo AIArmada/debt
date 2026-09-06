@@ -3,6 +3,7 @@
 namespace App\Actions\Promises\Data;
 
 use App\Domain\Enums\MemberRole;
+use App\Domain\StringNormalizer;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -24,6 +25,6 @@ final readonly class InviteMemberData
     {
         $validated = Validator::make($input, self::rules())->validate();
 
-        return new self(strtolower(trim((string) $validated['email'])), MemberRole::from((string) $validated['role']));
+        return new self(StringNormalizer::lowercaseTrimmed((string) $validated['email']), MemberRole::from((string) $validated['role']));
     }
 }

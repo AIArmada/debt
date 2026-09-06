@@ -2,6 +2,7 @@
 
 namespace App\Actions\Promises;
 
+use App\Domain\StringNormalizer;
 use App\Models\ProfileInvite;
 use App\Models\ProfileMember;
 use App\Models\User;
@@ -25,7 +26,7 @@ final class AcceptInvitation
                 throw ValidationException::withMessages(['invitation' => 'This invitation is no longer available.']);
             }
 
-            if (strtolower($user->email) !== strtolower($invite->email)) {
+            if (StringNormalizer::lowercase($user->email) !== StringNormalizer::lowercase($invite->email)) {
                 throw ValidationException::withMessages(['invitation' => 'Sign in with the invited email address.']);
             }
 

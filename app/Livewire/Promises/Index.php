@@ -10,16 +10,18 @@ use App\Domain\Queries\DueDateQuery;
 use App\Domain\Queries\OutstandingBalance;
 use App\Domain\Queries\ProfileTotals;
 use App\Domain\Queries\RecordStatusQuery;
+use App\Domain\StringNormalizer;
 use App\Models\FinancialProfile;
 use App\Models\Obligation;
 use App\Models\Record;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
-class Index extends Component
+final class Index extends Component
 {
     public FinancialProfile $profile;
 
@@ -39,7 +41,9 @@ class Index extends Component
     {
         $records = $this->recordsQuery($this->filter()->value)
             ->with([
-                'partyLinks' => fn ($query) => $query->where('role', PartyRole::Counterparty->value)->with('party'),
+                'partyLinks' => function (Relation $query): void {
+                    $query->where('role', PartyRole::Counterparty->value)->with('party');
+                },
                 'obligations.moneySubject',
                 'obligations.quantitySubject',
                 'obligations.commitmentSubject',
@@ -48,15 +52,15 @@ class Index extends Component
             ->latest('id')
             ->get();
 
-        $overdue = $records->mapWithKeys(fn ($record): array => [
+        $overdue = $records->mapWithKeys(fn (Record $record): array => [
             $record->getKey() => $dueDateQuery->recordIsOverdue($record),
         ]);
-        $records = $records->sortByDesc(fn ($record): int => ($overdue[$record->getKey()] ?? false) ? 1 : 0)->values();
+        $records = $records->sortByDesc(fn (Record $record): int => ($overdue[$record->getKey()] ?? false) ? 1 : 0)->values();
         $filterCounts = collect(RecordArchiveFilter::cases())->mapWithKeys(fn (RecordArchiveFilter $filter): array => [
             $filter->value => $this->recordsQuery($filter->value)->count(),
         ]);
 
-        $balances = $records->mapWithKeys(function ($record) use ($outstandingBalance): array {
+        $balances = $records->mapWithKeys(function (Record $record) use ($outstandingBalance): array {
             $positions = [];
             foreach ($record->obligations->filter(static fn (Obligation $obligation): bool => $obligation->subject_type === SubjectType::Money) as $obligation) {
                 foreach ($outstandingBalance->forObligation($obligation) as $currency => $balance) {
@@ -78,7 +82,9 @@ class Index extends Component
         ]);
 
         $dueSoon = $dueDateQuery->dueSoon($this->profile->records()->getQuery())
-            ->with(['obligations' => fn ($query) => $query->where('status', ObligationStatus::Open->value)->with('reminders')])
+            ->with(['obligations' => function (Relation $query): void {
+                $query->where('status', ObligationStatus::Open->value)->with('reminders');
+            }])
             ->orderBy('created_at')
             ->limit(5)
             ->get();
@@ -102,13 +108,13 @@ class Index extends Component
     /** @return Builder<Record> */
     private function recordsQuery(string $filter): Builder
     {
-        $search = trim($this->search);
+        $search = StringNormalizer::trimmed($this->search);
         $records = $this->profile->records()->getQuery()
-            ->when($search !== '', function ($query) use ($search): void {
-                $query->where(function ($recordQuery) use ($search): void {
+            ->when($search !== '', function (Builder $query) use ($search): void {
+                $query->where(function (Builder $recordQuery) use ($search): void {
                     $recordQuery->where('title', 'like', "%{$search}%")
                         ->orWhere('note', 'like', "%{$search}%")
-                        ->orWhereHas('partyLinks.party', function ($partyQuery) use ($search): void {
+                        ->orWhereHas('partyLinks.party', function (Builder $partyQuery) use ($search): void {
                             $partyQuery->where('display_name', 'like', "%{$search}%");
                         });
                 });
@@ -117,11 +123,11 @@ class Index extends Component
         return match (RecordArchiveFilter::tryFrom($filter) ?? RecordArchiveFilter::Active) {
             RecordArchiveFilter::Active => $records->where('is_archived', false),
             RecordArchiveFilter::Archived => $records->where('is_archived', true),
-            RecordArchiveFilter::Open => $records->where('is_archived', false)->whereHas('obligations', fn ($query) => $query->where('status', ObligationStatus::Open->value)),
+            RecordArchiveFilter::Open => $records->where('is_archived', false)->whereHas('obligations', fn (Builder $query): Builder => $query->where('status', ObligationStatus::Open->value)),
             RecordArchiveFilter::Settled => $records
                 ->where('is_archived', false)
                 ->whereHas('obligations')
-                ->whereDoesntHave('obligations', fn ($query) => $query->where('status', '!=', ObligationStatus::Settled->value)),
+                ->whereDoesntHave('obligations', fn (Builder $query): Builder => $query->where('status', '!=', ObligationStatus::Settled->value)),
             RecordArchiveFilter::DueSoon => app(DueDateQuery::class)->dueSoon($records),
             RecordArchiveFilter::Overdue => app(DueDateQuery::class)->overdue($records),
             RecordArchiveFilter::All => $records,

@@ -10,6 +10,7 @@ use App\Models\FinancialProfile;
 use App\Models\ImportRow;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
@@ -64,7 +65,7 @@ final class Index extends Component
     {
         return ImportRow::query()
             ->whereKey($rowId)
-            ->whereHas('batch', fn ($query) => $query->where('profile_id', $this->profile->getKey()))
+            ->whereHas('batch', fn (Builder $query): Builder => $query->where('profile_id', $this->profile->getKey()))
             ->firstOrFail();
     }
 }

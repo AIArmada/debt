@@ -4,6 +4,7 @@ namespace App\Domain\Money;
 
 use AIArmada\CommerceSupport\Support\MoneyFormatter;
 use Akaunting\Money\Currency as AkauntingCurrency;
+use App\Domain\StringNormalizer;
 use InvalidArgumentException;
 
 final readonly class Money
@@ -14,7 +15,7 @@ final readonly class Money
 
     public function __construct(int $amountMinor, string $currency)
     {
-        $currency = strtoupper(trim($currency));
+        $currency = StringNormalizer::uppercaseTrimmed($currency);
 
         if (! Currency::isSupported($currency)) {
             throw new InvalidArgumentException('Choose a supported currency.');
@@ -35,8 +36,8 @@ final readonly class Money
 
     public static function parseMajor(string $amount, string $currency): self
     {
-        $currency = strtoupper(trim($currency));
-        $amount = trim($amount);
+        $currency = StringNormalizer::uppercaseTrimmed($currency);
+        $amount = StringNormalizer::trimmed($amount);
 
         if ($amount === '' || preg_match('/^\d+(?:\.\d+)?$/D', $amount) !== 1) {
             throw new InvalidArgumentException('Enter a valid monetary amount.');
@@ -61,6 +62,14 @@ final readonly class Money
         return new self($this->amountMinor + $other->amountMinor, $this->currency);
     }
 
+    /**
+     * Format minor units for display without validating them as a Money value.
+     */
+    public static function display(int $amountMinor, string $currency): string
+    {
+        return MoneyFormatter::formatMinor($amountMinor, StringNormalizer::uppercase($currency));
+    }
+
     public function format(): string
     {
         return MoneyFormatter::formatMinor($this->amountMinor, $this->currency);
@@ -71,14 +80,9 @@ final readonly class Money
         return MoneyFormatter::formatMinorWithCode($this->amountMinor, $this->currency);
     }
 
-    public static function formatMinor(int $amountMinor, string $currency): string
-    {
-        return MoneyFormatter::formatMinor($amountMinor, strtoupper($currency));
-    }
-
     public static function precisionFor(string $currency): int
     {
-        return (new AkauntingCurrency(strtoupper(trim($currency))))->getPrecision();
+        return (new AkauntingCurrency(StringNormalizer::uppercaseTrimmed($currency)))->getPrecision();
     }
 
     private function ensureSameCurrency(self $other): void

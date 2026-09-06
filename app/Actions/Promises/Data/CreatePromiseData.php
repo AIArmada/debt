@@ -4,6 +4,7 @@ namespace App\Actions\Promises\Data;
 
 use App\Domain\Enums\Direction;
 use App\Domain\Enums\SubjectType;
+use App\Domain\StringNormalizer;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -38,7 +39,7 @@ final readonly class CreatePromiseData
     public static function fromInput(array $input, string $currency): self
     {
         $validated = Validator::make($input + ['subjectType' => SubjectType::Money->value], self::rules())->validate();
-        $partyName = trim((string) $validated['partyName']);
+        $partyName = StringNormalizer::trimmed((string) $validated['partyName']);
 
         if ($partyName === '') {
             throw ValidationException::withMessages(['partyName' => 'Enter a person or organisation.']);
@@ -49,7 +50,7 @@ final readonly class CreatePromiseData
             $validated['partyId'] ?? null,
             Direction::fromRequest($validated['direction']),
             $validated['dueOn'] ?? null,
-            filled($validated['note'] ?? null) ? trim((string) $validated['note']) : null,
+            StringNormalizer::optionalTrimmed($validated['note'] ?? null),
             PromiseSubjectData::fromInput($validated, $currency),
         );
     }

@@ -3,6 +3,7 @@
 namespace App\Domain\Queries;
 
 use App\Domain\Enums\Direction;
+use App\Domain\StringNormalizer;
 use App\Models\FinancialProfile;
 
 final class ProfileTotals
@@ -20,7 +21,7 @@ final class ProfileTotals
                 continue;
             }
             $bucket = Direction::from((string) $row->direction)->bucketForBalance($balance);
-            $currency = strtoupper((string) $row->currency);
+            $currency = StringNormalizer::uppercase((string) $row->currency);
             $totals[$bucket][$currency] = ($totals[$bucket][$currency] ?? 0) + abs($balance);
         }
 

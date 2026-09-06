@@ -22,7 +22,7 @@
             <flux:text>To pay</flux:text>
             <div class="mt-3 space-y-1 text-2xl font-semibold tracking-tight">
                 @forelse ($totals['to_pay'] as $currency => $amount)
-                    <div>{{ \App\Domain\Money\Money::formatMinor($amount, $currency) }}</div>
+                    <div>{{ \App\Domain\Money\Money::display($amount, $currency) }}</div>
                 @empty
                     <div>—</div>
                 @endforelse
@@ -33,7 +33,7 @@
             <flux:text>To receive</flux:text>
             <div class="mt-3 space-y-1 text-2xl font-semibold tracking-tight text-cyan-800">
                 @forelse ($totals['to_receive'] as $currency => $amount)
-                    <div>{{ \App\Domain\Money\Money::formatMinor($amount, $currency) }}</div>
+                    <div>{{ \App\Domain\Money\Money::display($amount, $currency) }}</div>
                 @empty
                     <div>—</div>
                 @endforelse
@@ -83,7 +83,7 @@
                     </div>
                     <div class="shrink-0 text-left sm:text-right">
                         @forelse ($balances[$record->id] ?? [] as $position)
-                            <div class="font-semibold">{{ \App\Domain\Money\Money::formatMinor($position['amount'], $position['currency']) }}</div>
+                            <div class="font-semibold">{{ \App\Domain\Money\Money::display($position['amount'], $position['currency']) }}</div>
                             <div class="text-xs text-zinc-500">{{ $position['label'] }} · {{ $position['currency'] }}</div>
                         @empty
                             <div class="font-semibold">{{ ucfirst(($statuses[$record->id] ?? \App\Domain\Enums\ObligationStatus::Open)->value) }}</div>

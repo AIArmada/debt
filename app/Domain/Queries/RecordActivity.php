@@ -29,9 +29,9 @@ final class RecordActivity
         ]);
 
         $obligations = $record->obligations;
-        $moneyMovements = $obligations->flatMap(static fn (Obligation $obligation) => $obligation->moneyMovements);
-        $quantityReturns = $obligations->flatMap(static fn (Obligation $obligation) => $obligation->quantityReturns);
-        $reminders = $obligations->flatMap(static fn (Obligation $obligation) => $obligation->reminders);
+        $moneyMovements = $obligations->flatMap(static fn (Obligation $obligation): EloquentCollection => $obligation->moneyMovements);
+        $quantityReturns = $obligations->flatMap(static fn (Obligation $obligation): EloquentCollection => $obligation->quantityReturns);
+        $reminders = $obligations->flatMap(static fn (Obligation $obligation): EloquentCollection => $obligation->reminders);
         $attachmentIds = $this->attachmentIds($record, $obligations, $moneyMovements, $quantityReturns);
         $subjects = [
             (new Record)->getMorphClass() => [$record->getKey()],

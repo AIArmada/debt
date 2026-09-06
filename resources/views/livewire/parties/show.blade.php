@@ -23,11 +23,11 @@
     <div class="grid gap-4 sm:grid-cols-2">
         <div class="app-metric app-metric-primary rounded-2xl p-5">
             <flux:text>To pay</flux:text>
-            <div class="mt-3 space-y-1 text-2xl font-semibold">@forelse ($exposure['to_pay'] as $currency => $amount)<div>{{ \App\Domain\Money\Money::formatMinor($amount, $currency) }}</div>@empty<div>—</div>@endforelse</div>
+            <div class="mt-3 space-y-1 text-2xl font-semibold">@forelse ($exposure['to_pay'] as $currency => $amount)<div>{{ \App\Domain\Money\Money::display($amount, $currency) }}</div>@empty<div>—</div>@endforelse</div>
         </div>
         <div class="app-metric app-metric-secondary rounded-2xl p-5">
             <flux:text>To receive</flux:text>
-            <div class="mt-3 space-y-1 text-2xl font-semibold text-cyan-800">@forelse ($exposure['to_receive'] as $currency => $amount)<div>{{ \App\Domain\Money\Money::formatMinor($amount, $currency) }}</div>@empty<div>—</div>@endforelse</div>
+            <div class="mt-3 space-y-1 text-2xl font-semibold text-cyan-800">@forelse ($exposure['to_receive'] as $currency => $amount)<div>{{ \App\Domain\Money\Money::display($amount, $currency) }}</div>@empty<div>—</div>@endforelse</div>
         </div>
     </div>
 

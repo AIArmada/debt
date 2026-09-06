@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
-class Index extends Component
+final class Index extends Component
 {
     public FinancialProfile $profile;
 

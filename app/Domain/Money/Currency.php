@@ -2,6 +2,8 @@
 
 namespace App\Domain\Money;
 
+use App\Domain\StringNormalizer;
+
 final class Currency
 {
     /** @var array<string, string> */
@@ -45,11 +47,11 @@ final class Currency
 
     public static function isSupported(?string $code): bool
     {
-        return $code !== null && array_key_exists(strtoupper($code), self::OPTIONS);
+        return $code !== null && array_key_exists(StringNormalizer::uppercase($code), self::OPTIONS);
     }
 
     public static function label(?string $code): string
     {
-        return self::OPTIONS[strtoupper((string) $code)] ?? (string) $code;
+        return self::OPTIONS[StringNormalizer::uppercase((string) $code)] ?? (string) $code;
     }
 }

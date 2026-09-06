@@ -4,6 +4,7 @@ namespace App\Actions\Promises\Data;
 
 use App\Domain\Enums\MoneyEntry;
 use App\Domain\Money\Money;
+use App\Domain\StringNormalizer;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
@@ -49,7 +50,7 @@ final readonly class RecordMovementData
             $money->amountMinor,
             $money->currency,
             $occurredOn,
-            filled($validated['note'] ?? null) ? trim((string) $validated['note']) : null,
+            StringNormalizer::optionalTrimmed($validated['note'] ?? null),
         );
     }
 

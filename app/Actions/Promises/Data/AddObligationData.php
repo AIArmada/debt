@@ -4,6 +4,7 @@ namespace App\Actions\Promises\Data;
 
 use App\Domain\Enums\Direction;
 use App\Domain\Enums\SubjectType;
+use App\Domain\StringNormalizer;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -37,7 +38,7 @@ final readonly class AddObligationData
         return new self(
             Direction::fromRequest($validated['direction']),
             $validated['dueOn'] ?? null,
-            filled($validated['note'] ?? null) ? trim((string) $validated['note']) : null,
+            StringNormalizer::optionalTrimmed($validated['note'] ?? null),
             PromiseSubjectData::fromInput($validated, $currency),
         );
     }

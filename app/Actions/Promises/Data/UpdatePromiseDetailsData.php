@@ -2,6 +2,7 @@
 
 namespace App\Actions\Promises\Data;
 
+use App\Domain\StringNormalizer;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
@@ -35,7 +36,7 @@ final readonly class UpdatePromiseDetailsData
             'dueOn' => $input['dueOn'] ?? $input['due_on'] ?? null,
         ];
         $validated = Validator::make($input, self::rules())->validate();
-        $title = trim((string) $validated['title']);
+        $title = StringNormalizer::trimmed((string) $validated['title']);
 
         if ($title === '') {
             throw ValidationException::withMessages(['title' => 'Enter a promise title.']);

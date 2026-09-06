@@ -4,6 +4,8 @@ namespace App\Actions\Promises\Data;
 
 use App\Domain\Enums\SubjectType;
 use App\Domain\Money\Money;
+use App\Domain\Quantities\QuantityValidator;
+use App\Domain\StringNormalizer;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -43,7 +45,7 @@ final readonly class PromiseSubjectData
         $validated = Validator::make($input + ['subjectType' => SubjectType::Money->value], self::rules())->validate();
         $type = SubjectType::from((string) $validated['subjectType']);
         $amountMinor = 0;
-        $moneyCurrency = strtoupper($currency);
+        $moneyCurrency = StringNormalizer::uppercase($currency);
 
         if ($type === SubjectType::Money) {
             if (! filled($validated['amount'] ?? null)) {
@@ -64,16 +66,16 @@ final readonly class PromiseSubjectData
             $moneyCurrency = $money->currency;
         }
 
-        $quantityName = filled($validated['quantityName'] ?? null) ? trim((string) $validated['quantityName']) : null;
+        $quantityName = StringNormalizer::optionalTrimmed($validated['quantityName'] ?? null);
         $quantityTotal = filled($validated['quantityTotal'] ?? null) ? (string) $validated['quantityTotal'] : null;
-        $quantityUnit = filled($validated['quantityUnit'] ?? null) ? trim((string) $validated['quantityUnit']) : null;
-        $doneCriteria = filled($validated['doneCriteria'] ?? null) ? trim((string) $validated['doneCriteria']) : null;
+        $quantityUnit = StringNormalizer::optionalTrimmed($validated['quantityUnit'] ?? null);
+        $doneCriteria = StringNormalizer::optionalTrimmed($validated['doneCriteria'] ?? null);
 
         if ($type === SubjectType::Quantity && ($quantityName === '' || $quantityTotal === null || $quantityUnit === '')) {
             throw ValidationException::withMessages(['subjectType' => 'Complete the quantity details.']);
         }
 
-        if ($type === SubjectType::Quantity && preg_match('/^0+(?:\.0{1,4})?$/', $quantityTotal) === 1) {
+        if ($type === SubjectType::Quantity && QuantityValidator::isZero($quantityTotal)) {
             throw ValidationException::withMessages(['quantityTotal' => 'Enter a positive quantity.']);
         }
 

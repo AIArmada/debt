@@ -7,10 +7,10 @@
     </div>
 
     <div class="grid gap-4 sm:grid-cols-4">
-        <div class="app-metric app-metric-primary rounded-2xl p-5"><flux:text>Income</flux:text><div class="mt-2 text-xl font-semibold">{{ \App\Domain\Money\Money::formatMinor($period->income_minor, $period->currency) }}</div></div>
-        <div class="app-metric rounded-2xl p-5"><flux:text>Essentials</flux:text><div class="mt-2 text-xl font-semibold">{{ \App\Domain\Money\Money::formatMinor($period->essential_minor, $period->currency) }}</div></div>
-        <div class="app-metric rounded-2xl p-5"><flux:text>Reserve</flux:text><div class="mt-2 text-xl font-semibold">{{ \App\Domain\Money\Money::formatMinor($period->reserve_minor, $period->currency) }}</div></div>
-        <div class="app-metric app-metric-secondary rounded-2xl p-5"><flux:text>Capacity</flux:text><div class="mt-2 text-xl font-semibold">{{ \App\Domain\Money\Money::formatMinor($period->capacity(), $period->currency) }}</div></div>
+        <div class="app-metric app-metric-primary rounded-2xl p-5"><flux:text>Income</flux:text><div class="mt-2 text-xl font-semibold">{{ \App\Domain\Money\Money::display($period->income_minor, $period->currency) }}</div></div>
+        <div class="app-metric rounded-2xl p-5"><flux:text>Essentials</flux:text><div class="mt-2 text-xl font-semibold">{{ \App\Domain\Money\Money::display($period->essential_minor, $period->currency) }}</div></div>
+        <div class="app-metric rounded-2xl p-5"><flux:text>Reserve</flux:text><div class="mt-2 text-xl font-semibold">{{ \App\Domain\Money\Money::display($period->reserve_minor, $period->currency) }}</div></div>
+        <div class="app-metric app-metric-secondary rounded-2xl p-5"><flux:text>Capacity</flux:text><div class="mt-2 text-xl font-semibold">{{ \App\Domain\Money\Money::display($period->capacity(), $period->currency) }}</div></div>
     </div>
 
     <section class="app-card overflow-hidden rounded-2xl">
@@ -22,8 +22,8 @@
             @forelse ($plan?->allocations ?? [] as $allocation)
                 @php($line = $progress[$allocation->id] ?? ['planned_minor' => $allocation->planned_minor, 'paid_minor' => 0])
                 <div class="flex flex-col gap-2 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div><div class="font-medium">{{ $allocation->obligation->title }}</div><div class="text-sm text-zinc-500">Planned {{ \App\Domain\Money\Money::formatMinor($line['planned_minor'], $period->currency) }}</div></div>
-                    <div class="text-sm font-semibold text-emerald-700">Paid {{ \App\Domain\Money\Money::formatMinor($line['paid_minor'], $period->currency) }}</div>
+                    <div><div class="font-medium">{{ $allocation->obligation->title }}</div><div class="text-sm text-zinc-500">Planned {{ \App\Domain\Money\Money::display($line['planned_minor'], $period->currency) }}</div></div>
+                    <div class="text-sm font-semibold text-emerald-700">Paid {{ \App\Domain\Money\Money::display($line['paid_minor'], $period->currency) }}</div>
                 </div>
             @empty
                 <div class="px-5 py-10 text-sm text-zinc-500">Generate a plan to see suggested allocations.</div>

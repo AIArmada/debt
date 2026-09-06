@@ -2,6 +2,7 @@
 
 namespace App\Actions\Promises\Data;
 
+use App\Domain\StringNormalizer;
 use Illuminate\Support\Facades\Validator;
 
 final readonly class UpdateFinancialProfileData
@@ -22,6 +23,6 @@ final readonly class UpdateFinancialProfileData
     {
         $validated = Validator::make($input, self::rules())->validate();
 
-        return new self(trim((string) $validated['name']), (string) $validated['timezone']);
+        return new self(StringNormalizer::trimmed((string) $validated['name']), (string) $validated['timezone']);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Actions\Promises\Data;
 
 use App\Domain\Enums\ApiTokenAbility;
+use App\Domain\StringNormalizer;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -33,6 +34,6 @@ final readonly class CreateApiTokenData
             $validated['abilities'] ?? array_column(ApiTokenAbility::cases(), 'value'),
         )));
 
-        return new self(trim((string) $validated['name']), $abilities);
+        return new self(StringNormalizer::trimmed((string) $validated['name']), $abilities);
     }
 }

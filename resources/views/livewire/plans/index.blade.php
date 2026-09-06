@@ -26,7 +26,7 @@
         <div class="divide-y divide-zinc-200/80 dark:divide-zinc-700/80">
             @forelse ($periods as $period)
                 <a href="{{ route('plans.show', [$profile, $period]) }}" wire:navigate class="flex items-center justify-between px-5 py-4 hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
-                    <span><span class="font-medium">{{ $period->starts_on->format('d M Y') }} – {{ $period->ends_on->format('d M Y') }}</span><span class="mt-1 block text-sm text-zinc-500">{{ $period->currency }} · Capacity {{ \App\Domain\Money\Money::formatMinor($period->capacity(), $period->currency) }}</span></span>
+                    <span><span class="font-medium">{{ $period->starts_on->format('d M Y') }} – {{ $period->ends_on->format('d M Y') }}</span><span class="mt-1 block text-sm text-zinc-500">{{ $period->currency }} · Capacity {{ \App\Domain\Money\Money::display($period->capacity(), $period->currency) }}</span></span>
                     <span class="text-sm text-emerald-700">Open →</span>
                 </a>
             @empty

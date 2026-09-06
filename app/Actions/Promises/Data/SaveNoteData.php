@@ -2,6 +2,7 @@
 
 namespace App\Actions\Promises\Data;
 
+use App\Domain\StringNormalizer;
 use Illuminate\Support\Facades\Validator;
 
 final readonly class SaveNoteData
@@ -21,7 +22,7 @@ final readonly class SaveNoteData
     {
         /** @var array{note:string|null} $validated */
         $validated = Validator::make($input, self::rules())->validate();
-        $note = filled($validated['note'] ?? null) ? trim((string) $validated['note']) : null;
+        $note = StringNormalizer::optionalTrimmed($validated['note'] ?? null);
 
         return new self($note);
     }

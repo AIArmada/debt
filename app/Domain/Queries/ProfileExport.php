@@ -10,6 +10,9 @@ use App\Models\MoneyMovement;
 use App\Models\Obligation;
 use App\Models\QuantityReturn;
 use App\Models\Record;
+use App\Models\RecordParty;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\URL;
 
 final class ProfileExport
@@ -23,17 +26,17 @@ final class ProfileExport
 
     public function rowCount(FinancialProfile $profile): int
     {
-        $obligations = Obligation::query()->whereHas('record', fn ($query) => $query->where('profile_id', $profile->getKey()));
+        $obligations = Obligation::query()->whereHas('record', fn (Builder $query): Builder => $query->where('profile_id', $profile->getKey()));
 
         return $profile->records()->count()
             + (clone $obligations)->count()
             + MoneyMovement::query()
                 ->where('status', MovementStatus::Confirmed->value)
-                ->whereHas('obligation.record', fn ($query) => $query->where('profile_id', $profile->getKey()))
+                ->whereHas('obligation.record', fn (Builder $query): Builder => $query->where('profile_id', $profile->getKey()))
                 ->count()
             + QuantityReturn::query()
                 ->where('status', MovementStatus::Confirmed->value)
-                ->whereHas('obligation.record', fn ($query) => $query->where('profile_id', $profile->getKey()))
+                ->whereHas('obligation.record', fn (Builder $query): Builder => $query->where('profile_id', $profile->getKey()))
                 ->count()
             + $profile->attachments()->count()
             + $profile->activityEntries()->count();
@@ -48,12 +51,12 @@ final class ProfileExport
                 'obligations.moneySubject',
                 'obligations.quantitySubject',
                 'obligations.commitmentSubject',
-                'obligations.moneyMovements' => fn ($query) => $query
-                    ->where('status', MovementStatus::Confirmed->value)
-                    ->with('attachments'),
-                'obligations.quantityReturns' => fn ($query) => $query
-                    ->where('status', MovementStatus::Confirmed->value)
-                    ->with('attachments'),
+                'obligations.moneyMovements' => function (Relation $query): void {
+                    $query->where('status', MovementStatus::Confirmed->value)->with('attachments');
+                },
+                'obligations.quantityReturns' => function (Relation $query): void {
+                    $query->where('status', MovementStatus::Confirmed->value)->with('attachments');
+                },
             ])
             ->oldest('created_at')
             ->oldest('id')
@@ -143,7 +146,7 @@ final class ProfileExport
             'title' => $record->title,
             'note' => $record->note,
             'is_archived' => $record->is_archived,
-            'parties' => $record->partyLinks->map(fn ($link): array => [
+            'parties' => $record->partyLinks->map(fn (RecordParty $link): array => [
                 'id' => $link->party?->getKey(),
                 'name' => $link->party?->display_name,
                 'role' => $link->role,

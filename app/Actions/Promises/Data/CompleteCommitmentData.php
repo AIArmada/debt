@@ -2,6 +2,7 @@
 
 namespace App\Actions\Promises\Data;
 
+use App\Domain\StringNormalizer;
 use Illuminate\Support\Facades\Validator;
 
 final readonly class CompleteCommitmentData
@@ -26,7 +27,7 @@ final readonly class CompleteCommitmentData
     public static function fromInput(array $input): self
     {
         $validated = Validator::make($input + ['completedOn' => today()->toDateString()], self::rules())->validate();
-        $note = filled($validated['note'] ?? null) ? trim((string) $validated['note']) : null;
+        $note = StringNormalizer::optionalTrimmed($validated['note'] ?? null);
 
         return new self($note, (string) $validated['completedOn']);
     }
