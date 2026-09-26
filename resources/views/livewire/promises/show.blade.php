@@ -44,11 +44,12 @@
         <flux:text class="leading-6">{{ $record->note }}</flux:text>
     @endcan
 
-    <section class="app-card rounded-2xl p-5 sm:p-7">
+    <section id="evidence" x-data class="app-card rounded-2xl p-5 sm:p-7">
         <div class="flex flex-wrap items-start justify-between gap-4">
             <div>
                 <flux:heading size="lg">Evidence</flux:heading>
                 <flux:text class="mt-1">Keep agreements, receipts, and context beside the promise.</flux:text>
+                <flux:text class="mt-2 text-sm text-emerald-700 dark:text-emerald-300">{{ $this->evidenceTargetDescription() }}</flux:text>
             </div>
             @can('update', $record)
                 <flux:button wire:click="prepareRecordEvidence" variant="ghost" wire:loading.attr="disabled">Add evidence</flux:button>
@@ -67,19 +68,21 @@
             </div>
         @endif
         @can('update', $record)
-            <form wire:submit="saveEvidence" class="mt-5 grid gap-3 border-t border-zinc-200/80 pt-5 sm:grid-cols-3 dark:border-zinc-700/80">
-                <input wire:model="evidenceFile" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.txt,.csv,.doc,.docx,.xls,.xlsx" class="block w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm sm:col-span-2" />
-                <flux:select wire:model="evidenceCategory" label="Category">
-                    @foreach (\App\Domain\Enums\AttachmentCategory::cases() as $category)
-                        <flux:select.option value="{{ $category->value }}">{{ ucfirst($category->value) }}</flux:select.option>
-                    @endforeach
-                </flux:select>
-                <flux:input wire:model="evidenceLinkUrl" label="Or link URL" placeholder="https://..." class="sm:col-span-2" />
-                <div class="flex items-end"><flux:button type="submit" variant="primary" wire:loading.attr="disabled" class="w-full">Save evidence</flux:button></div>
-                @error('evidenceFile')<flux:text class="text-red-700 sm:col-span-3">{{ $message }}</flux:text>@enderror
-                @error('linkUrl')<flux:text class="text-red-700 sm:col-span-3">{{ $message }}</flux:text>@enderror
-                @error('evidence')<flux:text class="text-red-700 sm:col-span-3">{{ $message }}</flux:text>@enderror
-            </form>
+            @if ($showEvidenceForm)
+                <form wire:submit="saveEvidence" class="mt-5 grid gap-3 border-t border-zinc-200/80 pt-5 sm:grid-cols-3 dark:border-zinc-700/80">
+                    <input wire:model="evidenceFile" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.txt,.csv,.doc,.docx,.xls,.xlsx" class="block w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm sm:col-span-2" />
+                    <flux:select wire:model="evidenceCategory" label="Category">
+                        @foreach (\App\Domain\Enums\AttachmentCategory::cases() as $category)
+                            <flux:select.option value="{{ $category->value }}">{{ ucfirst($category->value) }}</flux:select.option>
+                        @endforeach
+                    </flux:select>
+                    <flux:input wire:model="evidenceLinkUrl" label="Or link URL" placeholder="https://..." class="sm:col-span-2" />
+                    <div class="flex items-end"><flux:button type="submit" variant="primary" wire:loading.attr="disabled" class="w-full">Save evidence</flux:button></div>
+                    @error('evidenceFile')<flux:text class="text-red-700 sm:col-span-3">{{ $message }}</flux:text>@enderror
+                    @error('linkUrl')<flux:text class="text-red-700 sm:col-span-3">{{ $message }}</flux:text>@enderror
+                    @error('evidence')<flux:text class="text-red-700 sm:col-span-3">{{ $message }}</flux:text>@enderror
+                </form>
+            @endif
         @endcan
     </section>
 
@@ -255,7 +258,11 @@
                     <div class="flex items-center gap-4 sm:text-right">
                         <div class="font-semibold">{{ \App\Domain\Money\Money::display($movement->amount_minor, $movement->currency) }}</div>
                         @can('update', $record)
-                            <button type="button" wire:click="prepareMovementEvidence('{{ $movement->id }}')" wire:loading.attr="disabled" class="text-xs font-semibold text-emerald-700 hover:underline">Attach</button>
+                            @if ($evidenceMovementId === (string) $movement->id)
+                                <span class="text-xs font-semibold text-emerald-700">Selected for evidence</span>
+                            @else
+                                <button type="button" wire:click="prepareMovementEvidence('{{ $movement->id }}')" x-on:click="document.getElementById('evidence')?.scrollIntoView({ behavior: 'smooth', block: 'start' })" wire:loading.attr="disabled" class="text-xs font-semibold text-emerald-700 hover:underline">Attach</button>
+                            @endif
                         @endcan
                         @if ($movement->status === \App\Domain\Enums\MovementStatus::Confirmed)
                             <button type="button" wire:click="voidMovement('{{ $movement->id }}')" wire:confirm="Void this movement?" wire:loading.attr="disabled" class="text-xs font-semibold text-red-700 hover:underline">Void</button>
@@ -283,7 +290,11 @@
                             @endif
                         </div>
                         @can('update', $record)
-                            <button type="button" wire:click="prepareReturnEvidence('{{ $return->id }}')" wire:loading.attr="disabled" class="text-xs font-semibold text-emerald-700 hover:underline">Attach</button>
+                            @if ($evidenceReturnId === (string) $return->id)
+                                <span class="text-xs font-semibold text-emerald-700">Selected for evidence</span>
+                            @else
+                                <button type="button" wire:click="prepareReturnEvidence('{{ $return->id }}')" x-on:click="document.getElementById('evidence')?.scrollIntoView({ behavior: 'smooth', block: 'start' })" wire:loading.attr="disabled" class="text-xs font-semibold text-emerald-700 hover:underline">Attach</button>
+                            @endif
                         @endcan
                     </div>
                 @empty

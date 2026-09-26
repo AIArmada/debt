@@ -13,6 +13,7 @@ final class ProfileTotals
     /** @return array{to_pay: array<string, int>, to_receive: array<string, int>} */
     public function forProfile(FinancialProfile $profile): array
     {
+        /** @var array{to_pay: array<string, int>, to_receive: array<string, int>} $totals */
         $totals = ['to_pay' => [], 'to_receive' => []];
 
         foreach ($this->moneyBalanceQuery->forProfile($profile) as $row) {
@@ -25,6 +26,9 @@ final class ProfileTotals
             $totals[$bucket][$currency] = ($totals[$bucket][$currency] ?? 0) + abs($balance);
         }
 
-        return $totals;
+        return [
+            'to_pay' => $totals['to_pay'],
+            'to_receive' => $totals['to_receive'],
+        ];
     }
 }

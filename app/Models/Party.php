@@ -46,6 +46,30 @@ class Party extends Model
         return $this->hasManyThrough(Record::class, RecordParty::class, 'party_id', 'id', 'id', 'record_id');
     }
 
+    /** @return HasMany<PartyContact, $this> */
+    public function contacts(): HasMany
+    {
+        return $this->hasMany(PartyContact::class);
+    }
+
+    /** @return HasMany<PaymentDestination, $this> */
+    public function paymentDestinations(): HasMany
+    {
+        return $this->hasMany(PaymentDestination::class);
+    }
+
+    /** @return HasMany<PartyRelationship, $this> */
+    public function relationshipsFrom(): HasMany
+    {
+        return $this->hasMany(PartyRelationship::class, 'from_party_id');
+    }
+
+    /** @return HasMany<PartyRelationship, $this> */
+    public function relationshipsTo(): HasMany
+    {
+        return $this->hasMany(PartyRelationship::class, 'to_party_id');
+    }
+
     public function displayName(): string
     {
         return $this->display_name;

@@ -108,6 +108,8 @@ final class Show extends Component
 
     public string $evidenceCategory = AttachmentCategory::Other->value;
 
+    public bool $showEvidenceForm = false;
+
     public ?string $evidenceMovementId = null;
 
     public ?string $evidenceReturnId = null;
@@ -193,20 +195,34 @@ final class Show extends Component
 
     public function prepareRecordEvidence(): void
     {
+        $this->showEvidenceForm = true;
         $this->evidenceMovementId = null;
         $this->evidenceReturnId = null;
     }
 
     public function prepareMovementEvidence(string $movementId): void
     {
+        $this->showEvidenceForm = true;
         $this->evidenceMovementId = $movementId;
         $this->evidenceReturnId = null;
     }
 
     public function prepareReturnEvidence(string $returnId): void
     {
+        $this->showEvidenceForm = true;
         $this->evidenceMovementId = null;
         $this->evidenceReturnId = $returnId;
+    }
+
+    public function evidenceTargetDescription(): string
+    {
+        if (! $this->showEvidenceForm) {
+            return 'Choose Add evidence or Attach from history to add a file or link.';
+        }
+
+        return $this->evidenceMovementId !== null || $this->evidenceReturnId !== null
+            ? 'Evidence will be attached to the selected history item.'
+            : 'Evidence will be attached to this promise.';
     }
 
     public function saveEvidence(AttachEvidence $attachEvidence, PromiseShowData $promiseShowData): void
@@ -219,7 +235,9 @@ final class Show extends Component
         ], $this->evidenceFile));
         $this->reset(['evidenceFile', 'evidenceLinkUrl']);
         $this->evidenceCategory = AttachmentCategory::Other->value;
-        $this->prepareRecordEvidence();
+        $this->showEvidenceForm = false;
+        $this->evidenceMovementId = null;
+        $this->evidenceReturnId = null;
         $this->record->refresh();
     }
 

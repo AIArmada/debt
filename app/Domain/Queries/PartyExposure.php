@@ -16,6 +16,7 @@ final class PartyExposure
     /** @return array{to_pay: array<string, int>, to_receive: array<string, int>, open_count: int, settled_count: int} */
     public function forParty(Party $party): array
     {
+        /** @var array{to_pay: array<string, int>, to_receive: array<string, int>} $totals */
         $totals = ['to_pay' => [], 'to_receive' => []];
         $obligations = $party->records()
             ->where('records.is_archived', false)
@@ -37,7 +38,8 @@ final class PartyExposure
         }
 
         return [
-            ...$totals,
+            'to_pay' => $totals['to_pay'],
+            'to_receive' => $totals['to_receive'],
             'open_count' => $obligations->filter(static fn (Obligation $obligation): bool => $obligation->status === ObligationStatus::Open)->count(),
             'settled_count' => $obligations->filter(static fn (Obligation $obligation): bool => $obligation->status === ObligationStatus::Settled)->count(),
         ];

@@ -56,11 +56,18 @@
             <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
         </flux:sidebar>
 
+        <flux:header class="hidden border-b border-zinc-200/80 bg-white/70 backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-950/70 lg:flex">
+            <flux:spacer />
+            <x-notification-bell :unread-count="$unreadNotificationCount ?? 0" />
+        </flux:header>
+
         <!-- Mobile User Menu -->
         <flux:header class="border-b border-zinc-200/80 bg-white/70 backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-950/70 lg:hidden">
             <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
 
             <flux:spacer />
+
+            <x-notification-bell :unread-count="$unreadNotificationCount ?? 0" />
 
             <flux:dropdown position="top" align="end">
                 <flux:profile

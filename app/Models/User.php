@@ -73,6 +73,12 @@ class User extends Authenticatable implements PasskeyUser
         return $this->hasMany(FinancialProfile::class, 'owner_user_id');
     }
 
+    /** @return HasMany<NotificationPreference, $this> */
+    public function notificationPreferences(): HasMany
+    {
+        return $this->hasMany(NotificationPreference::class);
+    }
+
     /**
      * Get the user's initials
      */

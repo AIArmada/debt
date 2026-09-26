@@ -12,6 +12,7 @@ use App\Actions\Promises\VoidMovement;
 use App\Domain\Enums\AttachmentCategory;
 use App\Domain\Enums\Direction;
 use App\Domain\Enums\MemberRole;
+use App\Livewire\Promises\Show as PromiseShow;
 use App\Models\ActivityEntry;
 use App\Models\Attachment;
 use App\Models\User;
@@ -23,6 +24,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\ValidationException;
+use Livewire\Livewire;
 
 pest()->use(RefreshDatabase::class);
 
@@ -57,6 +59,34 @@ test('evidence can attach to records and movements without crossing parent scope
         ->and($recordAttachment->disk_path)->not->toBeNull()
         ->and($movementAttachment->link_url)->toBe('https://example.test/receipt');
     Storage::disk('private')->assertExists($recordAttachment->disk_path);
+});
+
+test('history attach selection identifies the selected evidence target', function () {
+    $user = User::factory()->create();
+    $profile = $user->financialProfiles()->firstOrFail();
+    $record = app(CreatePromise::class)->handle($user, $profile, CreatePromiseData::fromInput([
+        'partyName' => 'History evidence person',
+        'direction' => Direction::Payable->value,
+        'amount' => '10.00',
+    ], 'MYR'));
+    $movement = app(RecordMoneyMovement::class)->handle(
+        $user,
+        $record->obligations->firstOrFail(),
+        RecordMovementData::settlement(1000, 'MYR', today()->toDateString()),
+    );
+
+    $this->actingAs($user);
+
+    Livewire::test(PromiseShow::class, ['profile' => $profile, 'record' => $record])
+        ->assertSet('showEvidenceForm', false)
+        ->assertDontSee('Save evidence')
+        ->call('prepareMovementEvidence', $movement->getKey())
+        ->assertSet('evidenceMovementId', $movement->getKey())
+        ->assertSet('evidenceReturnId', null)
+        ->assertSet('showEvidenceForm', true)
+        ->assertSee('Save evidence')
+        ->assertSee('Selected for evidence')
+        ->assertSee('Evidence will be attached to the selected history item.');
 });
 
 test('voiding a movement leaves its evidence reachable and detaching soft deletes it', function () {

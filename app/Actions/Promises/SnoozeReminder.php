@@ -24,12 +24,15 @@ final class SnoozeReminder
         if (! $this->profileAccess->can($user, $reminder->obligation->record->profile, [MemberRole::Owner, MemberRole::Editor])) {
             throw new AuthorizationException;
         }
-        if (! in_array($reminder->status, [ReminderStatus::Pending, ReminderStatus::Snoozed], true)) {
-            throw ValidationException::withMessages(['reminder' => 'Only scheduled reminders can be snoozed.']);
+        if (! in_array($reminder->status, [ReminderStatus::Pending, ReminderStatus::Sent, ReminderStatus::Snoozed], true)) {
+            throw ValidationException::withMessages(['reminder' => 'Only active reminders can be snoozed.']);
         }
 
         return DB::transaction(function () use ($user, $reminder, $data): Reminder {
             $locked = Reminder::query()->whereKey($reminder->getKey())->lockForUpdate()->firstOrFail();
+            if (! in_array($locked->status, [ReminderStatus::Pending, ReminderStatus::Sent, ReminderStatus::Snoozed], true)) {
+                throw ValidationException::withMessages(['reminder' => 'Only active reminders can be snoozed.']);
+            }
             $locked->loadMissing('obligation.record.profile');
             $locked->forceFill(['snoozed_until' => Carbon::parse($data->until)->toDateString(), 'status' => ReminderStatus::Snoozed])->save();
             $this->activityLogger->record($locked->obligation->record->profile, $user, $locked, 'reminder_snoozed', after: ['snoozed_until' => $locked->snoozed_until->toDateString()]);

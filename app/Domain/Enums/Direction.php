@@ -20,6 +20,24 @@ enum Direction: string
         };
     }
 
+    public function descriptionFor(SubjectType $subjectType): string
+    {
+        return match ($subjectType) {
+            SubjectType::Money => match ($this) {
+                self::Payable => 'I need to pay them.',
+                self::Receivable => 'I expect to receive payment.',
+            },
+            SubjectType::Quantity => match ($this) {
+                self::Payable => 'I need to give them an item or time.',
+                self::Receivable => 'I expect to receive an item or time.',
+            },
+            SubjectType::Commitment => match ($this) {
+                self::Payable => 'I need to do something for them.',
+                self::Receivable => 'I expect them to do something for me.',
+            },
+        };
+    }
+
     public function opposite(): self
     {
         return match ($this) {
@@ -33,6 +51,7 @@ enum Direction: string
         return $balance < 0 ? $this->opposite() : $this;
     }
 
+    /** @return 'to_pay'|'to_receive' */
     public function bucketForBalance(int $balance): string
     {
         return $this->forBalance($balance) === self::Payable ? 'to_pay' : 'to_receive';

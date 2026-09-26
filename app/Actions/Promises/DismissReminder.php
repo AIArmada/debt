@@ -22,12 +22,15 @@ final class DismissReminder
         if (! $this->profileAccess->can($user, $reminder->obligation->record->profile, [MemberRole::Owner, MemberRole::Editor])) {
             throw new AuthorizationException;
         }
-        if (! in_array($reminder->status, [ReminderStatus::Pending, ReminderStatus::Snoozed], true)) {
-            throw ValidationException::withMessages(['reminder' => 'Only scheduled reminders can be dismissed.']);
+        if (! in_array($reminder->status, [ReminderStatus::Pending, ReminderStatus::Sent, ReminderStatus::Snoozed], true)) {
+            throw ValidationException::withMessages(['reminder' => 'Only active reminders can be dismissed.']);
         }
 
         return DB::transaction(function () use ($user, $reminder): Reminder {
             $locked = Reminder::query()->whereKey($reminder->getKey())->lockForUpdate()->firstOrFail();
+            if (! in_array($locked->status, [ReminderStatus::Pending, ReminderStatus::Sent, ReminderStatus::Snoozed], true)) {
+                throw ValidationException::withMessages(['reminder' => 'Only active reminders can be dismissed.']);
+            }
             $locked->loadMissing('obligation.record.profile');
             $locked->forceFill(['status' => ReminderStatus::Dismissed])->save();
             $this->activityLogger->record($locked->obligation->record->profile, $user, $locked, 'reminder_dismissed');

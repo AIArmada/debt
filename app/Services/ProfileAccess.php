@@ -21,6 +21,10 @@ final class ProfileAccess
             ->whereNull('revoked_at')
             ->value('role');
 
+        if ($role instanceof MemberRole) {
+            return $role;
+        }
+
         return is_string($role) ? MemberRole::tryFrom($role) : null;
     }
 

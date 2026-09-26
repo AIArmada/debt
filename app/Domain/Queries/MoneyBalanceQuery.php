@@ -26,7 +26,7 @@ final class MoneyBalanceQuery
             ->all();
     }
 
-    /** @return Collection<int, \stdClass{id: string, direction: string, currency: string, balance: int|string}> */
+    /** @return Collection<int, \stdClass> */
     public function forProfile(FinancialProfile $profile): Collection
     {
         return DB::table('money_movements')

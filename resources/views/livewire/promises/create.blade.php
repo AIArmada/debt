@@ -38,11 +38,11 @@
             <div class="grid gap-3 sm:grid-cols-2">
                 <button type="button" wire:click="selectDirection('{{ \App\Domain\Enums\Direction::Payable->value }}')" wire:loading.attr="disabled" class="{{ $direction === \App\Domain\Enums\Direction::Payable->value ? 'border-emerald-600 bg-emerald-50 text-emerald-950 ring-2 ring-emerald-600/20 dark:border-emerald-400 dark:bg-emerald-950/30 dark:text-emerald-100' : 'border-zinc-200 bg-white text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200' }} min-h-16 rounded-xl border px-4 py-3 text-start text-sm font-semibold transition">
                     <span class="block">{{ \App\Domain\Enums\Direction::Payable->label() }}</span>
-                    <span class="mt-1 block text-xs font-normal opacity-70">I need to pay or return something.</span>
+                    <span class="mt-1 block text-xs font-normal opacity-70">{{ \App\Domain\Enums\Direction::Payable->descriptionFor($subjectType) }}</span>
                 </button>
                 <button type="button" wire:click="selectDirection('{{ \App\Domain\Enums\Direction::Receivable->value }}')" wire:loading.attr="disabled" class="{{ $direction === \App\Domain\Enums\Direction::Receivable->value ? 'border-cyan-600 bg-cyan-50 text-cyan-950 ring-2 ring-cyan-600/20 dark:border-cyan-400 dark:bg-cyan-950/30 dark:text-cyan-100' : 'border-zinc-200 bg-white text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200' }} min-h-16 rounded-xl border px-4 py-3 text-start text-sm font-semibold transition">
                     <span class="block">{{ \App\Domain\Enums\Direction::Receivable->label() }}</span>
-                    <span class="mt-1 block text-xs font-normal opacity-70">I expect to receive payment.</span>
+                    <span class="mt-1 block text-xs font-normal opacity-70">{{ \App\Domain\Enums\Direction::Receivable->descriptionFor($subjectType) }}</span>
                 </button>
             </div>
         </fieldset>

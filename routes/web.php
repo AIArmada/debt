@@ -6,6 +6,7 @@ use App\Http\Controllers\ProfileExportController;
 use App\Livewire\ExchangeRates\Index as ExchangeRatesIndex;
 use App\Livewire\Imports\Index as ImportsIndex;
 use App\Livewire\Members\Index as MembersIndex;
+use App\Livewire\Notifications\Index as NotificationsIndex;
 use App\Livewire\Parties\Index as PeopleIndex;
 use App\Livewire\Parties\Show as PartyShow;
 use App\Livewire\Plans\Index as PlansIndex;
@@ -75,6 +76,7 @@ Route::view('legal/deletion', 'legal.page', [
 ])->name('legal.deletion');
 
 Route::middleware(['auth', 'verified'])->group(function (): void {
+    Route::get('notifications', NotificationsIndex::class)->name('notifications.index');
     Route::get('p/{profile}/promises', PromisesIndex::class)->name('promises.index');
     Route::get('p/{profile}/promises/create', CreatePromise::class)->name('promises.create');
     Route::get('p/{profile}/promises/{record}', ShowPromise::class)

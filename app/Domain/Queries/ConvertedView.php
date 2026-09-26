@@ -25,6 +25,7 @@ final class ConvertedView
             throw ValidationException::withMessages(['target' => 'Choose a supported target currency.']);
         }
 
+        /** @var array{target_currency: string, to_pay: array<string, array{amount_minor: int, rate: string, rated_on: string, stale: bool}>, to_receive: array<string, array{amount_minor: int, rate: string, rated_on: string, stale: bool}>} $converted */
         $converted = ['target_currency' => $target, 'to_pay' => [], 'to_receive' => []];
         foreach ($this->moneyBalanceQuery->forProfile($profile) as $row) {
             $balance = (int) $row->balance;

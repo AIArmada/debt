@@ -22,4 +22,24 @@ final class PartyPolicy
 
         return app(ProfileAccess::class)->can($user, $party->profile, [MemberRole::Owner, MemberRole::Editor]);
     }
+
+    public function manageContacts(User $user, Party $party): bool
+    {
+        return $this->update($user, $party);
+    }
+
+    public function managePaymentDestinations(User $user, Party $party): bool
+    {
+        return $this->update($user, $party);
+    }
+
+    public function revealPaymentDestination(User $user, Party $party): bool
+    {
+        return $this->update($user, $party);
+    }
+
+    public function manageRelationships(User $user, Party $party): bool
+    {
+        return $this->update($user, $party);
+    }
 }
