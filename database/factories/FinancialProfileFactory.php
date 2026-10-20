@@ -24,6 +24,8 @@ class FinancialProfileFactory extends Factory
             'base_currency' => 'MYR',
             'timezone' => 'Asia/Kuala_Lumpur',
             'is_archived' => false,
+            'interest_free_mode' => true,
+            'show_hijri' => false,
         ];
     }
 }

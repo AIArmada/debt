@@ -3,6 +3,7 @@
 namespace App\Actions\Promises;
 
 use App\Actions\Promises\Data\CompleteCommitmentData;
+use App\Domain\Enums\ClosureReason;
 use App\Domain\Enums\SubjectType;
 use App\Domain\Obligations\ObligationStatusMachine;
 use App\Models\CommitmentSubject;
@@ -53,7 +54,10 @@ final class CompleteCommitment
                 'completed_at' => Carbon::parse($data->completedOn)->endOfDay(),
                 'completion_note' => $data->note,
             ])->save();
-            $lockedObligation->forceFill(['status' => $this->statusMachine->afterCommitmentCompletion()])->save();
+            $lockedObligation->forceFill([
+                'status' => $this->statusMachine->afterCommitmentCompletion(),
+                'closure_reason' => ClosureReason::Completed,
+            ])->save();
 
             $this->activityLogger->record(
                 $lockedObligation->record->profile,

@@ -26,4 +26,18 @@
             </form>
         </section>
     @endcan
+
+    <section class="app-card rounded-2xl p-5 sm:p-7">
+        <flux:heading size="lg">Saved exchange rates</flux:heading>
+        <div class="mt-4 divide-y divide-zinc-100 dark:divide-zinc-800">
+            @forelse ($rates as $savedRate)
+                <div wire:key="exchange-rate-{{ $savedRate->id }}" class="flex flex-wrap items-center justify-between gap-2 py-3 text-sm">
+                    <span class="font-medium">{{ $savedRate->from_currency }} → {{ $savedRate->to_currency }}</span>
+                    <span>{{ $savedRate->rate }} · {{ $savedRate->rated_on->format('d M Y') }} · {{ $savedRate->source }}</span>
+                </div>
+            @empty
+                <flux:text class="py-3 text-sm">No rates saved for this profile.</flux:text>
+            @endforelse
+        </div>
+    </section>
 </div>

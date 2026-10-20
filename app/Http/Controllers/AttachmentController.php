@@ -14,7 +14,7 @@ final class AttachmentController extends Controller
     public function download(FinancialProfile $profile, Attachment $attachment): RedirectResponse|StreamedResponse
     {
         abort_unless($attachment->profile->is($profile), 404);
-        Gate::authorize('view', $attachment);
+        abort_unless(Gate::allows('view', $attachment), 404);
 
         if ($attachment->link_url !== null) {
             return redirect()->away($attachment->link_url);

@@ -27,10 +27,14 @@ final class UpdateFinancialProfile
             $before = [
                 'name' => $lockedProfile->name,
                 'timezone' => $lockedProfile->timezone,
+                'interest_free_mode' => $lockedProfile->interest_free_mode,
+                'show_hijri' => $lockedProfile->show_hijri,
             ];
             $lockedProfile->forceFill([
                 'name' => $data->name,
                 'timezone' => $data->timezone,
+                'interest_free_mode' => $data->interestFreeModeProvided ? $data->interestFreeMode : $lockedProfile->interest_free_mode,
+                'show_hijri' => $data->showHijriProvided ? $data->showHijri : $lockedProfile->show_hijri,
             ])->save();
             $this->activityLogger->record(
                 $lockedProfile,
@@ -38,7 +42,12 @@ final class UpdateFinancialProfile
                 $lockedProfile,
                 'financial_profile_updated',
                 before: $before,
-                after: ['name' => $lockedProfile->name, 'timezone' => $lockedProfile->timezone],
+                after: [
+                    'name' => $lockedProfile->name,
+                    'timezone' => $lockedProfile->timezone,
+                    'interest_free_mode' => $lockedProfile->interest_free_mode,
+                    'show_hijri' => $lockedProfile->show_hijri,
+                ],
             );
 
             return $lockedProfile->refresh();

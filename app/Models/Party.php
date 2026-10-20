@@ -40,6 +40,12 @@ class Party extends Model
         return $this->hasMany(RecordParty::class);
     }
 
+    /** @return HasMany<ObligationShare, $this> */
+    public function obligationShares(): HasMany
+    {
+        return $this->hasMany(ObligationShare::class);
+    }
+
     /** @return HasManyThrough<Record, RecordParty, $this> */
     public function records(): HasManyThrough
     {

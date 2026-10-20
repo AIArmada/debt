@@ -24,7 +24,7 @@ final class PartySearch
             ->where('status', PartyStatus::Active->value)
             ->when($exceptPartyId !== null, fn (Builder $query): Builder => $query->where('id', '<>', $exceptPartyId))
             ->where(function (Builder $query) use ($term): void {
-                $query->where('display_name', 'like', "{$term}%");
+                $query->where('display_name', 'ILIKE', "%{$term}%");
             })
             ->orderBy('display_name')
             ->limit(6)

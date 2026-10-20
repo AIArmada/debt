@@ -11,14 +11,15 @@ return new class extends Migration
     {
         Schema::create('exchange_rates', function (Blueprint $table): void {
             $table->uuid('id')->primary();
+            $table->foreignUuid('profile_id')->constrained('financial_profiles')->cascadeOnDelete();
             $table->string('from_currency', 3);
             $table->string('to_currency', 3);
             $table->decimal('rate', 18, 8);
             $table->date('rated_on');
             $table->string('source', 255);
             $table->timestamps();
-            $table->unique(['from_currency', 'to_currency', 'rated_on']);
-            $table->index(['from_currency', 'to_currency', 'rated_on']);
+            $table->unique(['profile_id', 'from_currency', 'to_currency', 'rated_on']);
+            $table->index(['profile_id', 'from_currency', 'to_currency', 'rated_on']);
         });
 
         DB::statement('ALTER TABLE exchange_rates ADD CONSTRAINT exchange_rates_rate_positive CHECK (rate > 0)');

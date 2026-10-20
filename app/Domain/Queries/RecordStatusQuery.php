@@ -13,8 +13,20 @@ final class RecordStatusQuery
             ->pluck('status')
             ->map(static fn (mixed $status): ObligationStatus => $status instanceof ObligationStatus ? $status : ObligationStatus::from((string) $status));
 
-        return $statuses->isNotEmpty() && $statuses->every(
+        if ($statuses->isNotEmpty() && $statuses->every(
             static fn (ObligationStatus $status): bool => $status === ObligationStatus::Settled,
-        ) ? ObligationStatus::Settled : ObligationStatus::Open;
+        )) {
+            return ObligationStatus::Settled;
+        }
+
+        if ($statuses->contains(ObligationStatus::Disputed)) {
+            return ObligationStatus::Disputed;
+        }
+
+        if ($statuses->contains(ObligationStatus::Paused)) {
+            return ObligationStatus::Paused;
+        }
+
+        return ObligationStatus::Open;
     }
 }

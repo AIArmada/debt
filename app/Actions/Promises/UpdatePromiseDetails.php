@@ -32,12 +32,6 @@ final class UpdatePromiseDetails
             $lockedRecord->loadMissing('profile');
             Gate::forUser($user)->authorize('update', $lockedRecord);
 
-            if ($lockedRecord->hasConfirmedMovements()) {
-                throw ValidationException::withMessages([
-                    'details' => 'This promise has confirmed movements. Void and correct them before editing its details.',
-                ]);
-            }
-
             $obligation = $data->obligationId === null
                 ? $lockedRecord->obligations()->oldest('created_at')->oldest('id')->firstOrFail()
                 : $lockedRecord->obligations()->whereKey($data->obligationId)->firstOrFail();

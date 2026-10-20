@@ -22,7 +22,7 @@ return new class extends Migration
             $table->index(['obligation_id', 'status']);
         });
 
-        Schema::getConnection()->statement("ALTER TABLE reminders ADD CONSTRAINT reminders_channel_valid CHECK (channel IN ('".ReminderChannel::Database->value."'))");
+        Schema::getConnection()->statement("ALTER TABLE reminders ADD CONSTRAINT reminders_channel_valid CHECK (channel IN ('".implode("','", array_column(ReminderChannel::cases(), 'value'))."'))");
         Schema::getConnection()->statement("ALTER TABLE reminders ADD CONSTRAINT reminders_status_valid CHECK (status IN ('".implode("','", array_column(ReminderStatus::cases(), 'value'))."'))");
 
         Schema::create('notifications', function (Blueprint $table): void {

@@ -20,7 +20,12 @@ final class SetExchangeRate
 
         return DB::transaction(function () use ($user, $profile, $data): ExchangeRate {
             $rate = ExchangeRate::query()->updateOrCreate(
-                ['from_currency' => $data->from, 'to_currency' => $data->to, 'rated_on' => $data->ratedOn],
+                [
+                    'profile_id' => $profile->getKey(),
+                    'from_currency' => $data->from,
+                    'to_currency' => $data->to,
+                    'rated_on' => $data->ratedOn,
+                ],
                 ['rate' => $data->rate, 'source' => $data->source],
             );
             $this->activityLogger->record($profile, $user, $rate, 'exchange_rate_saved', after: [

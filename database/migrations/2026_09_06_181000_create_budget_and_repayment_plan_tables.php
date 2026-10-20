@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Enums\PlanStatus;
+use App\Domain\Enums\PlanStrategy;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -27,11 +28,13 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('budget_period_id')->constrained()->cascadeOnDelete();
             $table->string('status', 30)->default(PlanStatus::Draft->value);
+            $table->string('strategy', 30)->default(PlanStrategy::DueDate->value);
             $table->timestamp('generated_at')->nullable();
             $table->timestamps();
             $table->index(['budget_period_id', 'status']);
         });
         DB::statement("ALTER TABLE repayment_plans ADD CONSTRAINT repayment_plans_status_valid CHECK (status IN ('".implode("','", array_column(PlanStatus::cases(), 'value'))."'))");
+        DB::statement("ALTER TABLE repayment_plans ADD CONSTRAINT repayment_plans_strategy_valid CHECK (strategy IN ('".implode("','", array_column(PlanStrategy::cases(), 'value'))."'))");
 
         Schema::create('plan_allocations', function (Blueprint $table): void {
             $table->uuid('id')->primary();

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->string('title');
             $table->date('due_on')->nullable();
             $table->string('status', 30)->default('open');
+            $table->string('closure_reason', 30)->nullable();
             $table->string('subject_type', 20)->default('money');
             $table->timestamps();
             $table->index(['record_id', 'direction', 'status']);

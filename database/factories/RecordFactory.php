@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Domain\Enums\RecordVisibility;
 use App\Models\FinancialProfile;
 use App\Models\Record;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -20,9 +21,20 @@ class RecordFactory extends Factory
     {
         return [
             'profile_id' => FinancialProfile::factory(),
+            'created_by' => null,
             'title' => fake()->sentence(3),
             'note' => fake()->optional()->sentence(),
             'is_archived' => false,
+            'visibility' => RecordVisibility::Shared,
         ];
+    }
+
+    public function configure(): static
+    {
+        return $this->afterMaking(function (Record $record): void {
+            if ($record->created_by === null) {
+                $record->setAttribute('created_by', $record->profile()->value('owner_user_id'));
+            }
+        });
     }
 }

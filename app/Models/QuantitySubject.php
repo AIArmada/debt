@@ -9,6 +9,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property string $name
+ * @property string $total
+ * @property string $unit
+ * @property bool $is_fractionable
+ */
 class QuantitySubject extends Model
 {
     /** @use HasFactory<QuantitySubjectFactory> */

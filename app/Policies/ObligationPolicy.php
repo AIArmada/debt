@@ -2,10 +2,9 @@
 
 namespace App\Policies;
 
-use App\Domain\Enums\MemberRole;
 use App\Models\Obligation;
 use App\Models\User;
-use App\Services\ProfileAccess;
+use Illuminate\Support\Facades\Gate;
 
 class ObligationPolicy
 {
@@ -13,17 +12,13 @@ class ObligationPolicy
     {
         $obligation->loadMissing('record.profile');
 
-        return app(ProfileAccess::class)->can($user, $obligation->record->profile, [
-            MemberRole::Owner,
-            MemberRole::Editor,
-            MemberRole::Viewer,
-        ]);
+        return Gate::forUser($user)->allows('view', $obligation->record);
     }
 
     public function recordMovement(User $user, Obligation $obligation): bool
     {
         $obligation->loadMissing('record.profile');
 
-        return app(ProfileAccess::class)->can($user, $obligation->record->profile, [MemberRole::Owner, MemberRole::Editor]);
+        return Gate::forUser($user)->allows('update', $obligation->record);
     }
 }

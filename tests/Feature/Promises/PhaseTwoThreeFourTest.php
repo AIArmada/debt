@@ -163,7 +163,7 @@ test('party exposure counts linked parts and archiving is blocked until they are
 
     expect(fn () => app(ArchiveParty::class)->handle($user, $party))->toThrow(ValidationException::class);
     app(RecordMoneyMovement::class)->handle($user, $record->obligations->firstOrFail(), RecordMovementData::settlement(1000, 'MYR', today()->toDateString()));
-    expect(app(PartyExposure::class)->forParty($party))->toMatchArray([
+    expect(app(PartyExposure::class)->forParty($party, $user))->toMatchArray([
         'open_count' => 0,
         'settled_count' => 1,
         'to_pay' => [],
@@ -239,7 +239,7 @@ test('saved exchange rates produce labeled stale conversions without mutating na
         'source' => 'user',
     ]));
 
-    $converted = app(ConvertedView::class)->forProfile($profile, 'USD');
+    $converted = app(ConvertedView::class)->forProfile($profile, 'USD', $user);
 
     expect($converted['to_pay']['USD']['amount_minor'])->toBe(20000)
         ->and($converted['to_pay']['USD']['stale'])->toBeTrue()
@@ -266,9 +266,9 @@ test('plans allocate by due date, supersede active plans, and report confirmed p
     $period = app(CreateBudgetPeriod::class)->handle($user, $profile, CreateBudgetPeriodData::fromInput([
         'startsOn' => today()->toDateString(),
         'endsOn' => today()->addDays(30)->toDateString(),
-        'incomeMinor' => 6000,
-        'essentialMinor' => 0,
-        'reserveMinor' => 0,
+        'income' => '60.00',
+        'essentials' => '0',
+        'reserve' => '0',
         'currency' => 'MYR',
     ]));
     $before = $profile->records()->with('obligations.moneyMovements')->get()->flatMap->obligations->flatMap->moneyMovements->count();

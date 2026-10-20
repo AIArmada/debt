@@ -139,6 +139,12 @@ test('evidence downloads require the signed profile-scoped route', function () {
 
     $this->actingAs($owner)->get($url)->assertOk();
     $this->actingAs($other)->get($url)->assertNotFound();
+    $this->actingAs($owner)->get(str_replace('signature=', 'signature=invalid', $url))->assertNotFound();
+    $expiredUrl = URL::temporarySignedRoute('attachments.download', now()->subMinute(), [
+        'profile' => $profile,
+        'attachment' => $attachment,
+    ]);
+    $this->actingAs($owner)->get($expiredUrl)->assertNotFound();
 });
 
 test('evidence rejects unsupported sources and cleans files when attachment persistence fails', function () {

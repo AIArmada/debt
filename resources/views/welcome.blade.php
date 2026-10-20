@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="A private, practical place to record promises, track confirmed movements, and see what you owe or are owed.">
-    <title>Clarity for your promises · {{ config('app.name', 'Promise Tracker') }}</title>
+    <meta name="description" content="{{ __('welcome.meta_description') }}">
+    <title>{{ __('welcome.title', ['app' => config('app.name', 'Promise Tracker')]) }}</title>
 
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -28,6 +28,11 @@
         .landing-nav-links a, .landing-text-link { color: inherit; text-decoration: none; transition: color .2s ease; }
         .landing-nav-links a:hover, .landing-text-link:hover { color: var(--forest); }
         .landing-nav-actions { display: flex; align-items: center; gap: 10px; }
+        .landing-language-switch { display: inline-flex; align-items: center; gap: 2px; padding: 4px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); font-size: 11px; line-height: 1; }
+        .landing-language-switch a { display: inline-flex; align-items: center; justify-content: center; min-width: 30px; min-height: 32px; border-radius: 999px; padding: 6px 7px; color: inherit; text-decoration: none; }
+        .landing-language-switch a:hover { color: var(--forest); }
+        .landing-language-switch a:focus-visible { outline: 2px solid var(--forest); outline-offset: 2px; }
+        .landing-language-switch a.is-active { background: var(--forest); color: white; font-weight: 700; }
         .landing-button { display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; padding: 12px 18px; border: 1px solid transparent; font-size: 14px; font-weight: 600; text-decoration: none; transition: transform .2s ease, box-shadow .2s ease, background .2s ease; }
         .landing-button:hover { transform: translateY(-2px); }
         .landing-button-primary { background: var(--forest); color: white; box-shadow: 0 10px 20px rgba(18, 60, 52, .16); }
@@ -149,18 +154,31 @@
         .landing-footer a:hover { color: white; }
         @media (max-width: 900px) { .landing-hero-grid, .landing-problem-grid, .landing-principles { grid-template-columns: 1fr; gap: 52px; } .landing-hero { padding-top: 68px; } .landing-preview-wrap { max-width: 590px; margin: 0 auto; } .landing-principles > .landing-section-heading { position: static; } }
         @media (max-width: 680px) { .landing-container { width: min(100% - 32px, 540px); } .landing-nav-inner { min-height: 70px; } .landing-nav-links { display: none; } .landing-nav-actions .landing-button-secondary { display: none; } .landing-hero { padding: 58px 0 64px; } .landing-hero h1 { font-size: clamp(42px, 13vw, 64px); } .landing-lede { font-size: 17px; } .landing-preview-wrap { padding-left: 10px; } .landing-preview-wrap::before { width: 90%; } .landing-trust-grid, .landing-feature-grid, .landing-faq-grid { grid-template-columns: 1fr; } .landing-trust-item { padding: 17px 0; } .landing-trust-item + .landing-trust-item { border-left: 0; border-top: 1px solid var(--line); } .landing-section { padding: 78px 0; } .landing-fragment-list { gap: 8px; } .landing-fragment { padding: 13px; } .landing-fragment span { font-size: 13px; } .landing-quote { padding: 26px; } .landing-quote p { font-size: 20px; } .landing-feature-intro, .landing-cta-inner, .landing-footer-inner { align-items: start; flex-direction: column; } .landing-feature-intro { gap: 20px; } .landing-feature-card { min-height: 205px; } .landing-feature-card h3 { margin-top: 30px; } .landing-steps { grid-template-columns: 1fr; } .landing-step { min-height: 0; } .landing-step h3 { margin-top: 26px; } .landing-cta { padding: 78px 0 82px; } .landing-cta-inner { gap: 28px; } .landing-cta h2 { font-size: 42px; } }
+        @media (max-width: 680px) { .landing-nav-inner { gap: 8px; } .landing-nav-actions { gap: 6px; } .landing-nav-actions > .landing-button-primary { padding: 10px 11px; font-size: 12px; white-space: nowrap; } .landing-language-switch { gap: 0; padding: 3px; } .landing-language-switch a { padding: 5px; } }
+        @media (max-width: 380px) { .landing-nav-inner { gap: 5px; } .landing-brand { gap: 7px; font-size: 13px; } .landing-brand-mark { width: 32px; height: 32px; border-radius: 10px; } .landing-nav-actions { gap: 4px; } .landing-nav-actions > .landing-button-primary { padding: 9px 8px; font-size: 11px; } .landing-language-switch a { padding: 5px 4px; } }
     </style>
 </head>
 <body>
 <div class="landing-shell">
     <header class="landing-nav">
         <div class="landing-container landing-nav-inner">
-            <a class="landing-brand" href="{{ route('home') }}" aria-label="{{ config('app.name', 'Promise Tracker') }} home">
+            <a class="landing-brand" href="{{ route('home') }}" aria-label="{{ __('welcome.brand_home', ['app' => config('app.name', 'Promise Tracker')]) }}">
                 <span class="landing-brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 17.5 12 4l7 13.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.3 13.7h7.4M7 17.5h10" stroke-linecap="round"/></svg></span>
                 <span>{{ config('app.name', 'Promise Tracker') }}</span>
             </a>
-            <nav class="landing-nav-links" aria-label="Primary navigation"><a href="#why">Why this exists</a><a href="#how">How it works</a><a href="#trust">Trust & control</a></nav>
-            <div class="landing-nav-actions"><a class="landing-button landing-button-secondary" href="{{ route('login') }}">Sign in</a><a class="landing-button landing-button-primary" href="{{ route('register') }}">Create account</a></div>
+            <nav class="landing-nav-links" aria-label="{{ __('welcome.primary_navigation') }}">
+                <a href="#why">{{ __('welcome.nav_why') }}</a>
+                <a href="#how">{{ __('welcome.nav_how') }}</a>
+                <a href="#trust">{{ __('welcome.nav_trust') }}</a>
+            </nav>
+            <div class="landing-nav-actions">
+                <div class="landing-language-switch" role="group" aria-label="{{ __('welcome.language_switch') }}">
+                    <a href="{{ route('locale.switch', ['locale' => 'en']) }}" lang="en" hreflang="en" class="{{ app()->getLocale() === 'en' ? 'is-active' : '' }}" @if (app()->getLocale() === 'en') aria-current="page" @endif>{{ __('welcome.language_english') }}</a>
+                    <a href="{{ route('locale.switch', ['locale' => 'ms']) }}" lang="ms" hreflang="ms" class="{{ app()->getLocale() === 'ms' ? 'is-active' : '' }}" @if (app()->getLocale() === 'ms') aria-current="page" @endif>{{ __('welcome.language_malay') }}</a>
+                </div>
+                <a class="landing-button landing-button-secondary" href="{{ route('login') }}">{{ __('welcome.sign_in') }}</a>
+                <a class="landing-button landing-button-primary" href="{{ route('register') }}">{{ __('welcome.create_account') }}</a>
+            </div>
         </div>
     </header>
 
@@ -168,43 +186,124 @@
         <section class="landing-hero">
             <div class="landing-container landing-hero-grid">
                 <div>
-                    <div class="landing-eyebrow">A private place for your promises</div>
-                    <h1>Clarity for what you owe <em>— and what you’re owed.</em></h1>
-                    <p class="landing-lede">Record what you owe and what others owe you, then follow each confirmed movement until the promise is settled.</p>
-                    <div class="landing-hero-actions"><a class="landing-button landing-button-primary" href="{{ route('register') }}">Create a private workspace <span aria-hidden="true" style="margin-left: 8px">→</span></a><a class="landing-button landing-button-secondary" href="#how">See how it works</a></div>
-                    <div class="landing-hero-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3 5 6v5c0 4.5 2.9 8.5 7 10 4.1-1.5 7-5.5 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>Start with what you know. Improve the picture over time.</div>
+                    <div class="landing-eyebrow">{{ __('welcome.hero_eyebrow') }}</div>
+                    <h1>{{ __('welcome.hero_headline') }}</h1>
+                    <p class="landing-lede">{{ __('welcome.hero_description') }}</p>
+                    <div class="landing-hero-actions">
+                        <a class="landing-button landing-button-primary" href="{{ route('register') }}">{{ __('welcome.create_account') }} <span aria-hidden="true" style="margin-left: 8px">→</span></a>
+                        <a class="landing-button landing-button-secondary" href="#how">{{ __('welcome.see_how_it_works') }}</a>
+                    </div>
+                    <div class="landing-hero-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 2.9 8.5 7 10 4.1-1.5 7-5.5 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>{{ __('welcome.hero_note') }}</div>
                 </div>
 
-                <div class="landing-preview-wrap" aria-label="Illustrative product preview">
+                <div class="landing-preview-wrap" role="group" aria-label="{{ __('welcome.preview_aria') }}">
                     <div class="landing-preview">
-                        <div class="landing-window-bar"><div class="landing-window-dots"><span></span><span></span><span></span></div><span>promise-tracker.app</span><span aria-hidden="true">•••</span></div>
-                        <div class="landing-preview-header"><div><div class="landing-preview-kicker">Promise overview</div><strong>Good morning, Aina</strong></div><span class="landing-profile-pill"><i></i>Personal</span></div>
-                        <div class="landing-preview-header"><span class="landing-preview-month">September 2026</span><span class="landing-preview-month">Example workspace</span></div>
-                        <div class="landing-preview-cards"><div class="landing-preview-card landing-preview-card-pay"><span>To pay</span><strong>MYR 4,280</strong></div><div class="landing-preview-card landing-preview-card-receive"><span>To receive</span><strong>MYR 1,150</strong></div></div>
-                        <div class="landing-next"><div class="landing-next-title"><span>Recent movement</span><span>Confirmed</span></div><div class="landing-progress"><i></i></div><div class="landing-progress-caption"><span>Opening balance recorded</span><span>100%</span></div></div>
-                        <div class="landing-next"><div class="landing-next-title"><b>Your promises</b><span>View all</span></div><div class="landing-next-row"><div><span class="landing-next-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg></span><span><b>Home financing</b><small>Due 12 Sep · You owe them</small></span></div><span class="landing-next-amount">MYR 650</span></div><div class="landing-next-row"><div><span class="landing-next-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 7h14v10H5z"/><path d="m5 8 7 5 7-5"/></svg></span><span><b>Family support</b><small>They owe you · MYR</small></span></div><span class="landing-next-amount">MYR 1,150</span></div></div>
-                        <div class="landing-example">Illustrative data only · your workspace starts empty</div>
+                        <div class="landing-window-bar"><div class="landing-window-dots" aria-hidden="true"><span></span><span></span><span></span></div><span>{{ config('app.name', 'Promise Tracker') }}</span><span aria-hidden="true">•••</span></div>
+                        <div class="landing-preview-header"><div><div class="landing-preview-kicker">{{ __('welcome.preview_overview') }}</div><strong>{{ __('welcome.preview_person') }}</strong></div><span class="landing-profile-pill"><i aria-hidden="true"></i>{{ __('welcome.preview_profile') }}</span></div>
+                        <div class="landing-preview-header"><span class="landing-preview-month">{{ __('welcome.preview_record') }}</span><span class="landing-preview-month">{{ __('welcome.preview_workspace') }}</span></div>
+                        <div class="landing-preview-cards">
+                            <div class="landing-preview-card landing-preview-card-pay"><span>{{ __('welcome.preview_to_pay') }}</span><strong>MYR 4,280</strong></div>
+                            <div class="landing-preview-card landing-preview-card-receive"><span>{{ __('welcome.preview_to_receive') }}</span><strong>MYR 1,150</strong></div>
+                        </div>
+                        <div class="landing-next">
+                            <div class="landing-next-title"><span>{{ __('welcome.preview_recent_movement') }}</span><span>{{ __('welcome.preview_confirmed') }}</span></div>
+                            <div class="landing-progress"><i></i></div>
+                            <div class="landing-progress-caption"><span>{{ __('welcome.preview_progress') }}</span><span>62%</span></div>
+                        </div>
+                        <div class="landing-next">
+                            <div class="landing-next-title"><b>{{ __('welcome.preview_promises') }}</b><span>{{ __('welcome.preview_view_all') }}</span></div>
+                            <div class="landing-next-row"><div><span class="landing-next-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg></span><span><b>{{ __('welcome.preview_home_costs') }}</b><small>{{ __('welcome.preview_due_you_owe') }}</small></span></div><span class="landing-next-amount">MYR 650</span></div>
+                            <div class="landing-next-row"><div><span class="landing-next-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 7h14v10H5z"/><path d="m5 8 7 5 7-5"/></svg></span><span><b>{{ __('welcome.preview_family_support') }}</b><small>{{ __('welcome.preview_they_owe') }}</small></span></div><span class="landing-next-amount">MYR 1,150</span></div>
+                        </div>
+                        <div class="landing-example">{{ __('welcome.preview_illustrative') }}</div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section class="landing-trust-strip" aria-label="Product assurances"><div class="landing-container landing-trust-grid"><div class="landing-trust-item"><span class="landing-trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3 5 6v5c0 4.5 2.9 8.5 7 10 4.1-1.5 7-5.5 7-10V6l-7-3Z"/><path d="M9 12h6M12 9v6" stroke-linecap="round"/></svg></span><span><strong>Private by default</strong><span>Your records start with you.</span></span></div><div class="landing-trust-item"><span class="landing-trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 12h16M12 4v16" stroke-linecap="round"/><circle cx="12" cy="12" r="8"/></svg></span><span><strong>Start manually</strong><span>No bank connection required.</span></span></div><div class="landing-trust-item"><span class="landing-trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 4v16M4 12h16" stroke-linecap="round"/><path d="m7 12 3 3 7-7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><strong>You decide what happens next</strong><span>Recommendations never replace your say.</span></span></div></div></section>
+        <section class="landing-trust-strip" aria-label="{{ __('welcome.trust_strip_aria') }}">
+            <div class="landing-container landing-trust-grid">
+                <div class="landing-trust-item"><span class="landing-trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 2.9 8.5 7 10 4.1-1.5 7-5.5 7-10V6l-7-3Z"/><path d="M9 12h6M12 9v6" stroke-linecap="round"/></svg></span><span><strong>{{ __('welcome.trust_visibility') }}</strong><span>{{ __('welcome.trust_visibility_desc') }}</span></span></div>
+                <div class="landing-trust-item"><span class="landing-trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 12h16M12 4v16" stroke-linecap="round"/><circle cx="12" cy="12" r="8"/></svg></span><span><strong>{{ __('welcome.trust_manual') }}</strong><span>{{ __('welcome.trust_manual_desc') }}</span></span></div>
+                <div class="landing-trust-item"><span class="landing-trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 4v16M4 12h16" stroke-linecap="round"/><path d="m7 12 3 3 7-7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><strong>{{ __('welcome.trust_control') }}</strong><span>{{ __('welcome.trust_control_desc') }}</span></span></div>
+            </div>
+        </section>
 
-        <section id="why" class="landing-section landing-section-soft"><div class="landing-container landing-problem-grid"><div><div class="landing-eyebrow">Why this exists</div><div class="landing-section-heading"><h2>Money conversations are hard enough without searching for the facts.</h2><p>When details live across messages, receipts, statements, and memory, the emotional weight gets heavier. This gives the facts a calm home.</p></div><div class="landing-fragment-list"><div class="landing-fragment"><small>Scattered</small><span>Receipts in three places</span></div><div class="landing-fragment"><small>Unclear</small><span>“What is the real balance?”</span></div><div class="landing-fragment"><small>Urgent</small><span>A due date you nearly missed</span></div><div class="landing-fragment"><small>Personal</small><span>A follow-up you keep avoiding</span></div></div></div><blockquote class="landing-quote"><div class="landing-quote-mark">“</div><p>Less shame. More signal. One honest view of what needs your attention.</p><footer>A practical system for the messy middle—not a scorecard.</footer></blockquote></div></section>
+        <section id="why" class="landing-section landing-section-soft">
+            <div class="landing-container landing-problem-grid">
+                <div>
+                    <div class="landing-eyebrow">{{ __('welcome.why_eyebrow') }}</div>
+                    <div class="landing-section-heading"><h2>{{ __('welcome.why_heading') }}</h2><p>{{ __('welcome.why_description') }}</p></div>
+                    <div class="landing-fragment-list">
+                        <div class="landing-fragment"><small>{{ __('welcome.why_fragment_scattered') }}</small><span>{{ __('welcome.why_fragment_scattered_desc') }}</span></div>
+                        <div class="landing-fragment"><small>{{ __('welcome.why_fragment_unclear') }}</small><span>{{ __('welcome.why_fragment_unclear_desc') }}</span></div>
+                        <div class="landing-fragment"><small>{{ __('welcome.why_fragment_approaching') }}</small><span>{{ __('welcome.why_fragment_approaching_desc') }}</span></div>
+                        <div class="landing-fragment"><small>{{ __('welcome.why_fragment_personal') }}</small><span>{{ __('welcome.why_fragment_personal_desc') }}</span></div>
+                    </div>
+                </div>
+                <blockquote class="landing-quote"><div class="landing-quote-mark" aria-hidden="true">“</div><p>{{ __('welcome.why_quote') }}</p><footer>{{ __('welcome.why_quote_footer') }}</footer></blockquote>
+            </div>
+        </section>
 
-        <section class="landing-section"><div class="landing-container"><div class="landing-feature-intro"><div class="landing-section-heading"><div class="landing-eyebrow">What you get</div><h2>A simpler way to keep your word.</h2></div><p>Promise Tracker keeps the record small, private, and explainable from the first amount to the final movement.</p></div><div class="landing-feature-grid"><article class="landing-feature-card"><div class="landing-feature-number"><span>01</span><span class="landing-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 6h14v13H5z"/><path d="M8 3v6M16 3v6M5 10h14"/></svg></span></div><h3>Record in seconds</h3><p>Add a person, direction, amount, due date, and note in one focused flow.</p></article><article class="landing-feature-card"><div class="landing-feature-number"><span>02</span><span class="landing-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 18h16M6 15l3-4 3 2 5-7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div><h3>Follow every movement</h3><p>Balances come from confirmed movements, so the history always explains the number.</p></article><article class="landing-feature-card"><div class="landing-feature-number"><span>03</span><span class="landing-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 4h9l3 3v13H6z"/><path d="M14 4v4h4M9 13h6M9 16h4" stroke-linecap="round"/></svg></span></div><h3>Keep currencies separate</h3><p>Amounts stay grouped by currency so different units are never silently combined.</p></article><article class="landing-feature-card"><div class="landing-feature-number"><span>04</span><span class="landing-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 6h14v12H5z"/><path d="m5 7 7 5 7-5M8 21h8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div><h3>Stay private</h3><p>Your promises start with you. Add people as private counterparties without requiring them to join.</p></article></div></div></section>
+        <section class="landing-section">
+            <div class="landing-container">
+                <div class="landing-feature-intro"><div class="landing-section-heading"><div class="landing-eyebrow">{{ __('welcome.features_eyebrow') }}</div><h2>{{ __('welcome.features_heading') }}</h2></div><p>{{ __('welcome.features_intro') }}</p></div>
+                <div class="landing-feature-grid">
+                    <article class="landing-feature-card"><div class="landing-feature-number"><span>01</span><span class="landing-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 6h14v13H5z"/><path d="M8 3v6M16 3v6M5 10h14"/></svg></span></div><h3>{{ __('welcome.feature_record_title') }}</h3><p>{{ __('welcome.feature_record_desc') }}</p></article>
+                    <article class="landing-feature-card"><div class="landing-feature-number"><span>02</span><span class="landing-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 18h16M6 15l3-4 3 2 5-7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div><h3>{{ __('welcome.feature_movements_title') }}</h3><p>{{ __('welcome.feature_movements_desc') }}</p></article>
+                    <article class="landing-feature-card"><div class="landing-feature-number"><span>03</span><span class="landing-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M6 4h9l3 3v13H6z"/><path d="M14 4v4h4M9 13h6M9 16h4" stroke-linecap="round"/></svg></span></div><h3>{{ __('welcome.feature_currencies_title') }}</h3><p>{{ __('welcome.feature_currencies_desc') }}</p></article>
+                    <article class="landing-feature-card"><div class="landing-feature-number"><span>04</span><span class="landing-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 6h14v12H5z"/><path d="m5 7 7 5 7-5M8 21h8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div><h3>{{ __('welcome.feature_charges_title') }}</h3><p>{{ __('welcome.feature_charges_desc') }}</p></article>
+                </div>
+            </div>
+        </section>
 
-        <section id="how" class="landing-section landing-section-soft"><div class="landing-container"><div class="landing-section-heading"><div class="landing-eyebrow">How it works</div><h2>Start small. Keep the picture honest.</h2><p>You only need the details you know today. Add the rest when the promise changes.</p></div><div class="landing-steps"><article class="landing-step"><span class="landing-step-num">01</span><h3>Add a promise</h3><p>Choose who it involves, whether you pay or receive, the amount, and an optional due date.</p></article><article class="landing-step"><span class="landing-step-num">02</span><h3>Record what happens</h3><p>Add confirmed payments, collections, or adjustments as they happen.</p></article><article class="landing-step"><span class="landing-step-num">03</span><h3>See the balance</h3><p>Open the history any time to understand the remaining amount and settle the promise.</p></article></div></div></section>
+        <section id="how" class="landing-section landing-section-soft">
+            <div class="landing-container">
+                <div class="landing-section-heading"><div class="landing-eyebrow">{{ __('welcome.how_eyebrow') }}</div><h2>{{ __('welcome.how_heading') }}</h2><p>{{ __('welcome.how_description') }}</p></div>
+                <div class="landing-steps">
+                    <article class="landing-step"><span class="landing-step-num">01</span><h3>{{ __('welcome.step_add_title') }}</h3><p>{{ __('welcome.step_add_desc') }}</p></article>
+                    <article class="landing-step"><span class="landing-step-num">02</span><h3>{{ __('welcome.step_movement_title') }}</h3><p>{{ __('welcome.step_movement_desc') }}</p></article>
+                    <article class="landing-step"><span class="landing-step-num">03</span><h3>{{ __('welcome.step_plan_title') }}</h3><p>{{ __('welcome.step_plan_desc') }}</p></article>
+                </div>
+            </div>
+        </section>
 
-        <section id="trust" class="landing-section"><div class="landing-container landing-principles"><div class="landing-section-heading"><div class="landing-eyebrow">Trust & control</div><h2>Simple rules make the record reliable.</h2><p>Promise Tracker is deliberately clear about what it stores and how each balance is formed.</p></div><div class="landing-principle-list"><article class="landing-principle"><span class="landing-principle-num">01</span><div><h3>Private is the starting point</h3><p>Your promises begin private. A person can be recorded without creating an account.</p></div></article><article class="landing-principle"><span class="landing-principle-num">02</span><div><h3>Only confirmed movements count</h3><p>Nothing changes a balance until you record it. A correction keeps the original movement visible.</p></div></article><article class="landing-principle"><span class="landing-principle-num">03</span><div><h3>Currencies stay separate</h3><p>Each currency has its own position. Promise Tracker never adds unlike currencies together.</p></div></article><article class="landing-principle"><span class="landing-principle-num">04</span><div><h3>You remain in control</h3><p>This is an organising tool, not financial or legal advice. You decide what to record and what to do next.</p></div></article></div></div></section>
+        <section id="trust" class="landing-section">
+            <div class="landing-container landing-principles">
+                <div class="landing-section-heading"><div class="landing-eyebrow">{{ __('welcome.trust_eyebrow') }}</div><h2>{{ __('welcome.trust_heading') }}</h2><p>{{ __('welcome.trust_description') }}</p></div>
+                <div class="landing-principle-list">
+                    <article class="landing-principle"><span class="landing-principle-num">01</span><div><h3>{{ __('welcome.principle_visibility_title') }}</h3><p>{{ __('welcome.principle_visibility_desc') }}</p></div></article>
+                    <article class="landing-principle"><span class="landing-principle-num">02</span><div><h3>{{ __('welcome.principle_movement_title') }}</h3><p>{{ __('welcome.principle_movement_desc') }}</p></div></article>
+                    <article class="landing-principle"><span class="landing-principle-num">03</span><div><h3>{{ __('welcome.principle_currency_title') }}</h3><p>{{ __('welcome.principle_currency_desc') }}</p></div></article>
+                    <article class="landing-principle"><span class="landing-principle-num">04</span><div><h3>{{ __('welcome.principle_control_title') }}</h3><p>{{ __('welcome.principle_control_desc') }}</p></div></article>
+                </div>
+            </div>
+        </section>
 
-<section class="landing-section landing-section-soft"><div class="landing-container"><div class="landing-section-heading"><div class="landing-eyebrow">Before you begin</div><h2>Good questions deserve straight answers.</h2></div><div class="landing-faq-grid"><article class="landing-faq"><h3>Do I need every detail first?</h3><p>No. Start with the person, direction, amount, and whatever context you know.</p></article><article class="landing-faq"><h3>Does the other person need an account?</h3><p>No. A person can stay as a private counterparty in your People list.</p></article><article class="landing-faq"><h3>Can I track more than people?</h3><p>Yes. People, organisations, and groups can each be connected to a promise.</p></article><article class="landing-faq"><h3>How is the balance formed?</h3><p>From confirmed movements in the promise history, grouped separately by currency.</p></article></div></div></section>
+        <section class="landing-section landing-section-soft">
+            <div class="landing-container">
+                <div class="landing-section-heading"><div class="landing-eyebrow">{{ __('welcome.faq_eyebrow') }}</div><h2>{{ __('welcome.faq_heading') }}</h2></div>
+                <div class="landing-faq-grid">
+                    <article class="landing-faq"><h3>{{ __('welcome.faq_details_question') }}</h3><p>{{ __('welcome.faq_details_answer') }}</p></article>
+                    <article class="landing-faq"><h3>{{ __('welcome.faq_share_question') }}</h3><p>{{ __('welcome.faq_share_answer') }}</p></article>
+                    <article class="landing-faq"><h3>{{ __('welcome.faq_types_question') }}</h3><p>{{ __('welcome.faq_types_answer') }}</p></article>
+                    <article class="landing-faq"><h3>{{ __('welcome.faq_payments_question') }}</h3><p>{{ __('welcome.faq_payments_answer') }}</p></article>
+                </div>
+            </div>
+        </section>
 
-        <section class="landing-cta"><div class="landing-container landing-cta-inner"><div><div class="landing-eyebrow">A calmer next step</div><h2>Make the picture clearer, one record at a time.</h2></div><a class="landing-button landing-button-primary" href="{{ route('register') }}">Create your private workspace <span aria-hidden="true" style="margin-left: 8px">→</span></a></div></section>
+        <section class="landing-cta">
+            <div class="landing-container landing-cta-inner"><div><div class="landing-eyebrow">{{ __('welcome.cta_eyebrow') }}</div><h2>{{ __('welcome.cta_heading') }}</h2></div><a class="landing-button landing-button-primary" href="{{ route('register') }}">{{ __('welcome.create_account') }} <span aria-hidden="true" style="margin-left: 8px">→</span></a></div>
+        </section>
     </main>
 
-    <footer class="landing-footer"><div class="landing-container landing-footer-inner"><a class="landing-brand" href="{{ route('home') }}"><span class="landing-brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 17.5 12 4l7 13.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.3 13.7h7.4M7 17.5h10" stroke-linecap="round"/></svg></span><span>{{ config('app.name', 'Promise Tracker') }}</span></a><div class="landing-footer-links"><a href="{{ route('legal.privacy') }}">Privacy</a><a href="{{ route('legal.terms') }}">Terms</a><a href="{{ route('legal.retention') }}">Retention</a><a href="{{ route('legal.deletion') }}">Deletion</a><a href="#how">How it works</a><a href="{{ route('login') }}">Sign in</a></div><span>Built for clear next steps.</span></div></footer>
+    <footer class="landing-footer">
+        <div class="landing-container landing-footer-inner">
+            <a class="landing-brand" href="{{ route('home') }}" aria-label="{{ __('welcome.brand_home', ['app' => config('app.name', 'Promise Tracker')]) }}"><span class="landing-brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 17.5 12 4l7 13.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.3 13.7h7.4M7 17.5h10" stroke-linecap="round"/></svg></span><span>{{ config('app.name', 'Promise Tracker') }}</span></a>
+            <div class="landing-footer-links"><a href="{{ route('legal.privacy') }}">{{ __('welcome.footer_privacy') }}</a><a href="{{ route('legal.terms') }}">{{ __('welcome.footer_terms') }}</a><a href="{{ route('legal.retention') }}">{{ __('welcome.footer_retention') }}</a><a href="{{ route('legal.deletion') }}">{{ __('welcome.footer_deletion') }}</a><a href="#how">{{ __('welcome.footer_how') }}</a><a href="{{ route('login') }}">{{ __('welcome.footer_sign_in') }}</a></div>
+            <span>{{ __('welcome.footer_tagline') }}</span>
+        </div>
+    </footer>
 </div>
 </body>
 </html>

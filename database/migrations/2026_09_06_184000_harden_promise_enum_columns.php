@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Enums\ClosureReason;
 use App\Domain\Enums\Direction;
 use App\Domain\Enums\MemberRole;
 use App\Domain\Enums\MoneyEntry;
@@ -8,6 +9,7 @@ use App\Domain\Enums\ObligationStatus;
 use App\Domain\Enums\PartyKind;
 use App\Domain\Enums\PartyRole;
 use App\Domain\Enums\PartyStatus;
+use App\Domain\Enums\RecordVisibility;
 use App\Domain\Enums\SubjectType;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
@@ -19,9 +21,11 @@ return new class extends Migration
         $this->addCheck('profile_members', 'profile_members_role_valid', 'role', MemberRole::cases());
         $this->addCheck('parties', 'parties_kind_valid', 'kind', PartyKind::cases());
         $this->addCheck('parties', 'parties_status_valid', 'status', PartyStatus::cases());
+        $this->addCheck('records', 'records_visibility_valid', 'visibility', RecordVisibility::cases());
         $this->addCheck('record_parties', 'record_parties_role_valid', 'role', PartyRole::cases());
         $this->addCheck('obligations', 'obligations_direction_valid', 'direction', Direction::cases());
         $this->addCheck('obligations', 'obligations_status_valid', 'status', ObligationStatus::cases());
+        DB::statement("ALTER TABLE obligations ADD CONSTRAINT obligations_closure_reason_valid CHECK (closure_reason IS NULL OR closure_reason IN ('".implode("','", array_column(ClosureReason::cases(), 'value'))."'))");
         $this->addCheck('obligations', 'obligations_subject_type_valid', 'subject_type', SubjectType::cases());
         $this->addCheck('money_movements', 'money_movements_entry_valid', 'entry', MoneyEntry::cases());
         $this->addCheck('money_movements', 'money_movements_status_valid', 'status', MovementStatus::cases());
@@ -33,8 +37,9 @@ return new class extends Migration
         foreach ([
             'profile_members' => ['profile_members_role_valid'],
             'parties' => ['parties_kind_valid', 'parties_status_valid'],
+            'records' => ['records_visibility_valid'],
             'record_parties' => ['record_parties_role_valid'],
-            'obligations' => ['obligations_direction_valid', 'obligations_status_valid', 'obligations_subject_type_valid'],
+            'obligations' => ['obligations_direction_valid', 'obligations_status_valid', 'obligations_closure_reason_valid', 'obligations_subject_type_valid'],
             'money_movements' => ['money_movements_entry_valid', 'money_movements_status_valid'],
             'quantity_returns' => ['quantity_returns_status_valid'],
         ] as $table => $constraints) {

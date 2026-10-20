@@ -18,6 +18,20 @@
                     <option value="{{ $timezoneOption }}">{{ $timezoneOption }}</option>
                 @endforeach
             </flux:select>
+            <label class="flex items-start gap-3 rounded-xl border border-zinc-200 px-4 py-3 dark:border-zinc-700">
+                <input wire:model="interestFreeMode" type="checkbox" class="mt-1 rounded border-zinc-300 text-emerald-600" />
+                <span>
+                    <span class="block text-sm font-medium">{{ __('charges.guard.label') }}</span>
+                    <span class="mt-1 block text-xs text-zinc-500">{{ __('charges.guard.disclaimer') }}</span>
+                </span>
+            </label>
+            <label class="flex items-start gap-3 rounded-xl border border-zinc-200 px-4 py-3 dark:border-zinc-700">
+                <input wire:model="showHijri" type="checkbox" class="mt-1 rounded border-zinc-300 text-emerald-600" />
+                <span>
+                    <span class="block text-sm font-medium">{{ __('app.show_hijri') }}</span>
+                    <span class="mt-1 block text-xs text-zinc-500">{{ __('app.show_hijri_description') }}</span>
+                </span>
+            </label>
             <div class="rounded-xl bg-zinc-50 px-4 py-3 dark:bg-zinc-900">
                 <flux:text class="font-medium">Base currency: {{ $profile->base_currency }}</flux:text>
                 <flux:text class="mt-1 text-sm">Base currency is read-only so existing ledger amounts never change.</flux:text>
@@ -28,6 +42,7 @@
                     <a href="{{ route('members.index', $profile) }}" wire:navigate class="font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white">Members</a>
                     <a href="{{ route('profile.exports.csv', $profile) }}" class="font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white">Export CSV</a>
                     <a href="{{ route('profile.exports.json', $profile) }}" class="font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white">Export JSON</a>
+                    <a href="{{ route('profile.exports.zip', $profile) }}" class="font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white">{{ __('promises.export_zip') }}</a>
                 </div>
                 <flux:button type="submit" variant="primary" wire:loading.attr="disabled">Save settings</flux:button>
             </div>

@@ -10,6 +10,9 @@ use Illuminate\Validation\ValidationException;
 
 final readonly class RecordMovementData
 {
+    /**
+     * @param  array<string, mixed>|null  $calculation
+     */
     private function __construct(
         public int $amountMinor,
         public string $currency,
@@ -17,6 +20,8 @@ final readonly class RecordMovementData
         public string $occurredOn,
         public ?string $note,
         public bool $clampToOutstanding = false,
+        public ?array $calculation = null,
+        public string $activityAction = 'money_movement_recorded',
     ) {}
 
     /** @return array<string, array<int, string>> */
@@ -59,14 +64,17 @@ final readonly class RecordMovementData
         return new self($amountMinor, $currency, MoneyEntry::OpeningBalance, $occurredOn, $note);
     }
 
+    /** @param array<string, mixed>|null $calculation */
     public static function confirmed(
         int $amountMinor,
         string $currency,
         MoneyEntry $entry,
         string $occurredOn,
         ?string $note = null,
+        ?array $calculation = null,
+        string $activityAction = 'money_movement_recorded',
     ): self {
-        return new self($amountMinor, $currency, $entry, $occurredOn, $note);
+        return new self($amountMinor, $currency, $entry, $occurredOn, $note, false, $calculation, $activityAction);
     }
 
     public static function settlement(

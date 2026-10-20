@@ -15,7 +15,7 @@ class ActivityLogger
      */
     public function record(
         FinancialProfile $profile,
-        User $actor,
+        ?User $actor,
         Model $subject,
         string $action,
         ?array $before = null,
@@ -23,7 +23,7 @@ class ActivityLogger
     ): ActivityEntry {
         return ActivityEntry::create([
             'profile_id' => $profile->getKey(),
-            'actor_user_id' => $actor->getKey(),
+            'actor_user_id' => $actor?->getKey(),
             'subject_type' => $subject->getMorphClass(),
             'subject_id' => $subject->getKey(),
             'action' => $action,

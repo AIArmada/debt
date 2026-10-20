@@ -14,17 +14,18 @@ use Illuminate\Support\Carbon;
  * @property MemberRole $role
  * @property Carbon $expires_at
  * @property Carbon|null $accepted_at
+ * @property Carbon|null $revoked_at
  */
 class ProfileInvite extends Model
 {
     /** @use HasFactory<ProfileInviteFactory> */
     use HasFactory, HasUuids;
 
-    protected $fillable = ['profile_id', 'email', 'role', 'token_hash', 'invited_by', 'expires_at', 'accepted_at'];
+    protected $fillable = ['profile_id', 'email', 'role', 'token_hash', 'invited_by', 'expires_at', 'accepted_at', 'revoked_at'];
 
     protected function casts(): array
     {
-        return ['role' => MemberRole::class, 'expires_at' => 'datetime', 'accepted_at' => 'datetime'];
+        return ['role' => MemberRole::class, 'expires_at' => 'datetime', 'accepted_at' => 'datetime', 'revoked_at' => 'datetime'];
     }
 
     /** @return BelongsTo<FinancialProfile, $this> */
@@ -41,6 +42,6 @@ class ProfileInvite extends Model
 
     public function isUsable(): bool
     {
-        return $this->accepted_at === null && $this->expires_at->isFuture();
+        return $this->accepted_at === null && $this->revoked_at === null && $this->expires_at->isFuture();
     }
 }

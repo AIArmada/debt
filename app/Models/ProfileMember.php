@@ -3,13 +3,18 @@
 namespace App\Models;
 
 use App\Domain\Enums\MemberRole;
+use Carbon\CarbonInterface;
 use Database\Factories\ProfileMemberFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/** @property MemberRole $role */
+/**
+ * @property MemberRole $role
+ * @property CarbonInterface|null $accepted_at
+ * @property-read User|null $user
+ */
 class ProfileMember extends Model
 {
     /** @use HasFactory<ProfileMemberFactory> */

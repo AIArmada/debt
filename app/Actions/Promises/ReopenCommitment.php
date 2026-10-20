@@ -52,7 +52,10 @@ final class ReopenCommitment
                 'completed_at' => null,
                 'completion_note' => null,
             ])->save();
-            $lockedObligation->forceFill(['status' => $this->statusMachine->afterCommitmentReopened()])->save();
+            $lockedObligation->forceFill([
+                'status' => $this->statusMachine->afterCommitmentReopened(),
+                'closure_reason' => null,
+            ])->save();
 
             $this->activityLogger->record(
                 $lockedObligation->record->profile,

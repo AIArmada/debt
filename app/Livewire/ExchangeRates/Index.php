@@ -48,8 +48,12 @@ final class Index extends Component
 
     public function render(ConvertedView $convertedView): View
     {
+        $user = Auth::user();
+        abort_unless($user instanceof User, 401);
+
         return view('livewire.exchange-rates.index', [
-            'converted' => $convertedView->forProfile($this->profile, $this->target),
+            'converted' => $convertedView->forProfile($this->profile, $this->target, $user),
+            'rates' => $this->profile->exchangeRates()->latest('rated_on')->latest('created_at')->get(),
         ])->layout('layouts.app', ['title' => 'Exchange rates']);
     }
 }

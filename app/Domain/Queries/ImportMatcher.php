@@ -10,16 +10,20 @@ use App\Domain\StringNormalizer;
 use App\Models\ImportRow;
 use App\Models\Obligation;
 use App\Models\Record;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 
 final class ImportMatcher
 {
-    public function __construct(private readonly OutstandingBalance $outstandingBalance) {}
+    public function __construct(
+        private readonly OutstandingBalance $outstandingBalance,
+        private readonly RecordVisibilityQuery $recordVisibilityQuery,
+    ) {}
 
-    public function suggest(ImportRow $row): ?Obligation
+    public function suggest(ImportRow $row, User $user): ?Obligation
     {
         $row->loadMissing('batch.profile');
-        $obligations = $row->batch->profile->records()
+        $obligations = $this->recordVisibilityQuery->forUser($row->batch->profile->records()->getQuery(), $user)
             ->where('is_archived', false)
             ->with(['obligations.moneySubject', 'obligations.record.partyLinks.party'])
             ->get()

@@ -6,7 +6,9 @@ use App\Actions\Promises\CreatePromise as CreatePromiseAction;
 use App\Actions\Promises\Data\CreatePromiseData;
 use App\Domain\Enums\Direction;
 use App\Domain\Enums\PartyStatus;
+use App\Domain\Enums\RecordVisibility;
 use App\Domain\Enums\SubjectType;
+use App\Domain\Money\Currency;
 use App\Domain\Queries\PartySearch;
 use App\Models\FinancialProfile;
 use App\Models\User;
@@ -22,6 +24,8 @@ final class Create extends Component
 
     public string $partyName = '';
 
+    public string $purpose = '';
+
     public ?string $partyId = null;
 
     public string $direction = Direction::Payable->value;
@@ -30,9 +34,13 @@ final class Create extends Component
 
     public string $amount = '';
 
+    public string $currency = '';
+
     public ?string $dueOn = null;
 
     public string $note = '';
+
+    public RecordVisibility $visibility = RecordVisibility::Shared;
 
     public string $quantityName = '';
 
@@ -50,10 +58,14 @@ final class Create extends Component
         Gate::authorize('createObligation', $profile);
 
         $this->partyName = (string) request()->query('partyName', '');
+        $this->partyId = filled(request()->query('partyId')) ? (string) request()->query('partyId') : null;
+        $this->purpose = (string) request()->query('purpose', '');
         $direction = Direction::tryFrom((string) request()->query('direction', $this->direction));
         $this->direction = $direction === null ? $this->direction : $direction->value;
         $this->subjectType = SubjectType::tryFrom((string) request()->query('subjectType', $this->subjectType->value)) ?? $this->subjectType;
         $this->amount = (string) request()->query('amount', '');
+        $requestedCurrency = (string) request()->query('currency', $profile->base_currency);
+        $this->currency = Currency::isSupported($requestedCurrency) ? $requestedCurrency : (string) $profile->base_currency;
         $this->dueOn = filled(request()->query('dueOn')) ? (string) request()->query('dueOn') : null;
         $this->note = (string) request()->query('note', '');
         $this->quantityName = (string) request()->query('quantityName', '');
@@ -96,18 +108,20 @@ final class Create extends Component
 
         $data = CreatePromiseData::fromInput([
             'partyName' => $this->partyName,
+            'purpose' => $this->purpose,
             'partyId' => $this->partyId,
             'direction' => $this->direction,
             'subjectType' => $this->subjectType->value,
             'amount' => $this->amount,
             'dueOn' => $this->dueOn,
             'note' => $this->note,
+            'visibility' => $this->visibility->value,
             'quantityName' => $this->quantityName,
             'quantityTotal' => $this->quantityTotal,
             'quantityUnit' => $this->quantityUnit,
             'isFractionable' => $this->isFractionable,
             'doneCriteria' => $this->doneCriteria,
-        ], (string) $this->profile->base_currency);
+        ], $this->currency);
 
         $record = $createPromise->handle($user, $this->profile, $data);
 
@@ -122,6 +136,6 @@ final class Create extends Component
             : new Collection;
 
         return view('livewire.promises.create', compact('partyMatches'))
-            ->layout('layouts.app', ['title' => 'New promise']);
+            ->layout('layouts.app', ['title' => __('promises.create_title')]);
     }
 }

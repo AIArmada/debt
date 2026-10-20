@@ -22,7 +22,7 @@ final readonly class AddObligationData
     {
         return [
             'direction' => ['required', Rule::enum(Direction::class)],
-            'dueOn' => ['nullable', 'date', 'after_or_equal:today'],
+            'dueOn' => ['nullable', 'date'],
             'note' => ['nullable', 'string', 'max:4000'],
             ...PromiseSubjectData::rules(),
         ];

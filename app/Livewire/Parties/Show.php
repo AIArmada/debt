@@ -15,17 +15,23 @@ use App\Actions\Parties\RevealPaymentDestination;
 use App\Actions\Parties\SetPrimaryContact;
 use App\Actions\Parties\VerifyPaymentDestination;
 use App\Actions\Promises\ArchiveParty;
+use App\Actions\Promises\Data\OffsetObligationsData;
+use App\Actions\Promises\OffsetObligations;
 use App\Actions\Promises\RestoreParty;
 use App\Domain\Enums\PartyRelationshipKind;
 use App\Domain\Enums\PartyStatus;
 use App\Domain\Enums\PaymentDestinationKind;
+use App\Domain\Money\Money;
 use App\Domain\Presenters\PaymentDestinationPresenter;
+use App\Domain\Queries\OffsetSuggestions;
 use App\Domain\Queries\PartyExposure;
 use App\Domain\Queries\PartySearch;
+use App\Domain\Queries\RecordVisibilityQuery;
 use App\Models\FinancialProfile;
 use App\Models\Party;
 use App\Models\PartyRelationship;
 use App\Models\PaymentDestination;
+use App\Models\Record;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
@@ -65,6 +71,9 @@ final class Show extends Component
     public ?string $relationshipPartyId = null;
 
     public string $relationshipKind = PartyRelationshipKind::AssistantOf->value;
+
+    /** @var array<string, string> */
+    public array $offsetAmounts = [];
 
     private ?string $revealedDestinationId = null;
 
@@ -202,7 +211,28 @@ final class Show extends Component
         $this->refreshParty();
     }
 
-    public function render(PartyExposure $partyExposure, PartySearch $partySearch, PaymentDestinationPresenter $paymentDestinationPresenter): View
+    public function applyOffset(string $payableId, string $receivableId, OffsetObligations $offsetObligations, OffsetSuggestions $offsetSuggestions): void
+    {
+        $suggestions = $offsetSuggestions->forParty($this->party, $this->user());
+        $key = $payableId.':'.$receivableId;
+        $suggestion = collect($suggestions)->firstWhere('key', $key);
+        if ($suggestion === null) {
+            abort(404);
+        }
+
+        $amount = $this->offsetAmounts[$key] ?? $this->majorAmount((int) $suggestion['amount_minor'], (string) $suggestion['currency']);
+        $offsetObligations->handle($this->user(), OffsetObligationsData::fromInput([
+            'payableObligationId' => $payableId,
+            'receivableObligationId' => $receivableId,
+            'amount' => $amount,
+            'currency' => $suggestion['currency'],
+            'occurredOn' => today()->toDateString(),
+        ]));
+        unset($this->offsetAmounts[$key]);
+        $this->party->refresh();
+    }
+
+    public function render(PartyExposure $partyExposure, PartySearch $partySearch, PaymentDestinationPresenter $paymentDestinationPresenter, RecordVisibilityQuery $recordVisibilityQuery, OffsetSuggestions $offsetSuggestions): View
     {
         $this->party->load([
             'contacts' => function (HasMany $query): void {
@@ -215,7 +245,9 @@ final class Show extends Component
             'relationshipsTo.fromParty',
         ]);
 
-        $records = $this->party->records()
+        $partyRecords = Record::query()
+            ->whereHas('partyLinks', fn (Builder $query): Builder => $query->where('party_id', $this->party->getKey()));
+        $records = $recordVisibilityQuery->forUser($partyRecords, $this->user())
             ->where('is_archived', false)
             ->with('obligations')
             ->latest()
@@ -224,7 +256,7 @@ final class Show extends Component
         $destinations = $this->party->paymentDestinations->map(function (PaymentDestination $destination) use ($paymentDestinationPresenter): array {
             return [
                 'id' => $destination->getKey(),
-                'kind' => $destination->kind->label(),
+                'kind' => __('app.destination_kinds.'.$destination->kind->value),
                 'label' => $destination->label,
                 'masked' => $paymentDestinationPresenter->masked($destination),
                 'is_verified' => $destination->is_verified,
@@ -238,7 +270,7 @@ final class Show extends Component
             'from_name' => $this->party->display_name,
             'to_id' => $relationship->to_party_id,
             'to_name' => $relationship->toParty->display_name,
-            'kind' => $relationship->kind->label(),
+            'kind' => __('app.relationship_kinds.'.$relationship->kind->value),
         ]);
         $assistedBy = $this->party->relationshipsTo->map(fn (PartyRelationship $relationship): array => [
             'id' => $relationship->getKey(),
@@ -246,17 +278,22 @@ final class Show extends Component
             'from_name' => $relationship->fromParty->display_name,
             'to_id' => $relationship->to_party_id,
             'to_name' => $this->party->display_name,
-            'kind' => $relationship->kind->label(),
+            'kind' => __('app.relationship_kinds.'.$relationship->kind->value),
         ]);
 
         $revealedDestinationId = $this->revealedDestinationId;
         $revealedDestinationValue = $this->revealedDestinationValue;
         $this->revealedDestinationId = null;
         $this->revealedDestinationValue = null;
+        $partyOffsetSuggestions = $offsetSuggestions->forParty($this->party, $this->user());
+        foreach ($partyOffsetSuggestions as $suggestion) {
+            $this->offsetAmounts[$suggestion['key']] ??= $this->majorAmount($suggestion['amount_minor'], $suggestion['currency']);
+        }
 
         return view('livewire.parties.show', [
             'records' => $records,
-            'exposure' => $partyExposure->forParty($this->party),
+            'exposure' => $partyExposure->forParty($this->party, $this->user()),
+            'offsetSuggestions' => $partyOffsetSuggestions,
             'destinations' => $destinations,
             'assists' => $assists,
             'assistedBy' => $assistedBy,
@@ -281,5 +318,17 @@ final class Show extends Component
     private function refreshParty(): void
     {
         $this->party->refresh();
+    }
+
+    private function majorAmount(int $amountMinor, string $currency): string
+    {
+        $precision = Money::precisionFor($currency);
+        if ($precision === 0) {
+            return (string) $amountMinor;
+        }
+
+        $divisor = 10 ** $precision;
+
+        return intdiv($amountMinor, $divisor).'.'.str_pad((string) ($amountMinor % $divisor), $precision, '0', STR_PAD_LEFT);
     }
 }

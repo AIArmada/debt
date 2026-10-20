@@ -7,6 +7,7 @@ use App\Domain\Money\Currency;
 use App\Domain\StringNormalizer;
 use App\Models\ExchangeRate;
 use App\Models\FinancialProfile;
+use App\Models\User;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Illuminate\Validation\ValidationException;
@@ -18,7 +19,7 @@ final class ConvertedView
     /**
      * @return array{target_currency: string, to_pay: array<string, array{amount_minor: int, rate: string, rated_on: string, stale: bool}>, to_receive: array<string, array{amount_minor: int, rate: string, rated_on: string, stale: bool}>}
      */
-    public function forProfile(FinancialProfile $profile, string $target, ?string $rateId = null): array
+    public function forProfile(FinancialProfile $profile, string $target, User $viewer, ?string $rateId = null): array
     {
         $target = StringNormalizer::uppercase($target);
         if (! Currency::isSupported($target)) {
@@ -27,13 +28,13 @@ final class ConvertedView
 
         /** @var array{target_currency: string, to_pay: array<string, array{amount_minor: int, rate: string, rated_on: string, stale: bool}>, to_receive: array<string, array{amount_minor: int, rate: string, rated_on: string, stale: bool}>} $converted */
         $converted = ['target_currency' => $target, 'to_pay' => [], 'to_receive' => []];
-        foreach ($this->moneyBalanceQuery->forProfile($profile) as $row) {
+        foreach ($this->moneyBalanceQuery->forProfile($profile, $viewer) as $row) {
             $balance = (int) $row->balance;
             if ($balance === 0) {
                 continue;
             }
             $bucket = Direction::from((string) $row->direction)->bucketForBalance($balance);
-            $rate = $this->rate((string) $row->currency, $target, $rateId);
+            $rate = $this->rate($profile, (string) $row->currency, $target, $rateId);
             if ($rate === null && StringNormalizer::uppercase((string) $row->currency) !== $target) {
                 throw ValidationException::withMessages(['rate' => "No saved rate exists for {$row->currency} to {$target}."]);
             }
@@ -58,13 +59,15 @@ final class ConvertedView
         return $converted;
     }
 
-    private function rate(string $from, string $to, ?string $rateId): ?ExchangeRate
+    private function rate(FinancialProfile $profile, string $from, string $to, ?string $rateId): ?ExchangeRate
     {
         if (StringNormalizer::uppercase($from) === $to) {
             return null;
         }
 
-        $query = ExchangeRate::query()->where('from_currency', StringNormalizer::uppercase($from))->where('to_currency', $to);
+        $query = $profile->exchangeRates()
+            ->where('from_currency', StringNormalizer::uppercase($from))
+            ->where('to_currency', $to);
         if ($rateId !== null) {
             return $query->whereKey($rateId)->first();
         }

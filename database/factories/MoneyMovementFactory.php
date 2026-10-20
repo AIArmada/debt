@@ -29,4 +29,9 @@ class MoneyMovementFactory extends Factory
             'recorded_by' => User::factory(),
         ];
     }
+
+    public function proposed(): static
+    {
+        return $this->state(['status' => MovementStatus::Proposed]);
+    }
 }

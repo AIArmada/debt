@@ -18,7 +18,7 @@ use Livewire\Livewire;
 
 pest()->use(RefreshDatabase::class);
 
-test('profile settings update only changes the name and timezone', function () {
+test('profile settings update the name, timezone, and interest-free preference', function () {
     $user = User::factory()->create();
     $profile = $user->financialProfiles()->firstOrFail();
     $originalCurrency = $profile->base_currency;
@@ -26,11 +26,27 @@ test('profile settings update only changes the name and timezone', function () {
     app(UpdateFinancialProfile::class)->handle($user, $profile, UpdateFinancialProfileData::fromInput([
         'name' => 'Household',
         'timezone' => 'UTC',
+        'interestFreeMode' => false,
     ]));
 
     expect($profile->fresh()->name)->toBe('Household')
         ->and($profile->fresh()->timezone)->toBe('UTC')
+        ->and($profile->fresh()->interest_free_mode)->toBeFalse()
         ->and($profile->fresh()->base_currency)->toBe($originalCurrency);
+});
+
+test('omitting optional profile preferences preserves their saved values', function () {
+    $user = User::factory()->create();
+    $profile = $user->financialProfiles()->firstOrFail();
+    $profile->forceFill(['interest_free_mode' => false, 'show_hijri' => true])->save();
+
+    app(UpdateFinancialProfile::class)->handle($user, $profile, UpdateFinancialProfileData::fromInput([
+        'name' => 'Renamed without preference changes',
+        'timezone' => 'UTC',
+    ]));
+
+    expect($profile->fresh()->interest_free_mode)->toBeFalse()
+        ->and($profile->fresh()->show_hijri)->toBeTrue();
 });
 
 test('viewers cannot open profile settings', function () {

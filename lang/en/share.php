@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'title' => 'Shared promise', 'shared_promise' => 'Shared promise', 'balance' => 'Balance',
+    'no_balance' => 'No outstanding money balance.', 'balance_breakdown' => 'Balance breakdown', 'no_breakdown' => 'No money breakdown available.',
+    'borrowed' => 'Borrowed', 'charges' => 'Charges', 'paid' => 'Paid', 'unpaid_principal' => 'Unpaid principal', 'unpaid_charges' => 'Unpaid charges',
+    'instalments' => 'Instalments', 'no_instalments' => 'No instalments scheduled.', 'instalment_sequence' => 'Instalment :sequence',
+    'instalment_statuses' => ['pending' => 'Pending', 'overdue' => 'Overdue', 'settled' => 'Settled'],
+    'terms' => 'Charge terms', 'no_terms' => 'No additional charge terms.',
+    'movements' => 'Confirmed movements', 'no_movements' => 'No confirmed money movements.',
+    'evidence' => 'Evidence names', 'no_evidence' => 'No evidence attached.',
+    'disputed_by' => 'This promise is disputed by :name.', 'acknowledged_by' => 'Acknowledged by :name.',
+    'acknowledgement_recorded' => 'Your acknowledgement has been recorded.', 'dispute_recorded' => 'Your dispute has been recorded.',
+    'your_name' => 'Your name', 'note_optional' => 'Note (optional)', 'accept_terms' => 'I accept these terms',
+    'acknowledge' => 'Acknowledge this promise', 'dispute' => 'Dispute this promise', 'returned' => 'Returned :date',
+    'guarantors' => 'Guarantors', 'no_guarantors' => 'No guarantors listed.',
+    'guaranteed_by' => 'Guaranteed by', 'grace_period' => 'Grace period: :days days · Allocation: :allocation',
+    'lifetime_cap' => 'Lifetime cap: :amount', 'total_payable' => 'Total payable: :amount',
+    'fixed_penalty' => 'Fixed penalty: :amount', 'percentage_penalty' => 'Percentage penalty on overdue amount: :percent%',
+    'automatic_after_acceptance' => 'Automatic application begins after acceptance.', 'formal_debt' => 'Formal debt.',
+    'fixed_agreed_date' => 'Fixed total agreed upfront on :date.', 'days' => 'days',
+    'charge_modes' => ['none' => 'None', 'manual' => 'Manual', 'auto_propose' => 'Auto propose', 'auto_apply' => 'Auto apply'],
+    'charge_kinds' => ['none' => 'None', 'interest' => 'Interest', 'profit' => 'Profit'],
+    'charge_bases' => ['flat' => 'Flat', 'reducing_simple' => 'Reducing simple', 'fixed_total' => 'fixed total, agreed upfront'],
+    'charge_periods' => ['daily' => 'daily', 'weekly' => 'weekly', 'monthly' => 'monthly', 'yearly' => 'yearly'],
+    'allocation_orders' => ['charges_first' => 'charges first', 'principal_first' => 'principal first'],
+    'money_entries' => ['opening_balance' => 'opening balance', 'advance' => 'advance', 'charge' => 'charge', 'interest_charge' => 'interest charge', 'profit_charge' => 'profit charge', 'fee' => 'fee', 'penalty' => 'penalty', 'payment' => 'payment', 'collection' => 'collection', 'adjustment_up' => 'adjustment up', 'adjustment_down' => 'adjustment down', 'forgiveness' => 'forgiveness', 'write_off' => 'write off', 'offset' => 'offset'],
+];

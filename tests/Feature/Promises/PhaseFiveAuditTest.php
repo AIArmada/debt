@@ -66,7 +66,7 @@ test('FX display conversion uses decimal arithmetic', function () {
         'source' => 'test',
     ]));
 
-    expect(app(ConvertedView::class)->forProfile($profile, 'USD')['to_pay']['USD']['amount_minor'])
+    expect(app(ConvertedView::class)->forProfile($profile, 'USD', $user)['to_pay']['USD']['amount_minor'])
         ->toBe(101);
 });
 
@@ -117,7 +117,7 @@ test('promise details can change title and a past due date without changing ledg
     ]);
 });
 
-test('promise details cannot be changed after a confirmed movement', function () {
+test('promise title and due date can change after a confirmed movement without changing the ledger', function () {
     $user = User::factory()->create();
     $profile = $user->financialProfiles()->firstOrFail();
     $record = app(CreatePromise::class)->handle($user, $profile, CreatePromiseData::fromInput([
@@ -126,11 +126,22 @@ test('promise details cannot be changed after a confirmed movement', function ()
         'amount' => '10.00',
     ], 'MYR'));
 
-    expect(fn () => app(UpdatePromiseDetails::class)->handle($user, $record, UpdatePromiseDetailsData::fromInput([
+    $obligation = $record->obligations->firstOrFail();
+    $amountBefore = $obligation->moneyMovements()->firstOrFail()->amount_minor;
+    app(UpdatePromiseDetails::class)->handle($user, $record, UpdatePromiseDetailsData::fromInput([
         'recordId' => $record->getKey(),
-        'title' => 'Should fail',
-        'dueOn' => null,
-    ])))->toThrow(ValidationException::class);
+        'obligationId' => $obligation->getKey(),
+        'title' => 'Renegotiated details',
+        'dueOn' => today()->addDays(10)->toDateString(),
+    ]));
+
+    expect($record->fresh()->title)->toBe('Renegotiated details')
+        ->and($obligation->fresh()->due_on->toDateString())->toBe(today()->addDays(10)->toDateString())
+        ->and($obligation->moneyMovements()->firstOrFail()->amount_minor)->toBe($amountBefore);
+    $this->assertDatabaseHas('activity_entries', [
+        'subject_id' => $record->getKey(),
+        'action' => 'promise_details_updated',
+    ]);
 });
 
 test('a record can be deleted only when it has no confirmed movements, returns, or attachments', function () {

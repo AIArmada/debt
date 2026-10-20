@@ -45,12 +45,20 @@ return new class extends Migration
             $table->string('status', 20)->default('confirmed');
             $table->string('void_reason')->nullable();
             $table->string('note', 4000)->nullable();
+            $table->string('period_key')->nullable();
+            $table->jsonb('calculation')->nullable();
+            $table->uuid('linked_movement_id')->nullable();
             $table->foreignUuid('recorded_by')->constrained('users')->restrictOnDelete();
             $table->timestamps();
             $table->index(['obligation_id', 'status', 'currency']);
             $table->index(['obligation_id', 'occurred_on']);
         });
+        Schema::table('money_movements', function (Blueprint $table): void {
+            $table->foreign('linked_movement_id')->references('id')->on('money_movements')->nullOnDelete();
+        });
         DB::statement('ALTER TABLE money_movements ADD CONSTRAINT money_movements_amount_positive CHECK (amount_minor > 0)');
+        DB::statement('CREATE UNIQUE INDEX money_movements_period_key_unique ON money_movements (period_key) WHERE period_key IS NOT NULL');
+        DB::statement('CREATE UNIQUE INDEX money_movements_linked_movement_unique ON money_movements (linked_movement_id) WHERE linked_movement_id IS NOT NULL');
 
         Schema::create('quantity_returns', function (Blueprint $table): void {
             $table->uuid('id')->primary();

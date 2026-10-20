@@ -9,6 +9,7 @@ use App\Actions\Promises\RecordMoneyMovement;
 use App\Domain\Enums\PartyRole;
 use App\Domain\Enums\SubjectType;
 use App\Domain\Queries\OutstandingBalance;
+use App\Domain\Queries\RecordVisibilityQuery;
 use App\Models\FinancialProfile;
 use App\Models\Obligation;
 use App\Models\Record;
@@ -20,10 +21,11 @@ use Illuminate\Support\Collection;
 
 final class PromiseController
 {
-    public function index(Request $request, OutstandingBalance $outstandingBalance): JsonResponse
+    public function index(Request $request, OutstandingBalance $outstandingBalance, RecordVisibilityQuery $recordVisibilityQuery): JsonResponse
     {
         $profile = $this->profile($request);
-        $records = $profile->records()
+        $user = $this->user($request);
+        $records = $recordVisibilityQuery->forUser($profile->records()->getQuery(), $user)
             ->where('is_archived', false)
             ->with(['partyLinks' => function (Relation $query): void {
                 $query->where('role', PartyRole::Counterparty->value)->with('party');

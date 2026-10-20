@@ -1,8 +1,11 @@
 <?php
 
 use App\Concerns\ProfileValidationRules;
+use App\Actions\Promises\Data\UpdateUserLocaleData;
+use App\Actions\Promises\UpdateUserLocale;
 use App\Domain\Enums\NotificationType;
 use App\Models\NotificationPreference;
+use App\Models\User;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
@@ -16,7 +19,10 @@ new #[Title('Profile settings')] class extends Component {
 
     public string $name = '';
     public string $email = '';
+    public string $locale = 'en';
     public bool $reminderNotificationsEnabled = true;
+    public bool $shareAcceptedNotificationsEnabled = true;
+    public bool $shareDisputedNotificationsEnabled = true;
 
     /**
      * Mount the component.
@@ -25,11 +31,20 @@ new #[Title('Profile settings')] class extends Component {
     {
         $this->name = Auth::user()->name;
         $this->email = Auth::user()->email;
+        $this->locale = Auth::user()->locale;
         $preference = NotificationPreference::query()->firstOrCreate(
             ['user_id' => Auth::id(), 'type' => NotificationType::ReminderDue],
             ['enabled' => true],
         );
         $this->reminderNotificationsEnabled = $preference->enabled;
+        $this->shareAcceptedNotificationsEnabled = NotificationPreference::query()->firstOrCreate(
+            ['user_id' => Auth::id(), 'type' => NotificationType::ShareAccepted],
+            ['enabled' => true],
+        )->enabled;
+        $this->shareDisputedNotificationsEnabled = NotificationPreference::query()->firstOrCreate(
+            ['user_id' => Auth::id(), 'type' => NotificationType::ShareDisputed],
+            ['enabled' => true],
+        )->enabled;
     }
 
     /**
@@ -52,6 +67,16 @@ new #[Title('Profile settings')] class extends Component {
         Flux::toast(variant: 'success', text: __('Profile updated.'));
     }
 
+    public function updateLocale(UpdateUserLocale $updateUserLocale): void
+    {
+        $user = Auth::user();
+        abort_unless($user instanceof User, 401);
+        $user = $updateUserLocale->handle($user, UpdateUserLocaleData::fromInput(['locale' => $this->locale]));
+        $this->locale = $user->locale;
+
+        Flux::toast(variant: 'success', text: __('app.language_saved'));
+    }
+
     public function updatedReminderNotificationsEnabled(bool $enabled): void
     {
         NotificationPreference::query()->updateOrCreate(
@@ -60,6 +85,26 @@ new #[Title('Profile settings')] class extends Component {
         );
 
         Flux::toast(variant: 'success', text: $enabled ? __('Reminder notifications enabled.') : __('Reminder notifications disabled.'));
+    }
+
+    public function updatedShareAcceptedNotificationsEnabled(bool $enabled): void
+    {
+        $this->updateNotificationPreference(NotificationType::ShareAccepted, $enabled, 'Share acceptance notifications');
+    }
+
+    public function updatedShareDisputedNotificationsEnabled(bool $enabled): void
+    {
+        $this->updateNotificationPreference(NotificationType::ShareDisputed, $enabled, 'Share dispute notifications');
+    }
+
+    private function updateNotificationPreference(NotificationType $type, bool $enabled, string $label): void
+    {
+        NotificationPreference::query()->updateOrCreate(
+            ['user_id' => Auth::id(), 'type' => $type],
+            ['enabled' => $enabled],
+        );
+
+        Flux::toast(variant: 'success', text: $enabled ? $label.' enabled.' : $label.' disabled.');
     }
 
     /**
@@ -135,12 +180,29 @@ new #[Title('Profile settings')] class extends Component {
             </div>
         </form>
 
+        <form wire:submit="updateLocale" class="my-6 w-full space-y-4 border-t border-zinc-200/80 pt-6 dark:border-zinc-700/80">
+            <flux:heading size="sm">{{ __('app.language') }}</flux:heading>
+            <flux:select wire:model="locale" :label="__('app.language')" required>
+                <flux:select.option value="en">English</flux:select.option>
+                <flux:select.option value="ms">Bahasa Melayu</flux:select.option>
+            </flux:select>
+            <flux:button variant="primary" type="submit" wire:loading.attr="disabled">{{ __('app.save_language') }}</flux:button>
+        </form>
+
         <div class="border-t border-zinc-200/80 pt-6 dark:border-zinc-700/80">
             <flux:heading size="sm">Notifications</flux:heading>
             <flux:text class="mt-1 text-sm">Choose whether due reminder notifications appear in your inbox and bell.</flux:text>
             <label class="mt-4 flex items-start gap-3 text-sm">
                 <input wire:model.live="reminderNotificationsEnabled" type="checkbox" class="mt-1 rounded border-zinc-300 text-emerald-600" />
                 <span><span class="font-medium">Due reminders</span><span class="block text-zinc-500">Notify me when a reminder reaches its due date.</span></span>
+            </label>
+            <label class="mt-4 flex items-start gap-3 text-sm">
+                <input wire:model.live="shareAcceptedNotificationsEnabled" type="checkbox" class="mt-1 rounded border-zinc-300 text-emerald-600" />
+                <span><span class="font-medium">Share accepted</span><span class="block text-zinc-500">Notify me when someone accepts shared terms.</span></span>
+            </label>
+            <label class="mt-4 flex items-start gap-3 text-sm">
+                <input wire:model.live="shareDisputedNotificationsEnabled" type="checkbox" class="mt-1 rounded border-zinc-300 text-emerald-600" />
+                <span><span class="font-medium">Share disputed</span><span class="block text-zinc-500">Notify me when someone disputes a shared promise.</span></span>
             </label>
         </div>
 

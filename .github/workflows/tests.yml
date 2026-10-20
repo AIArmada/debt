@@ -17,12 +17,12 @@ jobs:
         image: postgres:17
         env:
           POSTGRES_DB: debt_test
-          POSTGRES_USER: postgress
+          POSTGRES_USER: postgres
           POSTGRES_HOST_AUTH_METHOD: trust
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U postgress -d debt_test"
+          --health-cmd "pg_isready -U postgres -d debt_test"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -57,7 +57,7 @@ jobs:
             echo "DB_HOST=127.0.0.1"
             echo "DB_PORT=5432"
             echo "DB_DATABASE=debt_test"
-            echo "DB_USERNAME=postgress"
+            echo "DB_USERNAME=postgres"
             echo "DB_PASSWORD="
           } >> "$GITHUB_ENV"
 

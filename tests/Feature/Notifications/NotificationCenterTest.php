@@ -5,12 +5,12 @@ use App\Actions\Promises\Data\CreatePromiseData;
 use App\Domain\Enums\Direction;
 use App\Domain\Enums\ReminderChannel;
 use App\Domain\Enums\ReminderStatus;
-use App\Livewire\Notifications\Index as NotificationIndex;
+use App\Livewire\Notifications\NotificationCenter;
 use App\Models\Record;
 use App\Models\Reminder;
 use App\Models\User;
 use App\Notifications\ReminderDue;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Filament\Notifications\Livewire\Notifications as FilamentNotifications;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Notifications\DatabaseNotification;
 use Livewire\Livewire;
@@ -76,10 +76,18 @@ test('the inbox is global, shows snapshot context, and isolates users', function
     $this->actingAs($user)->get(route('notifications.index'))->assertOk()->assertSee('My promise reminder')->assertDontSee('Private other reminder')->assertSee('RM12.34')->assertSee('Due 10 Sep 2026');
 
     $this->actingAs($user);
-    Livewire::test(NotificationIndex::class)
+    Livewire::test(NotificationCenter::class)
         ->assertSee('My promise reminder')
         ->assertDontSee('Private other reminder');
     expect($mine['notification']->fresh()->read_at)->toBeNull();
+});
+
+test('the app inbox keeps its component identity and Filament keeps the notifications alias', function () {
+    $user = User::factory()->create();
+    $component = Livewire::actingAs($user)->test(NotificationCenter::class);
+
+    expect($component->instance())->toBeInstanceOf(NotificationCenter::class)
+        ->and(Livewire::new('notifications'))->toBeInstanceOf(FilamentNotifications::class);
 });
 
 test('single and all mark-read actions use the official read_at column', function () use ($makeReminderNotification) {
@@ -88,14 +96,14 @@ test('single and all mark-read actions use the official read_at column', functio
     $second = $makeReminderNotification($user, 'Second reminder');
 
     $this->actingAs($user);
-    Livewire::test(NotificationIndex::class)
+    Livewire::test(NotificationCenter::class)
         ->call('markRead', $first['notification']->getKey());
 
     expect($first['notification']->fresh()->read_at)->not->toBeNull()
         ->and($second['notification']->fresh()->read_at)->toBeNull();
 
     $this->actingAs($user);
-    Livewire::test(NotificationIndex::class)
+    Livewire::test(NotificationCenter::class)
         ->call('markAllRead');
 
     expect($second['notification']->fresh()->read_at)->not->toBeNull();
@@ -105,13 +113,13 @@ test('inbox dismiss and snooze reuse reminder actions', function () use ($makeRe
     $user = User::factory()->create();
     $dismissed = $makeReminderNotification($user, 'Dismiss me');
     $this->actingAs($user);
-    Livewire::test(NotificationIndex::class)
+    Livewire::test(NotificationCenter::class)
         ->call('dismiss', $dismissed['notification']->getKey());
     expect($dismissed['reminder']->fresh()->status)->toBe(ReminderStatus::Dismissed)
         ->and($dismissed['notification']->fresh()->read_at)->not->toBeNull();
 
     $snoozed = $makeReminderNotification($user, 'Snooze me');
-    Livewire::actingAs($user)->test(NotificationIndex::class)
+    Livewire::actingAs($user)->test(NotificationCenter::class)
         ->call('snooze', $snoozed['notification']->getKey());
     expect($snoozed['reminder']->fresh()->status)->toBe(ReminderStatus::Snoozed)
         ->and($snoozed['reminder']->fresh()->snoozed_until->toDateString())->toBe(today()->addDay()->toDateString())
@@ -124,6 +132,9 @@ test('notification inbox only accepts the current user notification ids', functi
     $other = $makeReminderNotification($otherUser, 'Other user reminder');
 
     $this->actingAs($user);
-    expect(fn () => Livewire::test(NotificationIndex::class)->call('markRead', $other['notification']->getKey()))
-        ->toThrow(ModelNotFoundException::class);
+    Livewire::test(NotificationCenter::class)
+        ->call('markRead', $other['notification']->getKey())
+        ->assertNotFound();
+
+    expect($other['notification']->fresh()->read_at)->toBeNull();
 });

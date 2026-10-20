@@ -6,6 +6,8 @@ enum RecordArchiveFilter: string
 {
     case Active = 'active';
     case Open = 'open';
+    case Paused = 'paused';
+    case Disputed = 'disputed';
     case Settled = 'settled';
     case DueSoon = 'due-soon';
     case Overdue = 'overdue';

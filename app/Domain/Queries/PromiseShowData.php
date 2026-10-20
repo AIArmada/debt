@@ -3,6 +3,7 @@
 namespace App\Domain\Queries;
 
 use App\Domain\Enums\Direction;
+use App\Domain\Enums\PartyRole;
 use App\Models\Obligation;
 use App\Models\Record;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,7 +16,7 @@ final class PromiseShowData
     public function obligations(Record $record): EloquentCollection
     {
         return $record->obligations()
-            ->with(['moneySubject', 'quantitySubject', 'commitmentSubject', 'moneyMovements.recorder', 'moneyMovements.attachments', 'quantityReturns.recorder', 'quantityReturns.attachments', 'reminders'])
+            ->with(['moneySubject', 'chargeTerms', 'quantitySubject', 'commitmentSubject', 'shares.party', 'moneyMovements.recorder', 'moneyMovements.attachments', 'quantityReturns.recorder', 'quantityReturns.attachments', 'reminders'])
             ->get();
     }
 
@@ -27,17 +28,26 @@ final class PromiseShowData
             ->oldest('created_at')
             ->oldest('id')
             ->firstOrFail();
-        $party = $record->counterparties()->first();
+        $primaryParty = $record->partyLinks()
+            ->where('role', PartyRole::Counterparty->value)
+            ->where('is_primary', true)
+            ->with('party')
+            ->first()?->party;
         $query = [
-            'partyName' => $party === null ? $record->title : $party->display_name,
+            'partyName' => $primaryParty->display_name ?? '',
+            'purpose' => $record->title,
             'direction' => $obligation->direction->value,
             'subjectType' => $obligation->subject_type->value,
             'dueOn' => $obligation->due_on?->toDateString() ?? '',
             'note' => (string) ($record->note ?? ''),
         ];
+        if ($primaryParty !== null) {
+            $query['partyId'] = $primaryParty->getKey();
+        }
 
         if ($obligation->moneySubject !== null) {
             $query['amount'] = '';
+            $query['currency'] = $obligation->moneySubject->currency;
         }
 
         if ($obligation->quantitySubject !== null) {
@@ -95,7 +105,7 @@ final class PromiseShowData
                     'currency' => $currency,
                     'amount' => abs($balance),
                     'direction' => $balance === 0 ? null : $direction,
-                    'label' => $balance === 0 ? 'Settled' : $direction->label(),
+                    'label' => $balance === 0 ? __('promises.statuses.settled') : __('promises.directions.'.$direction->value),
                 ];
             })
             ->values()

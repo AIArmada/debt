@@ -32,10 +32,13 @@ final class CreatePromise
                 'partyId' => $data->partyId,
                 'kind' => PartyKind::Individual->value,
             ]));
+            $title = $data->purpose ?? $party->display_name;
             $record = $profile->records()->create([
-                'title' => $party->display_name,
+                'title' => $title,
                 'note' => $data->note,
                 'is_archived' => false,
+                'created_by' => $user->getKey(),
+                'visibility' => $data->visibility,
             ]);
             $record->partyLinks()->create([
                 'party_id' => $party->getKey(),
@@ -45,7 +48,7 @@ final class CreatePromise
 
             $obligation = $record->obligations()->create([
                 'direction' => $data->direction->value,
-                'title' => $record->title,
+                'title' => $title,
                 'status' => ObligationStatus::Open,
                 'subject_type' => $data->subject->type->value,
                 'due_on' => $data->dueOn,

@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignUuid('invited_by')->constrained('users')->restrictOnDelete();
             $table->timestamp('expires_at');
             $table->timestamp('accepted_at')->nullable();
+            $table->timestamp('revoked_at')->nullable();
             $table->timestamps();
             $table->index(['profile_id', 'email', 'accepted_at']);
         });

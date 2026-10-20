@@ -34,11 +34,11 @@ class FinancialProfile extends Model
         return app(ProfileAccess::class)->accessibleProfiles($user)->whereKey($value);
     }
 
-    protected $fillable = ['name', 'base_currency', 'timezone', 'is_archived'];
+    protected $fillable = ['name', 'base_currency', 'timezone', 'is_archived', 'interest_free_mode', 'show_hijri'];
 
     protected function casts(): array
     {
-        return ['is_archived' => 'boolean'];
+        return ['is_archived' => 'boolean', 'interest_free_mode' => 'boolean', 'show_hijri' => 'boolean'];
     }
 
     /** @return BelongsTo<User, $this> */
@@ -99,5 +99,11 @@ class FinancialProfile extends Model
     public function apiTokens(): HasMany
     {
         return $this->hasMany(ApiToken::class, 'profile_id');
+    }
+
+    /** @return HasMany<ExchangeRate, $this> */
+    public function exchangeRates(): HasMany
+    {
+        return $this->hasMany(ExchangeRate::class, 'profile_id');
     }
 }

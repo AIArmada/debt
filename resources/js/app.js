@@ -1,44 +1,56 @@
-window.dirtyForm = (state) => ({
-    state,
-    original: null,
-    initialized: false,
+let dirtyFormRegistered = false;
 
-    init() {
-        this.original = this.snapshot();
-        this.initialized = true;
-        this.beforeUnload = this.beforeUnload.bind(this);
-        this.confirmNavigation = this.confirmNavigation.bind(this);
+function registerDirtyForm() {
+    if (dirtyFormRegistered || !window.Alpine) {
+        return;
+    }
 
-        this.$watch('state', () => this.syncWarning(), { deep: true });
-        window.addEventListener('beforeunload', this.beforeUnload);
-        document.addEventListener('livewire:navigate', this.confirmNavigation);
-        this.syncWarning();
-    },
+    dirtyFormRegistered = true;
+    window.Alpine.data('dirtyForm', (state) => ({
+        state,
+        original: null,
+        initialized: false,
 
-    snapshot() {
-        return JSON.stringify(Object.fromEntries(
-            Object.entries(this.state).map(([key, value]) => [key, value ?? '']),
-        ));
-    },
+        init() {
+            this.original = this.snapshot();
+            this.initialized = true;
+            this.beforeUnload = this.beforeUnload.bind(this);
+            this.confirmNavigation = this.confirmNavigation.bind(this);
 
-    isDirty() {
-        return this.initialized && this.snapshot() !== this.original;
-    },
+            this.$watch('state', () => this.syncWarning(), { deep: true });
+            window.addEventListener('beforeunload', this.beforeUnload);
+            document.addEventListener('livewire:navigate', this.confirmNavigation);
+            this.syncWarning();
+        },
 
-    syncWarning() {
-        this.$root.dataset.dirty = this.isDirty() ? 'true' : 'false';
-    },
+        snapshot() {
+            return JSON.stringify(Object.fromEntries(
+                Object.entries(this.state).map(([key, value]) => [key, value ?? '']),
+            ));
+        },
 
-    beforeUnload(event) {
-        if (this.isDirty()) {
-            event.preventDefault();
-            event.returnValue = '';
-        }
-    },
+        isDirty() {
+            return this.initialized && this.snapshot() !== this.original;
+        },
 
-    confirmNavigation(event) {
-        if (this.isDirty() && !window.confirm('You have unsaved changes. Leave this page?')) {
-            event.preventDefault();
-        }
-    },
-});
+        syncWarning() {
+            this.$root.dataset.dirty = this.isDirty() ? 'true' : 'false';
+        },
+
+        beforeUnload(event) {
+            if (this.isDirty()) {
+                event.preventDefault();
+                event.returnValue = '';
+            }
+        },
+
+        confirmNavigation(event) {
+            if (this.isDirty() && !window.confirm('You have unsaved changes. Leave this page?')) {
+                event.preventDefault();
+            }
+        },
+    }));
+}
+
+document.addEventListener('alpine:init', registerDirtyForm, { once: true });
+registerDirtyForm();

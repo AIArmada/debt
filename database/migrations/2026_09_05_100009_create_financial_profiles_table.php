@@ -14,6 +14,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('base_currency', 3);
             $table->string('timezone')->default('UTC');
+            $table->boolean('interest_free_mode')->default(true);
+            $table->boolean('show_hijri')->default(false);
             $table->boolean('is_archived')->default(false);
             $table->timestamps();
             $table->index(['owner_user_id', 'is_archived']);

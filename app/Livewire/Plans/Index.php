@@ -19,11 +19,11 @@ final class Index extends Component
 
     public string $endsOn = '';
 
-    public string $incomeMinor = '';
+    public string $income = '';
 
-    public string $essentialMinor = '';
+    public string $essentials = '';
 
-    public string $reserveMinor = '';
+    public string $reserve = '';
 
     public string $currency = '';
 
@@ -43,18 +43,18 @@ final class Index extends Component
         $period = $createBudgetPeriod->handle($user, $this->profile, CreateBudgetPeriodData::fromInput([
             'startsOn' => $this->startsOn,
             'endsOn' => $this->endsOn,
-            'incomeMinor' => $this->incomeMinor,
-            'essentialMinor' => $this->essentialMinor,
-            'reserveMinor' => $this->reserveMinor,
+            'income' => $this->income,
+            'essentials' => $this->essentials,
+            'reserve' => $this->reserve,
             'currency' => $this->currency,
         ]));
-        $this->redirectRoute('plans.show', ['profile' => $this->profile, 'period' => $period], navigate: true);
+        $this->redirectRoute('plans.show', ['profile' => $this->profile, 'budgetPeriod' => $period], navigate: true);
     }
 
     public function render(): View
     {
         return view('livewire.plans.index', [
             'periods' => $this->profile->budgetPeriods()->latest('starts_on')->get(),
-        ])->layout('layouts.app', ['title' => 'Plans']);
+        ])->layout('layouts.app', ['title' => __('plans.title')]);
     }
 }

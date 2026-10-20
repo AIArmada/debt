@@ -5,18 +5,19 @@ namespace App\Domain\Queries;
 use App\Domain\Enums\Direction;
 use App\Domain\StringNormalizer;
 use App\Models\FinancialProfile;
+use App\Models\User;
 
 final class ProfileTotals
 {
     public function __construct(private readonly MoneyBalanceQuery $moneyBalanceQuery) {}
 
     /** @return array{to_pay: array<string, int>, to_receive: array<string, int>} */
-    public function forProfile(FinancialProfile $profile): array
+    public function forProfile(FinancialProfile $profile, User $viewer): array
     {
         /** @var array{to_pay: array<string, int>, to_receive: array<string, int>} $totals */
         $totals = ['to_pay' => [], 'to_receive' => []];
 
-        foreach ($this->moneyBalanceQuery->forProfile($profile) as $row) {
+        foreach ($this->moneyBalanceQuery->forProfile($profile, $viewer) as $row) {
             $balance = (int) $row->balance;
             if ($balance === 0) {
                 continue;

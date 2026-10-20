@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Domain\Enums\MovementStatus;
 use App\Domain\Enums\PartyRole;
+use App\Domain\Enums\RecordVisibility;
 use Database\Factories\RecordFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -14,16 +15,22 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
+/**
+ * @property RecordVisibility $visibility
+ */
 class Record extends Model
 {
     /** @use HasFactory<RecordFactory> */
     use HasFactory, HasUuids;
 
-    protected $fillable = ['title', 'note', 'is_archived'];
+    protected $fillable = ['title', 'note', 'is_archived', 'created_by', 'visibility'];
 
     protected function casts(): array
     {
-        return ['is_archived' => 'boolean'];
+        return [
+            'is_archived' => 'boolean',
+            'visibility' => RecordVisibility::class,
+        ];
     }
 
     /** @return BelongsTo<FinancialProfile, $this> */
@@ -49,6 +56,18 @@ class Record extends Model
     public function obligations(): HasMany
     {
         return $this->hasMany(Obligation::class)->oldest('created_at')->oldest('id');
+    }
+
+    /** @return HasMany<RecordShare, $this> */
+    public function shares(): HasMany
+    {
+        return $this->hasMany(RecordShare::class);
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     /** @return MorphMany<Attachment, $this> */

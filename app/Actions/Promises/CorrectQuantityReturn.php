@@ -3,7 +3,9 @@
 namespace App\Actions\Promises;
 
 use App\Actions\Promises\Data\CorrectQuantityReturnData;
+use App\Domain\Enums\ClosureReason;
 use App\Domain\Enums\MovementStatus;
+use App\Domain\Enums\ObligationStatus;
 use App\Domain\Enums\SubjectType;
 use App\Domain\Obligations\ObligationStatusMachine;
 use App\Domain\Quantities\QuantityValidator;
@@ -63,8 +65,10 @@ final class CorrectQuantityReturn
                 'recorded_by' => $user->getKey(),
             ]);
             $after = $this->outstandingQuantity->forObligation($obligation);
+            $nextStatus = $this->statusMachine->afterQuantityReturn($obligation->status, $after['remaining']);
             $obligation->forceFill([
-                'status' => $this->statusMachine->afterQuantityReturn($obligation->status, $after['remaining']),
+                'status' => $nextStatus,
+                'closure_reason' => $nextStatus === ObligationStatus::Settled ? ClosureReason::Completed : null,
             ])->save();
 
             $this->activityLogger->record(

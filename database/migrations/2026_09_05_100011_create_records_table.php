@@ -11,8 +11,10 @@ return new class extends Migration
         Schema::create('records', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->foreignUuid('profile_id')->constrained('financial_profiles')->cascadeOnDelete();
+            $table->foreignUuid('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->string('title');
             $table->text('note')->nullable();
+            $table->string('visibility', 20)->default('shared');
             $table->boolean('is_archived')->default(false);
             $table->timestamps();
             $table->index(['profile_id', 'is_archived']);

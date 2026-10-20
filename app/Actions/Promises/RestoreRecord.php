@@ -20,6 +20,7 @@ final class RestoreRecord
         return DB::transaction(function () use ($user, $record): Record {
             $locked = Record::query()->whereKey($record->getKey())->lockForUpdate()->firstOrFail();
             $locked->loadMissing('profile');
+            Gate::forUser($user)->authorize('update', $locked);
             $locked->forceFill(['is_archived' => false])->save();
             $this->activityLogger->record($locked->profile, $user, $locked, 'record_restored', before: ['is_archived' => true], after: ['is_archived' => false]);
 

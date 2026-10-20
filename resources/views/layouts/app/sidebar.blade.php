@@ -17,7 +17,7 @@
             <div class="px-3 py-3">
                 <flux:dropdown align="start">
                     <flux:button variant="subtle" class="w-full justify-between" data-test="profile-switcher">
-                        <span class="truncate">{{ $currentProfile instanceof \App\Models\FinancialProfile ? $currentProfile->name : 'Your profiles' }}</span>
+                        <span class="truncate">{{ $currentProfile instanceof \App\Models\FinancialProfile ? $currentProfile->name : __('app.your_profiles') }}</span>
                         <flux:icon name="chevron-down" class="size-4" />
                     </flux:button>
                     <flux:menu>
@@ -29,24 +29,27 @@
             </div>
 
             <flux:sidebar.nav>
-                <flux:sidebar.group :heading="__('Platform')" class="grid">
+                <flux:sidebar.group :heading="__('app.platform')" class="grid">
                     <flux:sidebar.item icon="home" :href="route('home')" :current="request()->routeIs('promises.*')" wire:navigate>
-                        {{ __('Home') }}
+                        {{ __('app.home') }}
                     </flux:sidebar.item>
                     <flux:sidebar.item icon="user-group" :href="$currentProfile ? route('people.index', ['profile' => $currentProfile]) : route('home')" :current="request()->routeIs('people.*')" wire:navigate>
-                        {{ __('People') }}
+                        {{ __('app.people') }}
                     </flux:sidebar.item>
                     <flux:sidebar.item icon="arrow-up-tray" :href="$currentProfile ? route('imports.index', ['profile' => $currentProfile]) : route('home')" :current="request()->routeIs('imports.*')" wire:navigate>
-                        {{ __('Imports') }}
+                        {{ __('app.imports') }}
                     </flux:sidebar.item>
                     <flux:sidebar.item icon="chart-bar" :href="$currentProfile ? route('plans.index', ['profile' => $currentProfile]) : route('home')" :current="request()->routeIs('plans.*')" wire:navigate>
-                        {{ __('Plans') }}
+                        {{ __('app.plans') }}
                     </flux:sidebar.item>
                     <flux:sidebar.item icon="arrow-path-rounded-square" :href="$currentProfile ? route('exchange-rates.index', ['profile' => $currentProfile]) : route('home')" :current="request()->routeIs('exchange-rates.*')" wire:navigate>
-                        {{ __('Currency') }}
+                        {{ __('app.currency') }}
                     </flux:sidebar.item>
                     <flux:sidebar.item icon="cog" :href="$currentProfile instanceof \App\Models\FinancialProfile ? route('profile-settings.edit', ['profile' => $currentProfile]) : route('profile.edit')" :current="request()->routeIs('profile.edit', 'profile-settings.*', 'profile-tokens.*')" wire:navigate>
-                        {{ __('Settings') }}
+                        {{ __('app.settings') }}
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="lifebuoy" :href="route('help.debt-support')" :current="request()->routeIs('help.*')" wire:navigate>
+                        {{ __('app.help') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>
@@ -96,7 +99,7 @@
 
                     <flux:menu.radio.group>
                         <flux:menu.item :href="route('profile.edit')" icon="cog" wire:navigate>
-                            {{ __('Settings') }}
+                            {{ __('app.settings') }}
                         </flux:menu.item>
                     </flux:menu.radio.group>
 
@@ -111,7 +114,7 @@
                             class="w-full cursor-pointer"
                             data-test="logout-button"
                         >
-                            {{ __('Log out') }}
+                            {{ __('app.log_out') }}
                         </flux:menu.item>
                     </form>
                 </flux:menu>

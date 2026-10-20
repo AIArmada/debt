@@ -33,6 +33,8 @@ class DatabaseSeeder extends Seeder
             'accepted_at' => now(),
         ]);
 
+        $this->call(StaffRolesAndPermissionsSeeder::class);
+
         if ($profile->records()->exists()) {
             return;
         }

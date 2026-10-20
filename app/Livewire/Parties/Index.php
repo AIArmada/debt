@@ -6,6 +6,7 @@ use App\Actions\Promises\Data\ResolveCounterpartyData;
 use App\Actions\Promises\ResolveCounterparty;
 use App\Domain\Enums\PartyKind;
 use App\Domain\Enums\PartyStatus;
+use App\Domain\Queries\NettingSuggestion;
 use App\Models\FinancialProfile;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
@@ -37,10 +38,10 @@ final class Index extends Component
             'kind' => $this->kind->value,
         ]));
         $this->reset('name');
-        session()->flash('party-created', 'Person saved.');
+        session()->flash('party-created', __('app.person_saved'));
     }
 
-    public function render(): View
+    public function render(NettingSuggestion $nettingSuggestion): View
     {
         $parties = $this->profile->parties()
             ->when($this->statusFilter === PartyStatus::Archived->value, fn (Builder $query): Builder => $query->where('status', PartyStatus::Archived->value))
@@ -50,6 +51,7 @@ final class Index extends Component
 
         return view('livewire.parties.index', [
             'parties' => $parties,
-        ])->layout('layouts.app', ['title' => 'People']);
+            'nettingSuggestions' => $nettingSuggestion->forProfile($this->profile, auth()->user()),
+        ])->layout('layouts.app', ['title' => __('app.people_title')]);
     }
 }

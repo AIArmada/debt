@@ -4,6 +4,7 @@ namespace App\Actions\Promises;
 
 use App\Domain\Enums\ObligationStatus;
 use App\Domain\Enums\PartyStatus;
+use App\Domain\Queries\RecordVisibilityQuery;
 use App\Models\Party;
 use App\Models\User;
 use App\Services\ActivityLogger;
@@ -14,7 +15,10 @@ use Illuminate\Validation\ValidationException;
 
 final class ArchiveParty
 {
-    public function __construct(private readonly ActivityLogger $activityLogger) {}
+    public function __construct(
+        private readonly ActivityLogger $activityLogger,
+        private readonly RecordVisibilityQuery $recordVisibilityQuery,
+    ) {}
 
     public function handle(User $user, Party $party): Party
     {
@@ -24,8 +28,8 @@ final class ArchiveParty
         return DB::transaction(function () use ($user, $party): Party {
             $locked = Party::query()->whereKey($party->getKey())->lockForUpdate()->firstOrFail();
             $locked->loadMissing('profile');
-            $hasOpenObligation = $locked->records()
-                ->whereHas('obligations', fn (Builder $query): Builder => $query->where('status', ObligationStatus::Open->value))
+            $hasOpenObligation = $this->recordVisibilityQuery->forUser($locked->records()->getQuery(), $user)
+                ->whereHas('obligations', fn (Builder $query): Builder => $query->where('status', '!=', ObligationStatus::Settled->value))
                 ->exists();
 
             if ($hasOpenObligation) {

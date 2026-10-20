@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Domain\Enums\PlanStatus;
+use App\Domain\Enums\PlanStrategy;
 use Database\Factories\RepaymentPlanFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,16 +11,19 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property PlanStrategy $strategy
+ */
 class RepaymentPlan extends Model
 {
     /** @use HasFactory<RepaymentPlanFactory> */
     use HasFactory, HasUuids;
 
-    protected $fillable = ['budget_period_id', 'status', 'generated_at'];
+    protected $fillable = ['budget_period_id', 'status', 'strategy', 'generated_at'];
 
     protected function casts(): array
     {
-        return ['status' => PlanStatus::class, 'generated_at' => 'datetime'];
+        return ['status' => PlanStatus::class, 'strategy' => PlanStrategy::class, 'generated_at' => 'datetime'];
     }
 
     /** @return BelongsTo<BudgetPeriod, $this> */

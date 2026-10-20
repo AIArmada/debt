@@ -31,6 +31,19 @@ final class Currency
         'AED' => 'UAE dirham',
         'SAR' => 'Saudi riyal',
         'QAR' => 'Qatari riyal',
+        'BDT' => 'Bangladeshi taka',
+        'PKR' => 'Pakistani rupee',
+        'LKR' => 'Sri Lankan rupee',
+        'MMK' => 'Myanmar kyat',
+        'KHR' => 'Cambodian riel',
+        'LAK' => 'Lao kip',
+        'NGN' => 'Nigerian naira',
+        'KES' => 'Kenyan shilling',
+        'EGP' => 'Egyptian pound',
+        'TRY' => 'Turkish lira',
+        'ZAR' => 'South African rand',
+        'BRL' => 'Brazilian real',
+        'MXN' => 'Mexican peso',
     ];
 
     /** @return list<string> */

@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'title' => 'Janji dikongsi', 'shared_promise' => 'Janji dikongsi', 'balance' => 'Baki',
+    'no_balance' => 'Tiada baki wang tertunggak.', 'balance_breakdown' => 'Pecahan baki', 'no_breakdown' => 'Tiada pecahan wang tersedia.',
+    'borrowed' => 'Dipinjam', 'charges' => 'Caj', 'paid' => 'Dibayar', 'unpaid_principal' => 'Pokok belum dibayar', 'unpaid_charges' => 'Caj belum dibayar',
+    'instalments' => 'Ansuran', 'no_instalments' => 'Tiada ansuran dijadualkan.', 'instalment_sequence' => 'Ansuran :sequence',
+    'instalment_statuses' => ['pending' => 'Menunggu', 'overdue' => 'Tertunggak', 'settled' => 'Selesai'],
+    'terms' => 'Terma caj', 'no_terms' => 'Tiada terma caj tambahan.',
+    'movements' => 'Transaksi disahkan', 'no_movements' => 'Tiada transaksi wang disahkan.',
+    'evidence' => 'Nama bukti', 'no_evidence' => 'Tiada bukti dilampirkan.',
+    'disputed_by' => 'Janji ini dipertikaikan oleh :name.', 'acknowledged_by' => 'Diakui oleh :name.',
+    'acknowledgement_recorded' => 'Pengakuan anda telah direkodkan.', 'dispute_recorded' => 'Pertikaian anda telah direkodkan.',
+    'your_name' => 'Nama anda', 'note_optional' => 'Nota (pilihan)', 'accept_terms' => 'Saya menerima terma ini',
+    'acknowledge' => 'Akui janji ini', 'dispute' => 'Pertikaikan janji ini', 'returned' => 'Dipulangkan :date',
+    'guarantors' => 'Penjamin', 'no_guarantors' => 'Tiada penjamin disenaraikan.',
+    'guaranteed_by' => 'Dijamin oleh', 'grace_period' => 'Tempoh ihsan: :days hari · Agihan: :allocation',
+    'lifetime_cap' => 'Had sepanjang tempoh: :amount', 'total_payable' => 'Jumlah perlu dibayar: :amount',
+    'fixed_penalty' => 'Penalti tetap: :amount', 'percentage_penalty' => 'Penalti peratusan pada jumlah tertunggak: :percent%',
+    'automatic_after_acceptance' => 'Penggunaan automatik bermula selepas penerimaan.', 'formal_debt' => 'Hutang rasmi.',
+    'fixed_agreed_date' => 'Jumlah tetap dipersetujui lebih awal pada :date.', 'days' => 'hari',
+    'charge_modes' => ['none' => 'Tiada', 'manual' => 'Manual', 'auto_propose' => 'Cadangan automatik', 'auto_apply' => 'Gunakan automatik'],
+    'charge_kinds' => ['none' => 'Tiada', 'interest' => 'Faedah', 'profit' => 'Keuntungan'],
+    'charge_bases' => ['flat' => 'Tetap', 'reducing_simple' => 'Baki berkurang mudah', 'fixed_total' => 'jumlah tetap, dipersetujui lebih awal'],
+    'charge_periods' => ['daily' => 'harian', 'weekly' => 'mingguan', 'monthly' => 'bulanan', 'yearly' => 'tahunan'],
+    'allocation_orders' => ['charges_first' => 'caj dahulu', 'principal_first' => 'pokok dahulu'],
+    'money_entries' => ['opening_balance' => 'baki pembukaan', 'advance' => 'pendahuluan', 'charge' => 'caj', 'interest_charge' => 'caj faedah', 'profit_charge' => 'caj keuntungan', 'fee' => 'yuran', 'penalty' => 'penalti', 'payment' => 'bayaran', 'collection' => 'kutipan', 'adjustment_up' => 'pelarasan naik', 'adjustment_down' => 'pelarasan turun', 'forgiveness' => 'pelepasan', 'write_off' => 'hapus kira', 'offset' => 'tolak selesai'],
+];

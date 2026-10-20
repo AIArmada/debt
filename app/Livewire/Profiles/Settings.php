@@ -19,12 +19,18 @@ final class Settings extends Component
 
     public string $timezone = 'UTC';
 
+    public bool $interestFreeMode = true;
+
+    public bool $showHijri = false;
+
     public function mount(FinancialProfile $profile): void
     {
         $this->profile = $profile;
         Gate::authorize('update', $profile);
         $this->name = $profile->name;
         $this->timezone = $profile->timezone;
+        $this->interestFreeMode = $profile->interest_free_mode;
+        $this->showHijri = $profile->show_hijri;
     }
 
     public function save(UpdateFinancialProfile $updateFinancialProfile): void
@@ -38,6 +44,8 @@ final class Settings extends Component
             UpdateFinancialProfileData::fromInput([
                 'name' => $this->name,
                 'timezone' => $this->timezone,
+                'interestFreeMode' => $this->interestFreeMode,
+                'showHijri' => $this->showHijri,
             ]),
         );
         session()->flash('profile-settings-saved', 'Profile settings saved.');
