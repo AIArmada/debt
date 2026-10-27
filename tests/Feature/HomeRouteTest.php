@@ -8,10 +8,14 @@ pest()->use(RefreshDatabase::class);
 test('guest root shows the product front page', function () {
     $this->get(route('home'))
         ->assertOk()
+        ->assertSee('ClearTogether')
         ->assertSee('One clear record, shared by both sides.')
-        ->assertSee('Start on your own')
-        ->assertSee('only when you want')
-        ->assertSee('New records are shared with profile members by default; private records are visible only to their creator and the profile owner.')
+        ->assertSee('Track money, promises or commitments in one place')
+        ->assertSee('Share a link with the other person')
+        ->assertSee('Promises are easy. Keeping track isn’t.')
+        ->assertSee('Track any kind of promise')
+        ->assertSee('Straight answers to common questions.')
+        ->assertSee('Choose who can see each record.')
         ->assertDontSee('welcome.');
 });
 
@@ -23,7 +27,7 @@ test('guest root renders Malay copy after changing the locale', function () {
     $this->get(route('home'))
         ->assertOk()
         ->assertSee('Satu rekod jelas untuk kedua-dua pihak.')
-        ->assertSee('Mulakan sendiri')
+        ->assertSee('Jejaki wang, janji atau komitmen di satu tempat')
         ->assertSee('tanpa akaun')
         ->assertDontSee('welcome.');
 });
