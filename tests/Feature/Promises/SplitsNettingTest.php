@@ -74,16 +74,16 @@ class SplitsNettingTest extends TestCase
         self::assertSame(0, (int) $obligation->shares()->count());
     }
 
-    public function test_netting_suggestions_greedily_pair_largest_debtors_and_creditors_per_currency(): void
+    public function test_netting_suggestions_greedily_pair_largest_payables_and_creditors_per_currency(): void
     {
         $user = User::factory()->create();
         $profile = $user->financialProfiles()->firstOrFail();
-        $firstParty = $this->party($profile, 'Largest debtor');
+        $firstParty = $this->party($profile, 'Largest payable');
         $secondParty = $this->party($profile, 'Small creditor');
         $thirdParty = $this->party($profile, 'Largest creditor');
 
-        $this->moneyPromise($user, $profile, $firstParty, Direction::Payable, '100.00', 'First debt');
-        $this->moneyPromise($user, $profile, $secondParty, Direction::Payable, '30.00', 'Second debt');
+        $this->moneyPromise($user, $profile, $firstParty, Direction::Payable, '100.00', 'First promise');
+        $this->moneyPromise($user, $profile, $secondParty, Direction::Payable, '30.00', 'Second promise');
         $this->moneyPromise($user, $profile, $secondParty, Direction::Receivable, '50.00', 'Second credit');
         $this->moneyPromise($user, $profile, $thirdParty, Direction::Receivable, '80.00', 'Third credit');
 

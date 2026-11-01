@@ -322,7 +322,7 @@ test('an auto propose charge does not change balance until confirmed', function 
         ->and($afterConfirmation)->toBe($before + 100);
 });
 
-test('auto apply requires acceptance unless the formal debt choice is set', function () {
+test('auto apply requires acceptance unless the formal promise choice is set', function () {
     $user = User::factory()->create();
     $profile = $user->financialProfiles()->firstOrFail();
     $profile->forceFill(['interest_free_mode' => false])->save();
@@ -546,7 +546,7 @@ test('fixed total auto proposals are generated before acceptance but cannot conf
         ->and($terms->fresh()->fixed_total_posted_at)->not->toBeNull();
 });
 
-test('fixed total auto apply stays gated by acceptance or the formal debt choice', function () {
+test('fixed total auto apply stays gated by acceptance or the formal promise choice', function () {
     $user = User::factory()->create();
     $profile = $user->financialProfiles()->firstOrFail();
     $profile->forceFill(['interest_free_mode' => false])->save();

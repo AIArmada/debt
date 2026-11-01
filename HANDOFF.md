@@ -3,7 +3,7 @@
 > **STATUS: SHIP BUILD COMPLETED Mon 19 Oct 2026.** Luna full-diff audit fixes
 > landed; orchestrator final gate: **222 tests passed (1282 assertions)**,
 > PHPStan `[OK] No errors`, Pint `{"tool":"pint","result":"passed"}`,
-> migrate:fresh+seed OK on `debt` and `debt_test`. Nothing committed.
+> migrate:fresh+seed OK on `promise` and `promise_test`. Nothing committed.
 > **LIVE CHROME GATE CLOSED Mon 19 Oct 2026:** Luna Chrome DevTools MCP run
 > found a plans-route 500, raw translation keys, mobile filter overflow, and
 > Alpine CSP console errors; Luna fixed them (227 tests green); retest passed
@@ -21,7 +21,7 @@
 > build via UseStandardAlpineForAdmin + published assets). Nothing committed.
 > Sections below are retained as the historical record of how it was built.
 
-Written: Sat 17 Oct 2026, ~14:22 +08, workspace `/Users/saiffil/Herd/debt`.
+Written: Sat 17 Oct 2026, ~14:22 +08, workspace `/Users/saiffil/Herd/promise`.
 Purpose: a fresh agent/session with ZERO prior context can finish the ship
 version from this file alone. Do not re-run the audit or first-pass review;
 they are done and summarised here. Token-saving order: read THIS file fully,
@@ -35,7 +35,7 @@ then `docs/ship-spec.md` (262 lines, incl. binding Amendments A1+A2), then act.
 - **Writer: `gpt-6-luna` via Codex CLI, ALWAYS max reasoning effort.**
   Invocation pattern (proven working, codex-cli 0.159.0 at
   `/Users/saiffil/.local/bin/codex`):
-  `codex exec -m gpt-6-luna -c model_reasoning_effort="max" -s workspace-write -C /Users/saiffil/Herd/debt -o /tmp/<out>.txt - < /tmp/<brief>.md > /tmp/<log>.log 2>&1`
+  `codex exec -m gpt-6-luna -c model_reasoning_effort="max" -s workspace-write -C /Users/saiffil/Herd/promise -o /tmp/<out>.txt - < /tmp/<brief>.md > /tmp/<log>.log 2>&1`
   Read-only audits use `-s read-only`. Never change waves/models; never use the
   native numbered use-case aliases. Standing user rule (personal memory `panel-models.md`):
   Luna dispatches are ALWAYS max, never low/medium. Panel skill reference:
@@ -54,7 +54,7 @@ then `docs/ship-spec.md` (262 lines, incl. binding Amendments A1+A2), then act.
 
 ## 2. What this product is (audit conclusion, settled)
 
-Folder `debt`, product **Promise Tracker** (`APP_NAME` in `.env.example`).
+Folder `promise`, product **Promise Tracker** (`APP_NAME` in `.env.example`).
 Laravel 13.30, Livewire 4.4, Fortify, Postgres-only, PHP 8.5, Pest 5.
 
 One-sentence outcome adopted for ship: *two people remember the same promise
@@ -113,7 +113,7 @@ The ship build (this handoff's work) closes those gaps per `docs/ship-spec.md`.
 
 - Postgres server IS running at `127.0.0.1:5432` (no `psql` CLI; use PHP/PDO).
   Working role: **`postgres`** (no password). The historic typo role
-  `postgress` does NOT exist. Databases `debt` and `debt_test` were CREATED
+  `postgress` does NOT exist. Databases `promise` and `promise_test` were CREATED
   by the orchestrator via PDO and exist. Extensions: only `plpgsql`.
 - Local `.env` was fixed by orchestrator: `DB_USERNAME=postgres` (was the
   typo). `config/database.php`, `.env.example`, `phpunit.xml` were fixed by
@@ -182,7 +182,7 @@ Scope: instalments + `instalment_allocations` (generate/regenerate guarded,
 oldest-first allocation, exact void reversal, allocation on confirm-proposed,
 due-date precedence to next unpaid instalment); Plans v2 (major-unit inputs
 via `Money::parseMajor`, `strategy` due_date/snowball/avalanche with annual
-normalisation, instalment-aware caps, DebtFreeProjection capped 600 months,
+normalisation, instalment-aware caps, PromiseFreeProjection capped 600 months,
 collect-first receivables); purpose titles (`records.title` = purpose else
 party name, restart prefill keeps real party, "Add another like this");
 message templates en+ms (`lang/{en,ms}/templates.php`, 6 keys), copy +
@@ -202,7 +202,7 @@ NettingSuggestion + People UI; guarantor add/remove + share-page display;
 full i18n (`lang/en` + `lang/ms`: app, promises, plans, charges, share,
 legal, help, templates); `users.locale` + `SetLocale` middleware + switcher
 + `/locale/{locale}`; Hijri (`show_hijri` + `HijriDatePresenter` via
-IntlCalendar islamic, guarded); help page `/help/debt-support` (AKPK,
+IntlCalendar islamic, guarded); help page `/help/promise-support` (AKPK,
 Talian Kasih 15999, Befrienders KL); export v2 + ZIP download + restore into
 NEW profile (`ImportProfileExport`); CSV `amount` major OR `amount_minor` +
 dates Y-m-d / d/m/Y / d M Y.
@@ -289,13 +289,13 @@ locale must render `en`. The ready-to-send fix brief is Appendix A below
 ## 8. EXACT resume sequence (run in order, after 16:49 or credit upgrade)
 
 Step 0 — Availability probe (cheap, once):
-`codex exec -m gpt-6-luna -c model_reasoning_effort="none" -s read-only -C /Users/saiffil/Herd/debt "reply with the single word: ok"`
+`codex exec -m gpt-6-luna -c model_reasoning_effort="none" -s read-only -C /Users/saiffil/Herd/promise "reply with the single word: ok"`
 Expect `ok`. If still usage-limit, STOP and tell the user the new reset time
 from the error; reschedule, do not burn retries.
 
 Step 1 — Dispatch the fix brief (Appendix A; recreate `/tmp/wave4-fix-brief.md`
 from Appendix A verbatim if /tmp was cleared):
-`codex exec -m gpt-6-luna -c model_reasoning_effort="max" -s workspace-write -C /Users/saiffil/Herd/debt -o /tmp/wave4-fix-out.md - < /tmp/wave4-fix-brief.md > /tmp/wave4-fix.log 2>&1`
+`codex exec -m gpt-6-luna -c model_reasoning_effort="max" -s workspace-write -C /Users/saiffil/Herd/promise -o /tmp/wave4-fix-out.md - < /tmp/wave4-fix-brief.md > /tmp/wave4-fix.log 2>&1`
 Monitor to terminal (`/tmp/wave4-fix-out.md` appears; process exits). Runs in
 prior waves took ~10–50 min; logs can reach tens of MB — that is normal.
 
@@ -336,8 +336,8 @@ Step 4 — Orchestrator final audit (independent, read + run):
   app/config/phpunit/.env.example; added TODO/FIXME 0 (`git diff -U0 | grep`);
   every `PartyRole` case (Counterparty, Guarantor) has a producer in app code;
   every `MoneyEntry`/`ObligationStatus` case reachable or deleted.
-- Fresh migrate from empty on `debt_test` too:
-  `DB_DATABASE=debt_test php artisan migrate:fresh --seed --force`.
+- Fresh migrate from empty on `promise_test` too:
+  `DB_DATABASE=promise_test php artisan migrate:fresh --seed --force`.
 - Landing smoke: `php artisan route:list` contains shares/help/locale/plans/
   imports/exports.zip routes; `php artisan charges:generate-due` scheduled
   BEFORE reminders in `bootstrap/app.php` (read the file).
@@ -380,15 +380,15 @@ Step 5 — Final report to user (see §10 outline). Do not commit.
    destinations + wa.me deep links, no gateway); WhatsApp Business API (same).
 7. Interruption note: Codex usage limit hit during Wave 4, recovered via
    scheduled resume; final state re-verified green after recovery.
-8. How to run locally: Postgres role `postgres`, DBs `debt`/`debt_test`,
-   `php artisan migrate --seed`, `composer run dev` / Herd site `debt.test`,
+8. How to run locally: Postgres role `postgres`, DBs `promise`/`promise_test`,
+   `php artisan migrate --seed`, `composer run dev` / Herd site `promise.test`,
    seed login `test@example.com` / `password` (DatabaseSeeder).
 9. Explicit statement: nothing committed/pushed; working tree left for review.
 
 ## Appendix A — Wave 4 fix brief (verbatim; save as `/tmp/wave4-fix-brief.md`)
 
 ```
-Fix Wave 4 leftovers in /Users/saiffil/Herd/debt. Orchestrator Postgres gate: 190 passed, 11 failed; phpstan 0; pint pass. Your previous run hit usage limit before handover/self-audit — after these fixes, ALSO do the Wave 4 self-audit vs /tmp/wave4-brief.md items 1-15 and produce the handover output that file required (files by area, commands+results, self-audit, grep proofs, assumptions).
+Fix Wave 4 leftovers in /Users/saiffil/Herd/promise. Orchestrator Postgres gate: 190 passed, 11 failed; phpstan 0; pint pass. Your previous run hit usage limit before handover/self-audit — after these fixes, ALSO do the Wave 4 self-audit vs /tmp/wave4-brief.md items 1-15 and produce the handover output that file required (files by area, commands+results, self-audit, grep proofs, assumptions).
 NOTE from handoff: /tmp/wave4-brief.md may be gone; the authoritative scope is docs/ship-spec.md Batch 6+7 items (§7, §9, §10) + this HANDOFF §5 Wave 4 list. Self-audit against THOSE.
 
 Verified failures to fix (fix APP by default; touch tests only where wording intentionally changed per spec A2, and list each):
@@ -405,7 +405,7 @@ Then: pint --dirty, phpstan app (sqlite --debug trick), php -l touched. Do not r
 ## Appendix B — Luna full-diff self-review brief template (Step 3)
 
 ```
-Read-only audit. Repo /Users/saiffil/Herd/debt. Read docs/ship-spec.md (A1+A2 binding) and HANDOFF.md §5. Review the FULL uncommitted diff (git diff + git status untracked) against the spec section by section (§1-§10, A1, A2). Start from zero: distrust handover notes including your own prior ones; every claim needs a quoted command (grep/cat) with file:line. Categories: FATAL (spec contradicted / money wrong / privacy leak), GAP (spec line unimplemented — name user harm), RISK (security, double-charge, data loss, labelling), DEAD (enum/action/route with zero producers — grep app/resources/config/routes/database/tests). Hand-recompute the two charge anchors (RM15 flat monthly 1.5% on RM1000; RM90 reducing daily 1.5% x10d on RM600) from calculator code and report inputs/outputs. Output: verdict SHIP-READY or NOT-READY + counts; findings grouped with evidence; anchors; unverified list. Do NOT modify files in this pass.
+Read-only audit. Repo /Users/saiffil/Herd/promise. Read docs/ship-spec.md (A1+A2 binding) and HANDOFF.md §5. Review the FULL uncommitted diff (git diff + git status untracked) against the spec section by section (§1-§10, A1, A2). Start from zero: distrust handover notes including your own prior ones; every claim needs a quoted command (grep/cat) with file:line. Categories: FATAL (spec contradicted / money wrong / privacy leak), GAP (spec line unimplemented — name user harm), RISK (security, double-charge, data loss, labelling), DEAD (enum/action/route with zero producers — grep app/resources/config/routes/database/tests). Hand-recompute the two charge anchors (RM15 flat monthly 1.5% on RM1000; RM90 reducing daily 1.5% x10d on RM600) from calculator code and report inputs/outputs. Output: verdict SHIP-READY or NOT-READY + counts; findings grouped with evidence; anchors; unverified list. Do NOT modify files in this pass.
 ```
 Then dispatch a workspace-write fix brief containing ONLY those findings
 (same formatting discipline as Appendix A), re-run §8 Step 2 gate, and loop

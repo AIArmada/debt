@@ -5,8 +5,8 @@ namespace App\Livewire\Plans;
 use App\Actions\Promises\GeneratePlan;
 use App\Domain\Enums\PlanStatus;
 use App\Domain\Enums\PlanStrategy;
-use App\Domain\Queries\DebtFreeProjection;
 use App\Domain\Queries\PlanProgress;
+use App\Domain\Queries\PromiseFreeProjection;
 use App\Domain\Queries\RecordVisibilityQuery;
 use App\Models\BudgetPeriod;
 use App\Models\FinancialProfile;
@@ -57,7 +57,7 @@ final class Show extends Component
         $this->period->refresh();
     }
 
-    public function render(PlanProgress $planProgress, RecordVisibilityQuery $recordVisibilityQuery, DebtFreeProjection $debtFreeProjection): View
+    public function render(PlanProgress $planProgress, RecordVisibilityQuery $recordVisibilityQuery, PromiseFreeProjection $promiseFreeProjection): View
     {
         $user = Auth::user();
         abort_unless($user instanceof User, 401);
@@ -81,7 +81,7 @@ final class Show extends Component
         /** @var array<string, array{planned_minor: int, paid_minor: int}> $progress */
         $progress = $plan instanceof RepaymentPlan ? $planProgress->forPlan($plan) : [];
         $strategy = PlanStrategy::tryFrom($this->strategy) ?? ($plan->strategy ?? PlanStrategy::DueDate);
-        $projection = $debtFreeProjection->forPeriod($user, $this->period, $strategy);
+        $projection = $promiseFreeProjection->forPeriod($user, $this->period, $strategy);
 
         return view('livewire.plans.show', [
             'plan' => $plan,

@@ -11,7 +11,7 @@ migrations on top, except where a genuinely new table needs its own migration.
 - Baseline: `DB_USERNAME=postgres php artisan test tests/Feature/Promises/PromiseTrackerTest.php`
   → 15 passed. The suite only fails out of the box because `postgress` (misspelled)
   is the configured role; the working role is `postgres`, server on 127.0.0.1:5432.
-- Databases `debt` and `debt_test` have been created locally. `psql` CLI is absent; use PHP/PDO.
+- Databases `promise` and `promise_test` have been created locally. `psql` CLI is absent; use PHP/PDO.
 - Stack stays: Laravel 13, Livewire 4, Fortify, Postgres only. Migrations use PG
   features (jsonb, partial indexes, CASCADE drops) — keep PG-only, do not chase SQLite.
 - Project rule (`.ai/rules/views.md`): no backward-compatibility shims. Remove obsolete surfaces.
@@ -142,7 +142,7 @@ user (card/BNPL/financing). Languages at ship: English + Bahasa Melayu.
 - `GeneratePlan` gains strategy input: `due_date` (current), `snowball` (smallest balance first),
   `avalanche` (highest effective rate first; rate from charge terms, 0 when none — ties by due date).
   Store strategy on repayment_plans (edit migration). Plan may include a collect-first note listing largest receivables.
-- `DebtFreeProjection` query: simulate monthly with current capacity + strategy, applying estimated reducing charges
+- `PromiseFreeProjection` query: simulate monthly with current capacity + strategy, applying estimated reducing charges
   when terms exist; output months-to-free + total charges estimate + "pay X extra → N months earlier" for X=10% capacity.
   Show on Plans show. Estimates labelled as estimates.
 - Instalment-aware cap: when instalments exist, a period allocation is capped at arrears + instalments due
@@ -160,7 +160,7 @@ user (card/BNPL/financing). Languages at ship: English + Bahasa Melayu.
 ### 10. Privacy, safety, portability
 - `records.visibility` (`shared|private`) + `records.created_by`. Private = only creator + profile owner can view;
   editors/viewers cannot. Policies + all list/total/export queries must respect it for non-owners (totals exclude others' private).
-- Help page `GET /help/debt-support` (auth): AKPK + generic guidance (talk early, get agreement in writing, pause before penalty),
+- Help page `GET /help/promise-support` (auth): AKPK + generic guidance (talk early, get agreement in writing, pause before penalty),
   threats/coercion safety note, crisis signposting MY (Talian Kasih 15999, Befrienders KL) + "find local help" wording, no advice claims.
   Link from sidebar + overdue empty/alert areas. Content from lang files.
 - Exchange rates become per-profile: add `profile_id` (required) by editing migration; scope ConvertedView + UI + SetExchangeRate.
@@ -182,7 +182,7 @@ user (card/BNPL/financing). Languages at ship: English + Bahasa Melayu.
 Verification per batch (scoped, quote output):
 `vendor/bin/pint --dirty --format agent` · `vendor/bin/phpstan analyse <touched paths> --memory-limit=1G` ·
 `php artisan test --compact <touched test files>` · fresh migrate on scratch DB:
-`DB_DATABASE=debt_test php artisan migrate:fresh --seed` must pass from empty at ship.
+`DB_DATABASE=promise_test php artisan migrate:fresh --seed` must pass from empty at ship.
 
 ## Luna self-audit before handover (required output)
 

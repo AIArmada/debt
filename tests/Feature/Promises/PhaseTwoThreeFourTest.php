@@ -252,13 +252,13 @@ test('plans allocate by due date, supersede active plans, and report confirmed p
     $profile = $user->financialProfiles()->firstOrFail();
     $createPromise = app(CreatePromise::class);
     $first = $createPromise->handle($user, $profile, CreatePromiseData::fromInput([
-        'partyName' => 'Soonest debt',
+        'partyName' => 'Soonest promise',
         'direction' => Direction::Payable->value,
         'amount' => '20.00',
         'dueOn' => today()->addDay()->toDateString(),
     ], 'MYR'));
     $second = $createPromise->handle($user, $profile, CreatePromiseData::fromInput([
-        'partyName' => 'Later debt',
+        'partyName' => 'Later promise',
         'direction' => Direction::Payable->value,
         'amount' => '50.00',
         'dueOn' => today()->addDays(2)->toDateString(),

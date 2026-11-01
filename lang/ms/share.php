@@ -17,7 +17,7 @@ return [
     'guaranteed_by' => 'Dijamin oleh', 'grace_period' => 'Tempoh ihsan: :days hari · Agihan: :allocation',
     'lifetime_cap' => 'Had sepanjang tempoh: :amount', 'total_payable' => 'Jumlah perlu dibayar: :amount',
     'fixed_penalty' => 'Penalti tetap: :amount', 'percentage_penalty' => 'Penalti peratusan pada jumlah tertunggak: :percent%',
-    'automatic_after_acceptance' => 'Penggunaan automatik bermula selepas penerimaan.', 'formal_debt' => 'Hutang rasmi.',
+    'automatic_after_acceptance' => 'Penggunaan automatik bermula selepas penerimaan.', 'formal_promise' => 'Janji rasmi.',
     'fixed_agreed_date' => 'Jumlah tetap dipersetujui lebih awal pada :date.', 'days' => 'hari',
     'charge_modes' => ['none' => 'Tiada', 'manual' => 'Manual', 'auto_propose' => 'Cadangan automatik', 'auto_apply' => 'Gunakan automatik'],
     'charge_kinds' => ['none' => 'Tiada', 'interest' => 'Faedah', 'profit' => 'Keuntungan'],

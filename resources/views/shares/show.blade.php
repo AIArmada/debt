@@ -98,7 +98,7 @@
                             <div class="mt-1 text-zinc-600 dark:text-zinc-300">{{ __('share.automatic_after_acceptance') }}</div>
                         @endif
                         @if ($term['is_formal'])
-                            <div class="mt-1 text-zinc-600 dark:text-zinc-300">{{ __('share.formal_debt') }}</div>
+                            <div class="mt-1 text-zinc-600 dark:text-zinc-300">{{ __('share.formal_promise') }}</div>
                         @endif
                         @if ($term['fixed_total_agreed_upfront_at'])
                             <div class="mt-1 text-zinc-600 dark:text-zinc-300">{{ __('share.fixed_agreed_date', ['date' => $term['fixed_total_agreed_upfront_at']->format('d M Y')]) }}</div>

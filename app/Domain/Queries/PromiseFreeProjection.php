@@ -18,7 +18,7 @@ use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 
-final class DebtFreeProjection
+final class PromiseFreeProjection
 {
     public function __construct(
         private readonly OutstandingBalance $outstandingBalance,
@@ -137,45 +137,45 @@ final class DebtFreeProjection
         ];
     }
 
-    /** @param list<array{id: string, title: string, due_on: int, balance: int, principal_remaining: int, charges_remaining: int, original_principal: int, annual_rate: numeric-string, basis: string|null, allocation_order: string, cap_remaining: int|null, grace_months_remaining: int}> $initialDebts
+    /** @param list<array{id: string, title: string, due_on: int, balance: int, principal_remaining: int, charges_remaining: int, original_principal: int, annual_rate: numeric-string, basis: string|null, allocation_order: string, cap_remaining: int|null, grace_months_remaining: int}> $initialPromises
      * @return array{months: int, charges: int}
      */
-    private function simulate(array $initialDebts, int $capacity, PlanStrategy $strategy): array
+    private function simulate(array $initialPromises, int $capacity, PlanStrategy $strategy): array
     {
-        $debts = array_values(array_filter($initialDebts, static fn (array $debt): bool => (int) $debt['balance'] > 0));
-        if ($debts === []) {
+        $promises = array_values(array_filter($initialPromises, static fn (array $promise): bool => (int) $promise['balance'] > 0));
+        if ($promises === []) {
             return ['months' => 0, 'charges' => 0];
         }
 
         $estimatedCharges = 0;
         for ($month = 1; $month <= 600; $month++) {
-            foreach ($debts as &$debt) {
-                $charge = $month <= $debt['grace_months_remaining']
+            foreach ($promises as &$promise) {
+                $charge = $month <= $promise['grace_months_remaining']
                     ? 0
-                    : $this->monthlyCharge($debt);
-                if ($debt['cap_remaining'] !== null) {
-                    $charge = min($charge, $debt['cap_remaining']);
-                    $debt['cap_remaining'] = max(0, $debt['cap_remaining'] - $charge);
+                    : $this->monthlyCharge($promise);
+                if ($promise['cap_remaining'] !== null) {
+                    $charge = min($charge, $promise['cap_remaining']);
+                    $promise['cap_remaining'] = max(0, $promise['cap_remaining'] - $charge);
                 }
-                $debt['charges_remaining'] = (int) $debt['charges_remaining'] + $charge;
-                $debt['balance'] = (int) $debt['principal_remaining'] + (int) $debt['charges_remaining'];
+                $promise['charges_remaining'] = (int) $promise['charges_remaining'] + $charge;
+                $promise['balance'] = (int) $promise['principal_remaining'] + (int) $promise['charges_remaining'];
                 $estimatedCharges += $charge;
             }
-            unset($debt);
+            unset($promise);
 
-            $debts = $this->sortDebts($debts, $strategy);
+            $promises = $this->sortPromises($promises, $strategy);
             $remainingCapacity = $capacity;
-            foreach ($debts as &$debt) {
+            foreach ($promises as &$promise) {
                 if ($remainingCapacity <= 0) {
                     break;
                 }
-                $paid = min($remainingCapacity, (int) $debt['balance']);
-                $this->applyPayment($debt, $paid);
+                $paid = min($remainingCapacity, (int) $promise['balance']);
+                $this->applyPayment($promise, $paid);
                 $remainingCapacity -= $paid;
             }
-            unset($debt);
-            $debts = array_values(array_filter($debts, static fn (array $debt): bool => (int) $debt['balance'] > 0));
-            if ($debts === []) {
+            unset($promise);
+            $promises = array_values(array_filter($promises, static fn (array $promise): bool => (int) $promise['balance'] > 0));
+            if ($promises === []) {
                 return ['months' => $month, 'charges' => $estimatedCharges];
             }
         }
@@ -183,18 +183,18 @@ final class DebtFreeProjection
         return ['months' => 600, 'charges' => $estimatedCharges];
     }
 
-    /** @param array{id: string, title: string, due_on: int, balance: int, principal_remaining: int, charges_remaining: int, original_principal: int, annual_rate: numeric-string, basis: string|null, allocation_order: string, cap_remaining: int|null, grace_months_remaining: int} $debt */
-    private function monthlyCharge(array $debt): int
+    /** @param array{id: string, title: string, due_on: int, balance: int, principal_remaining: int, charges_remaining: int, original_principal: int, annual_rate: numeric-string, basis: string|null, allocation_order: string, cap_remaining: int|null, grace_months_remaining: int} $promise */
+    private function monthlyCharge(array $promise): int
     {
-        $basis = (string) ($debt['basis'] ?? '');
-        $annualRate = (string) $debt['annual_rate'];
+        $basis = (string) ($promise['basis'] ?? '');
+        $annualRate = (string) $promise['annual_rate'];
         if (bccomp($annualRate, '0', 12) === 0 || $basis === 'fixed_total') {
             return 0;
         }
 
         $amount = match ($basis) {
-            'flat' => (int) $debt['principal_remaining'] > 0 ? (int) $debt['original_principal'] : 0,
-            'reducing_simple' => (int) $debt['principal_remaining'],
+            'flat' => (int) $promise['principal_remaining'] > 0 ? (int) $promise['original_principal'] : 0,
+            'reducing_simple' => (int) $promise['principal_remaining'],
             default => 0,
         };
         if ($amount <= 0) {
@@ -208,27 +208,27 @@ final class DebtFreeProjection
         return bccomp($fraction, '0.5', 12) >= 0 ? $whole + 1 : $whole;
     }
 
-    /** @param array{id: string, title: string, due_on: int, balance: int, principal_remaining: int, charges_remaining: int, original_principal: int, annual_rate: numeric-string, basis: string|null, allocation_order: string, cap_remaining: int|null, grace_months_remaining: int} $debt */
-    private function applyPayment(array &$debt, int $amount): void
+    /** @param array{id: string, title: string, due_on: int, balance: int, principal_remaining: int, charges_remaining: int, original_principal: int, annual_rate: numeric-string, basis: string|null, allocation_order: string, cap_remaining: int|null, grace_months_remaining: int} $promise */
+    private function applyPayment(array &$promise, int $amount): void
     {
-        if ($debt['allocation_order'] === 'principal_first') {
-            $principalPaid = min($amount, (int) $debt['principal_remaining']);
-            $debt['principal_remaining'] = (int) $debt['principal_remaining'] - $principalPaid;
-            $debt['charges_remaining'] = max(0, (int) $debt['charges_remaining'] - ($amount - $principalPaid));
+        if ($promise['allocation_order'] === 'principal_first') {
+            $principalPaid = min($amount, (int) $promise['principal_remaining']);
+            $promise['principal_remaining'] = (int) $promise['principal_remaining'] - $principalPaid;
+            $promise['charges_remaining'] = max(0, (int) $promise['charges_remaining'] - ($amount - $principalPaid));
         } else {
-            $chargesPaid = min($amount, (int) $debt['charges_remaining']);
-            $debt['charges_remaining'] = (int) $debt['charges_remaining'] - $chargesPaid;
-            $debt['principal_remaining'] = max(0, (int) $debt['principal_remaining'] - ($amount - $chargesPaid));
+            $chargesPaid = min($amount, (int) $promise['charges_remaining']);
+            $promise['charges_remaining'] = (int) $promise['charges_remaining'] - $chargesPaid;
+            $promise['principal_remaining'] = max(0, (int) $promise['principal_remaining'] - ($amount - $chargesPaid));
         }
-        $debt['balance'] = (int) $debt['principal_remaining'] + (int) $debt['charges_remaining'];
+        $promise['balance'] = (int) $promise['principal_remaining'] + (int) $promise['charges_remaining'];
     }
 
-    /** @param list<array{id: string, title: string, due_on: int, balance: int, principal_remaining: int, charges_remaining: int, original_principal: int, annual_rate: numeric-string, basis: string|null, allocation_order: string, cap_remaining: int|null, grace_months_remaining: int}> $debts
+    /** @param list<array{id: string, title: string, due_on: int, balance: int, principal_remaining: int, charges_remaining: int, original_principal: int, annual_rate: numeric-string, basis: string|null, allocation_order: string, cap_remaining: int|null, grace_months_remaining: int}> $promises
      * @return list<array{id: string, title: string, due_on: int, balance: int, principal_remaining: int, charges_remaining: int, original_principal: int, annual_rate: numeric-string, basis: string|null, allocation_order: string, cap_remaining: int|null, grace_months_remaining: int}>
      */
-    private function sortDebts(array $debts, PlanStrategy $strategy): array
+    private function sortPromises(array $promises, PlanStrategy $strategy): array
     {
-        usort($debts, static function (array $left, array $right) use ($strategy): int {
+        usort($promises, static function (array $left, array $right) use ($strategy): int {
             $strategyOrder = match ($strategy) {
                 PlanStrategy::DueDate => 0,
                 PlanStrategy::Snowball => (int) $left['balance'] <=> (int) $right['balance'],
@@ -246,7 +246,7 @@ final class DebtFreeProjection
                 ?: strcmp((string) $left['id'], (string) $right['id']);
         });
 
-        return $debts;
+        return $promises;
     }
 
     /** @return numeric-string */

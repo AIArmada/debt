@@ -12,11 +12,11 @@ class HelpPageTest extends TestCase
 
     public function test_help_page_requires_authentication_and_shows_malaysian_support_contacts(): void
     {
-        $this->get(route('help.debt-support'))->assertRedirect(route('login'));
+        $this->get(route('help.promise-support'))->assertRedirect(route('login'));
 
         $user = User::factory()->create(['email_verified_at' => now()]);
         $this->actingAs($user)
-            ->get(route('help.debt-support'))
+            ->get(route('help.promise-support'))
             ->assertOk()
             ->assertSee('Agensi Kaunseling dan Pengurusan Kredit')
             ->assertSee('Talian Kasih')
@@ -27,9 +27,9 @@ class HelpPageTest extends TestCase
 
         $malayUser = User::factory()->create(['email_verified_at' => now(), 'locale' => 'ms']);
         $this->actingAs($malayUser)
-            ->get(route('help.debt-support'))
+            ->get(route('help.promise-support'))
             ->assertOk()
-            ->assertSee('Bantuan dan sokongan hutang')
+            ->assertSee('Bantuan dan sokongan janji')
             ->assertSee('cari bantuan setempat di kawasan anda');
     }
 }

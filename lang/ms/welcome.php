@@ -91,7 +91,7 @@ return [
     'feature_movements_title' => 'Kongsi dan kemas kini bersama',
     'feature_movements_desc' => 'Kongsi pautan supaya kedua-dua pihak melihat rekod yang sama.',
     'feature_currencies_title' => 'Lihat baki sepintas lalu',
-    'feature_currencies_desc' => 'Ketahui jumlah hutang dengan jumlah dan sejarah yang jelas.',
+    'feature_currencies_desc' => 'Ketahui siapa berhutang apa, dengan jumlah dan sejarah yang jelas.',
     'feature_charges_title' => 'Tetapkan terma sendiri',
     'feature_charges_desc' => 'Tambah nota, kategori dan tarikh akhir mengikut cara anda berkongsi dan menyelesaikan.',
     'how_eyebrow' => 'Perkara yang kami lakukan',

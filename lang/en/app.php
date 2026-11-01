@@ -8,7 +8,7 @@ return [
     'plans' => 'Plans',
     'currency' => 'Currency',
     'settings' => 'Settings',
-    'help' => 'Debt support',
+    'help' => 'Promise support',
     'your_profiles' => 'Your profiles',
     'log_out' => 'Log out',
     'remove' => 'Remove',

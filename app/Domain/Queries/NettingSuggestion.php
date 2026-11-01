@@ -29,28 +29,28 @@ class NettingSuggestion
 
         $suggestions = [];
         foreach ($netByCurrency as $currency => $partyNets) {
-            $debtors = array_values(array_filter($partyNets, static fn (array $entry): bool => $entry['net'] < 0));
+            $payables = array_values(array_filter($partyNets, static fn (array $entry): bool => $entry['net'] < 0));
             $creditors = array_values(array_filter($partyNets, static fn (array $entry): bool => $entry['net'] > 0));
-            usort($debtors, static fn (array $left, array $right): int => (abs($right['net']) <=> abs($left['net'])) ?: strcmp((string) $left['party']->getKey(), (string) $right['party']->getKey())
+            usort($payables, static fn (array $left, array $right): int => (abs($right['net']) <=> abs($left['net'])) ?: strcmp((string) $left['party']->getKey(), (string) $right['party']->getKey())
             );
             usort($creditors, static fn (array $left, array $right): int => ($right['net'] <=> $left['net']) ?: strcmp((string) $left['party']->getKey(), (string) $right['party']->getKey())
             );
 
             $currencySuggestions = [];
-            $debtorIndex = 0;
+            $payableIndex = 0;
             $creditorIndex = 0;
-            while (isset($debtors[$debtorIndex], $creditors[$creditorIndex])) {
-                $amount = min(abs($debtors[$debtorIndex]['net']), $creditors[$creditorIndex]['net']);
+            while (isset($payables[$payableIndex], $creditors[$creditorIndex])) {
+                $amount = min(abs($payables[$payableIndex]['net']), $creditors[$creditorIndex]['net']);
                 $currencySuggestions[] = [
-                    'from_party' => $debtors[$debtorIndex]['party'],
+                    'from_party' => $payables[$payableIndex]['party'],
                     'to_party' => $creditors[$creditorIndex]['party'],
                     'amount_minor' => $amount,
                     'currency' => $currency,
                 ];
-                $debtors[$debtorIndex]['net'] += $amount;
+                $payables[$payableIndex]['net'] += $amount;
                 $creditors[$creditorIndex]['net'] -= $amount;
-                if ($debtors[$debtorIndex]['net'] === 0) {
-                    $debtorIndex++;
+                if ($payables[$payableIndex]['net'] === 0) {
+                    $payableIndex++;
                 }
                 if ($creditors[$creditorIndex]['net'] === 0) {
                     $creditorIndex++;

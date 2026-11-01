@@ -42,7 +42,7 @@
         </div>
     </div>
 
-    <a href="{{ route('help.debt-support') }}" wire:navigate class="-mt-3 text-sm font-medium text-emerald-700 hover:underline">{{ __('promises.debt_support_link') }}</a>
+    <a href="{{ route('help.promise-support') }}" wire:navigate class="-mt-3 text-sm font-medium text-emerald-700 hover:underline">{{ __('promises.promise_support_link') }}</a>
 
     <div class="relative">
         <flux:input wire:model.live.debounce.250ms="search" icon="magnifying-glass" :placeholder="__('promises.search')" :aria-label="__('promises.search_label')" />

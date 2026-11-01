@@ -438,7 +438,7 @@
                         <div><dt class="text-zinc-500">{{ __('charges.fixed_total.label') }}</dt><dd class="font-medium">{{ $chargeTerms->fixed_total_agreed_upfront_at ? __('app.yes') : __('app.no') }}</dd></div>
                     @endif
                     @if ($chargeTerms->is_formal)
-                        <div><dt class="text-zinc-500">{{ __('promises.formal_debt') }}</dt><dd class="font-medium">{{ __('app.yes') }}</dd></div>
+                        <div><dt class="text-zinc-500">{{ __('promises.formal_promise') }}</dt><dd class="font-medium">{{ __('app.yes') }}</dd></div>
                     @endif
                     @if ($chargeTermsGuardedAccrual || $chargeTermsGuardedPenalty)
                         <div class="sm:col-span-3 space-y-1"><dd class="font-medium text-amber-800 dark:text-amber-300">{{ __('promises.some_terms_blocked') }}</dd>@if ($chargeTermsGuardedPenalty)<dd class="font-medium text-amber-800 dark:text-amber-300">{{ __('charges.guard.percentage_penalty_blocked') }}</dd>@endif</div>
@@ -520,7 +520,7 @@
                         </flux:select>
                     </div>
                     <div class="flex flex-wrap gap-5 text-sm">
-                        <label class="flex items-center gap-3"><input wire:model="chargeIsFormal" type="checkbox" class="rounded border-zinc-300 text-emerald-600" /> {{ __('promises.formal_debt_description') }}</label>
+                        <label class="flex items-center gap-3"><input wire:model="chargeIsFormal" type="checkbox" class="rounded border-zinc-300 text-emerald-600" /> {{ __('promises.formal_promise_description') }}</label>
                         <label class="flex items-center gap-3"><input wire:model="chargeAutoApplyOnAcceptance" type="checkbox" class="rounded border-zinc-300 text-emerald-600" /> {{ __('promises.auto_apply_after_acceptance') }}</label>
                     </div>
                     @foreach (['chargeTerms', 'kind', 'basis', 'period', 'rate', 'cap', 'totalPayable', 'penaltyKind', 'penaltyValue', 'currency'] as $chargeError)

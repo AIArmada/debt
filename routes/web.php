@@ -54,7 +54,7 @@ Route::post('s/{token}/dispute', [RecordShareController::class, 'dispute'])
 
 Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('notifications', NotificationCenter::class)->name('notifications.index');
-    Route::view('help/debt-support', 'help.debt-support')->name('help.debt-support');
+    Route::view('help/promise-support', 'help.promise-support')->name('help.promise-support');
     Route::get('p/{profile}/promises', PromisesIndex::class)->name('promises.index');
     Route::get('p/{profile}/promises/create', CreatePromise::class)->name('promises.create');
     Route::get('p/{profile}/promises/{record}', ShowPromise::class)

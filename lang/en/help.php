@@ -1,8 +1,8 @@
 <?php
 
 return [
-    'title' => 'Debt help and support',
-    'intro' => 'If debt repayments feel difficult, seek help from an appropriate support service as early as you can.',
+    'title' => 'Promise help and support',
+    'intro' => 'If keeping up with promise repayments feels difficult, seek help from an appropriate support service as early as you can.',
     'akpk_title' => 'AKPK',
     'akpk_body' => 'Agensi Kaunseling dan Pengurusan Kredit (AKPK) provides financial education and credit counselling. Contact AKPK to learn which current services may be available to you.',
     'kasih_title' => 'Talian Kasih',

@@ -9,7 +9,7 @@ use App\Domain\Enums\Direction;
 use App\Domain\Enums\MoneyEntry;
 use App\Domain\Enums\MovementStatus;
 use App\Domain\Enums\PlanStrategy;
-use App\Domain\Queries\DebtFreeProjection;
+use App\Domain\Queries\PromiseFreeProjection;
 use App\Models\BudgetPeriod;
 use App\Models\FinancialProfile;
 use App\Models\Obligation;
@@ -97,7 +97,7 @@ test('due date, snowball, and avalanche strategies order allocations as specifie
 
 test('instalments cap a period allocation at arrears plus instalments due in the period', function () {
     $user = User::factory()->create();
-    [, $obligation] = planPromise($user, 'Scheduled debt', '100.00', today()->addDays(90)->toDateString());
+    [, $obligation] = planPromise($user, 'Scheduled promise', '100.00', today()->addDays(90)->toDateString());
     $obligation->instalments()->createMany([
         ['sequence' => 1, 'due_on' => today()->subDay(), 'amount_minor' => 2000, 'currency' => 'MYR', 'paid_minor' => 0],
         ['sequence' => 2, 'due_on' => today()->addDays(5), 'amount_minor' => 1500, 'currency' => 'MYR', 'paid_minor' => 0],
@@ -109,9 +109,9 @@ test('instalments cap a period allocation at arrears plus instalments due in the
     expect($plan->allocations->firstOrFail()->planned_minor)->toBe(3500);
 });
 
-test('debt-free projection is deterministic and estimates monthly reducing charges', function () {
+test('promise-free projection is deterministic and estimates monthly reducing charges', function () {
     $user = User::factory()->create();
-    [, $obligation] = planPromise($user, 'Projection debt', '120.00', today()->addDay()->toDateString());
+    [, $obligation] = planPromise($user, 'Projection promise', '120.00', today()->addDay()->toDateString());
     ObligationChargeTerm::factory()->create([
         'obligation_id' => $obligation->getKey(),
         'kind' => 'interest',
@@ -121,7 +121,7 @@ test('debt-free projection is deterministic and estimates monthly reducing charg
     ]);
     $period = planBudget($user, '60.00');
 
-    $projection = app(DebtFreeProjection::class)->forPeriod($user, $period, PlanStrategy::DueDate);
+    $projection = app(PromiseFreeProjection::class)->forPeriod($user, $period, PlanStrategy::DueDate);
 
     expect($projection['months_to_free'])->toBe(3)
         ->and($projection['total_estimated_charges_minor'])->toBe(183)
@@ -130,12 +130,12 @@ test('debt-free projection is deterministic and estimates monthly reducing charg
         ->and($projection['charges_saved_minor'])->toBe(8);
 });
 
-test('debt-free projection uses repayment capacity after essentials and reserve', function () {
+test('promise-free projection uses repayment capacity after essentials and reserve', function () {
     $user = User::factory()->create();
     planPromise($user, 'Capacity check', '50.00', today()->addDay()->toDateString());
     $period = planBudget($user, '100.00', 0, '70.00', '10.00');
 
-    $projection = app(DebtFreeProjection::class)->forPeriod($user, $period, PlanStrategy::DueDate);
+    $projection = app(PromiseFreeProjection::class)->forPeriod($user, $period, PlanStrategy::DueDate);
 
     expect($period->capacity())->toBe(2000)
         ->and($projection['months_to_free'])->toBe(3)
@@ -164,7 +164,7 @@ test('the plans route returns not found for a budget period from another profile
         ->assertNotFound();
 });
 
-test('debt-free projection stops estimated charges at the lifetime cap', function () {
+test('promise-free projection stops estimated charges at the lifetime cap', function () {
     $user = User::factory()->create();
     [, $obligation] = planPromise($user, 'Capped projection', '100.00', today()->addDay()->toDateString());
     ObligationChargeTerm::factory()->create([
@@ -184,12 +184,12 @@ test('debt-free projection stops estimated charges at the lifetime cap', functio
         'recorded_by' => $user->getKey(),
     ]);
 
-    $projection = app(DebtFreeProjection::class)->forPeriod($user, planBudget($user, '5.00'), PlanStrategy::DueDate);
+    $projection = app(PromiseFreeProjection::class)->forPeriod($user, planBudget($user, '5.00'), PlanStrategy::DueDate);
 
     expect($projection['total_estimated_charges_minor'])->toBe(50);
 });
 
-test('debt-free projection adds no charge while each obligation is inside its grace period', function () {
+test('promise-free projection adds no charge while each obligation is inside its grace period', function () {
     $user = User::factory()->create();
     [, $obligation] = planPromise($user, 'Grace projection', '20.00', today()->addDay()->toDateString());
     $obligation->moneyMovements()->where('entry', MoneyEntry::OpeningBalance->value)->update(['occurred_on' => today()->toDateString()]);
@@ -202,7 +202,7 @@ test('debt-free projection adds no charge while each obligation is inside its gr
         'grace_days' => 60,
     ]);
 
-    $projection = app(DebtFreeProjection::class)->forPeriod($user, planBudget($user, '20.00'), PlanStrategy::DueDate);
+    $projection = app(PromiseFreeProjection::class)->forPeriod($user, planBudget($user, '20.00'), PlanStrategy::DueDate);
 
     expect($projection['months_to_free'])->toBe(1)
         ->and($projection['total_estimated_charges_minor'])->toBe(0);

@@ -42,7 +42,7 @@
 
     <section class="app-card rounded-2xl p-5 sm:p-7">
         <div>
-            <flux:heading size="lg">{{ __('plans.debt_free_projection') }}</flux:heading>
+            <flux:heading size="lg">{{ __('plans.promise_free_projection') }}</flux:heading>
             <flux:text class="mt-1">{{ __('plans.projection_intro') }}</flux:text>
         </div>
         <div class="mt-5 grid gap-4 sm:grid-cols-3">

@@ -8,7 +8,7 @@ return [
     'plans' => 'Pelan',
     'currency' => 'Mata wang',
     'settings' => 'Tetapan',
-    'help' => 'Bantuan hutang',
+    'help' => 'Bantuan janji',
     'your_profiles' => 'Profil anda',
     'log_out' => 'Log keluar',
     'remove' => 'Buang',

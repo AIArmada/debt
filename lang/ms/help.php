@@ -1,8 +1,8 @@
 <?php
 
 return [
-    'title' => 'Bantuan dan sokongan hutang',
-    'intro' => 'Jika bayaran hutang terasa sukar, dapatkan bantuan daripada saluran yang sesuai seawal mungkin.',
+    'title' => 'Bantuan dan sokongan janji',
+    'intro' => 'Jika menepati janji terasa sukar, dapatkan bantuan daripada saluran yang sesuai seawal mungkin.',
     'akpk_title' => 'AKPK',
     'akpk_body' => 'Agensi Kaunseling dan Pengurusan Kredit (AKPK) menyediakan pendidikan kewangan dan khidmat kaunseling kredit. Hubungi AKPK untuk mengetahui perkhidmatan semasa yang tersedia kepada anda.',
     'kasih_title' => 'Talian Kasih',

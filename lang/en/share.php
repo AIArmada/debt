@@ -17,7 +17,7 @@ return [
     'guaranteed_by' => 'Guaranteed by', 'grace_period' => 'Grace period: :days days · Allocation: :allocation',
     'lifetime_cap' => 'Lifetime cap: :amount', 'total_payable' => 'Total payable: :amount',
     'fixed_penalty' => 'Fixed penalty: :amount', 'percentage_penalty' => 'Percentage penalty on overdue amount: :percent%',
-    'automatic_after_acceptance' => 'Automatic application begins after acceptance.', 'formal_debt' => 'Formal debt.',
+    'automatic_after_acceptance' => 'Automatic application begins after acceptance.', 'formal_promise' => 'Formal promise.',
     'fixed_agreed_date' => 'Fixed total agreed upfront on :date.', 'days' => 'days',
     'charge_modes' => ['none' => 'None', 'manual' => 'Manual', 'auto_propose' => 'Auto propose', 'auto_apply' => 'Auto apply'],
     'charge_kinds' => ['none' => 'None', 'interest' => 'Interest', 'profit' => 'Profit'],

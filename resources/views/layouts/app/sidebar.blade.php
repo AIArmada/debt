@@ -48,7 +48,7 @@
                     <flux:sidebar.item icon="cog" :href="$currentProfile instanceof \App\Models\FinancialProfile ? route('profile-settings.edit', ['profile' => $currentProfile]) : route('profile.edit')" :current="request()->routeIs('profile.edit', 'profile-settings.*', 'profile-tokens.*')" wire:navigate>
                         {{ __('app.settings') }}
                     </flux:sidebar.item>
-                    <flux:sidebar.item icon="lifebuoy" :href="route('help.debt-support')" :current="request()->routeIs('help.*')" wire:navigate>
+                    <flux:sidebar.item icon="lifebuoy" :href="route('help.promise-support')" :current="request()->routeIs('help.*')" wire:navigate>
                         {{ __('app.help') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>
