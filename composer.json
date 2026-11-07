@@ -62,6 +62,10 @@
             "Composer\\Config::disableProcessTimeout",
             "@php artisan dev"
         ],
+        "deploy": [
+            "Composer\\Config::disableProcessTimeout",
+            "./scripts/deploy.sh"
+        ],
         "lint": [
             "pint --parallel"
         ],
