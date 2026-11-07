@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="{{ __('welcome.meta_description') }}">
-    <title>{{ __('welcome.title', ['app' => 'ClearTogether']) }}</title>
+    <title>{{ __('welcome.title', ['app' => config('app.name')]) }}</title>
 
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -166,6 +166,7 @@
         .landing-brand { gap: 9px; font-size: 15px; letter-spacing: -.04em; }
         .landing-brand-mark { width: 28px; height: 28px; border-radius: 0; background: transparent; color: var(--forest); box-shadow: none; }
         .landing-brand-mark svg { width: 26px; height: 26px; }
+        img.landing-brand-mark { display: block; border-radius: 50%; object-fit: cover; }
         .landing-nav-links { gap: 30px; font-size: 13px; }
         .landing-nav-actions { gap: 10px; }
         .landing-language-switch { border: 0; border-radius: 0; background: none; font-size: 11px; }
@@ -234,7 +235,7 @@
         .landing-fragment:nth-child(2)::before, .landing-fragment:nth-child(4)::before { background: #fae8e3; }
         .landing-fragment small { display: none; }
         .landing-fragment span { font-size: 12px; font-weight: 500; line-height: 1.35; }
-        .landing-quote { min-height: 400px; display: flex; flex-direction: column; justify-content: space-between; border-radius: 17px; padding: 22px; background: #d9c6ac url('/images/promise-conversation.jpg') center / cover no-repeat; color: var(--ink); box-shadow: inset 0 0 0 1000px rgba(42, 34, 24, .08); }
+        .landing-quote { min-height: 400px; display: flex; flex-direction: column; justify-content: space-between; border-radius: 17px; padding: 22px; background: #d9c6ac url('/images/debt-notebook.png') center / cover no-repeat; color: var(--ink); box-shadow: inset 0 0 0 1000px rgba(42, 34, 24, .08); }
         .landing-quote-mark { display: none; }
         .landing-quote p { align-self: flex-start; max-width: 245px; margin: 14px 0; border-radius: 12px 12px 12px 3px; padding: 13px 15px; background: rgba(255, 255, 255, .96); color: var(--ink); font-size: 13px; line-height: 1.42; box-shadow: 0 8px 18px rgba(34, 34, 24, .09); }
         .landing-quote footer { align-self: flex-end; max-width: 220px; border-radius: 12px 12px 3px 12px; padding: 12px 15px; background: #d8edcf; color: var(--ink); font-size: 12px; box-shadow: 0 8px 18px rgba(34, 34, 24, .08); }
@@ -355,6 +356,7 @@
         .landing-window-bar { justify-content: flex-start; }
         .landing-preview-brand { display: inline-flex; align-items: center; gap: 7px; margin-right: auto; color: var(--ink); font-size: 11px; font-weight: 700; white-space: nowrap; }
         .landing-preview-brand svg { flex: 0 0 19px; width: 19px; height: 19px; color: var(--forest); }
+        .landing-preview-brand img { flex: 0 0 19px; width: 19px; height: 19px; border-radius: 50%; object-fit: cover; }
         .landing-preview-people { display: inline-flex; }
         .landing-preview-people i { display: grid; place-items: center; width: 20px; height: 20px; margin-left: -3px; border: 1px solid white; border-radius: 50%; background: #e5b69a; color: #35473c; font-size: 8px; font-style: normal; font-weight: 700; }
         .landing-preview-people i:nth-child(2) { background: #d6e6d8; }
@@ -394,7 +396,7 @@
         .landing-fragment small { display: block; margin-bottom: 2px; color: var(--ink); font-size: 11px; font-weight: 600; letter-spacing: 0; text-transform: none; }
         .landing-fragment-copy { display: grid; min-width: 0; }
         .landing-fragment .landing-fragment-copy > span { color: var(--muted); font-size: 10px; font-weight: 500; line-height: 1.35; }
-        .landing-quote { justify-content: flex-start; gap: 10px; min-height: 400px; padding: 26px; background-image: url('/images/promise-conversation.jpg'); box-shadow: inset 0 0 0 1000px rgba(42, 34, 24, .03); }
+        .landing-quote { justify-content: flex-start; gap: 10px; min-height: 400px; padding: 26px; background-image: url('/images/debt-notebook.png'); box-shadow: inset 0 0 0 1000px rgba(42, 34, 24, .03); }
         .landing-quote::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(180deg, rgba(255,255,255,.08), transparent 50%, rgba(40,32,22,.1)); pointer-events: none; }
         .landing-chat-bubble { position: relative; display: flex; align-items: center; gap: 9px; width: fit-content; max-width: 75%; border-radius: 12px; padding: 10px 12px; background: rgba(255, 255, 255, .95); color: var(--ink); font-size: 10px; line-height: 1.4; box-shadow: 0 5px 16px rgba(44, 34, 24, .1); }
         .landing-chat-first, .landing-chat-third { margin-left: 9px; }
@@ -404,7 +406,7 @@
         .landing-chat-note { position: relative; align-self: flex-start; margin: auto 0 0 5px; color: white; font-family: Georgia, "Times New Roman", serif; font-size: 16px; font-style: italic; line-height: 1.05; text-shadow: 0 1px 4px rgba(25, 35, 25, .4); transform: rotate(-5deg); }
         .landing-chat-note span { display: inline-block; margin-left: 10px; font-family: sans-serif; font-size: 22px; transform: rotate(20deg); }
         .landing-how-people { right: 0; bottom: 0; width: 220px; }
-        .landing-how-people img { display: block; width: 100%; height: auto; }
+        .landing-how-people img { display: block; width: 100%; height: auto; border-radius: 16px; }
         .landing-faq::after { display: none; }
         .landing-faq summary { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; cursor: pointer; list-style: none; }
         .landing-faq summary::-webkit-details-marker { display: none; }
@@ -450,6 +452,7 @@
             .landing-window-bar { gap: 6px; margin-bottom: 8px; font-size: 8px; }
             .landing-preview-brand { gap: 4px; font-size: 8px; }
             .landing-preview-brand svg { width: 13px; height: 13px; }
+            .landing-preview-brand img { width: 13px; height: 13px; }
             .landing-preview-people i { width: 15px; height: 15px; font-size: 7px; }
             .landing-preview-share, .landing-preview-more { padding: 3px 6px; font-size: 8px; }
             .landing-record-heading { gap: 8px; margin-bottom: 9px; }
@@ -527,15 +530,41 @@
             .landing-footer .landing-brand-mark, .landing-footer .landing-brand-mark svg { width: 21px; height: 21px; }
             .landing-footer-links { gap: 10px; }
         }
+        .landing-nav { position: sticky; top: 0; z-index: 50; }
+        .landing-hero-points { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 22px 0 0; padding: 0; list-style: none; color: var(--forest); font-size: 12.5px; font-weight: 700; }
+        .landing-hero-points li { display: inline-flex; align-items: center; gap: 7px; }
+        .landing-hero-points li::before { content: "✓"; display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: #e2f0e5; font-size: 11px; }
+        .landing-evidence { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; border-radius: 10px; padding: 8px 11px; background: #edf4ed; color: var(--forest); font-size: 10.5px; font-weight: 700; }
+        .landing-evidence span:last-child { color: var(--muted); font-weight: 600; }
+        .landing-section-cta { margin: 26px 0 0; }
+        .landing-section-cta a { color: var(--forest); font-size: 14px; font-weight: 700; text-decoration: none; border-bottom: 2px solid #d8ef72; padding-bottom: 2px; }
+        .landing-section-cta a:hover { border-color: var(--forest); }
+        .landing-kin { background: #0d2d28; color: #fff; padding: 72px 0; }
+        .landing-kin-inner { display: flex; align-items: center; justify-content: space-between; gap: 40px; }
+        .landing-kin .landing-eyebrow { color: #d8ef72; }
+        .landing-kin h2 { margin: 14px 0 12px; max-width: 560px; font-family: Georgia, "Times New Roman", serif; font-size: clamp(30px, 3.6vw, 46px); line-height: 1.04; letter-spacing: -.04em; font-weight: 500; }
+        .landing-kin p { margin: 0; max-width: 520px; color: rgba(255, 255, 255, .75); font-size: 15px; line-height: 1.6; }
+        .landing-kin .landing-button-primary { background: #d8ef72; color: var(--forest); white-space: nowrap; }
+        .landing-kin .landing-button-primary:hover { background: #e6f496; }
+        .landing-cta-points { display: flex; flex-wrap: wrap; gap: 8px 22px; margin: 16px 0 0; padding: 0; list-style: none; color: rgba(255, 255, 255, .88); font-size: 13px; font-weight: 600; }
+        .landing-cta-points li::before { content: "✓"; color: #d8ef72; margin-right: 7px; font-weight: 700; }
+        .landing-sticky-cta { position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 60; display: none; align-items: center; justify-content: space-between; gap: 12px; border-radius: 16px; padding: 10px 10px 10px 18px; background: rgba(13, 45, 40, .97); color: #fff; font-size: 13px; font-weight: 700; box-shadow: 0 14px 34px rgba(13, 45, 40, .35); }
+        .landing-sticky-cta a { flex: 0 0 auto; border-radius: 999px; padding: 10px 16px; background: #d8ef72; color: var(--forest); font-size: 12.5px; font-weight: 700; text-decoration: none; }
+        @media (max-width: 680px) {
+            .landing-sticky-cta { display: flex; }
+            .landing-kin { padding: 56px 0; }
+            .landing-kin-inner { align-items: flex-start; flex-direction: column; gap: 24px; }
+            .landing-hero-points { font-size: 11.5px; }
+        }
     </style>
 </head>
 <body>
 <div class="landing-shell">
     <header class="landing-nav">
         <div class="landing-container landing-nav-inner">
-            <a class="landing-brand" href="{{ route('home') }}" aria-label="{{ __('welcome.brand_home', ['app' => 'ClearTogether']) }}">
-                <span class="landing-brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 14c0-5.5 4.2-9 10-9 0 5.9-3.6 10-9 10" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 19c2.7-4.5 6.1-7.4 11-10M12 8c.2 2.3 1.4 3.6 3.5 4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-                <span>ClearTogether</span>
+            <a class="landing-brand" href="{{ route('home') }}" aria-label="{{ __('welcome.brand_home', ['app' => config('app.name')]) }}">
+                <img class="landing-brand-mark" src="{{ asset('images/promise-logo.png') }}" alt="" aria-hidden="true">
+                <span>{{ config('app.name') }}</span>
             </a>
             <nav class="landing-nav-links" aria-label="{{ __('welcome.primary_navigation') }}">
                 <a href="#why">{{ __('welcome.nav_why') }}</a>
@@ -561,17 +590,23 @@
                         <a class="landing-button landing-button-primary" href="{{ route('register') }}">{{ __('welcome.hero_create_account') }} <span aria-hidden="true" style="margin-left: 8px">→</span></a>
                         <a class="landing-button landing-button-secondary" href="#how">{{ __('welcome.see_how_it_works') }}</a>
                     </div>
+                    <ul class="landing-hero-points" aria-label="{{ __('welcome.hero_points_aria') }}">
+                        <li>{{ __('welcome.hero_point_private') }}</li>
+                        <li>{{ __('welcome.hero_point_free') }}</li>
+                        <li>{{ __('welcome.hero_point_export') }}</li>
+                    </ul>
                     <div class="landing-hero-note"><span class="landing-hero-avatars" aria-hidden="true"><i>A</i><i>M</i><i>J</i></span><span>{{ __('welcome.hero_note') }}</span></div>
                 </div>
 
                 <div class="landing-preview-wrap" role="group" aria-label="{{ __('welcome.preview_aria') }}">
                     <div class="landing-preview">
-                        <div class="landing-window-bar"><span class="landing-preview-brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 14c0-5.5 4.2-9 10-9 0 5.9-3.6 10-9 10" stroke-linecap="round"/><path d="M7 19c2.7-4.5 6.1-7.4 11-10" stroke-linecap="round"/></svg>ClearTogether</span><span class="landing-preview-people" aria-label="{{ __('welcome.preview_people') }}"><i>A</i><i>M</i></span><span class="landing-preview-share">{{ __('welcome.preview_share') }}</span><span class="landing-preview-more" aria-hidden="true">•••</span></div>
+                        <div class="landing-window-bar"><span class="landing-preview-brand"><img src="{{ asset('images/promise-logo.png') }}" alt="" aria-hidden="true">{{ config('app.name') }}</span><span class="landing-preview-people" aria-label="{{ __('welcome.preview_people') }}"><i>A</i></span><span class="landing-preview-share">{{ __('welcome.preview_share') }}</span><span class="landing-preview-more" aria-hidden="true">•••</span></div>
                         <div class="landing-record-heading"><span class="landing-record-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 11 9-7 9 7" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 10v10h13V10M9.5 20v-6h5v6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><strong>{{ __('welcome.preview_record_title') }}</strong><small>{{ __('welcome.preview_updated') }}</small></span></div>
                         <div class="landing-preview-cards">
                             <div class="landing-preview-card landing-preview-card-pay"><span>{{ __('welcome.preview_you_owe') }}</span><strong>$120.00</strong></div>
                             <div class="landing-preview-card landing-preview-card-receive"><span>{{ __('welcome.preview_they_owe') }}</span><strong>$80.00</strong></div>
                         </div>
+                        <div class="landing-evidence"><span>{{ __('welcome.evidence_attached') }}</span><span>✓ {{ __('welcome.evidence_confirmed') }}</span></div>
                         <div class="landing-preview-tabs"><span class="is-active">{{ __('welcome.preview_transactions') }}</span><span>{{ __('welcome.preview_balances') }}</span><span>{{ __('welcome.preview_categories') }}</span><span class="landing-preview-add">+ {{ __('welcome.preview_add') }}</span></div>
                         <div class="landing-preview-list">
                             <div class="landing-preview-row"><span class="landing-transaction-icon mint">⌂</span><span class="landing-transaction-name"><b>{{ __('welcome.preview_rent') }}</b><small>{{ __('welcome.preview_rent_date') }}</small></span><b class="landing-transaction-amount">$1,200.00</b><small class="landing-transaction-status">{{ __('welcome.preview_you_paid') }}</small></div>
@@ -618,6 +653,7 @@
                     <article class="landing-feature-card"><div class="landing-feature-number"><span>03</span><span class="landing-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M6 4h9l3 3v13H6z"/><path d="M14 4v4h4M9 13h6M9 16h4" stroke-linecap="round"/></svg></span></div><h3>{{ __('welcome.feature_currencies_title') }}</h3><p>{{ __('welcome.feature_currencies_desc') }}</p></article>
                     <article class="landing-feature-card"><div class="landing-feature-number"><span>04</span><span class="landing-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 6h14v12H5z"/><path d="m5 7 7 5 7-5M8 21h8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div><h3>{{ __('welcome.feature_charges_title') }}</h3><p>{{ __('welcome.feature_charges_desc') }}</p></article>
                 </div>
+                <p class="landing-section-cta"><a href="{{ route('register') }}">{{ __('welcome.features_cta') }} <span aria-hidden="true">→</span></a></p>
             </div>
         </section>
 
@@ -629,7 +665,7 @@
                     <article class="landing-step"><span class="landing-step-num">02</span><h3>{{ __('welcome.step_movement_title') }}</h3><p>{{ __('welcome.step_movement_desc') }}</p></article>
                     <article class="landing-step"><span class="landing-step-num">03</span><h3>{{ __('welcome.step_plan_title') }}</h3><p>{{ __('welcome.step_plan_desc') }}</p></article>
                 </div>
-                <div class="landing-how-people" aria-hidden="true"><img src="{{ asset('images/shared-people.png') }}" alt="" loading="lazy"></div>
+                <div class="landing-how-people" aria-hidden="true"><img src="{{ asset('images/personal-record.png') }}" alt="" loading="lazy"></div>
             </div>
         </section>
 
@@ -645,6 +681,10 @@
             </div>
         </section>
 
+        <section class="landing-kin" aria-label="{{ __('welcome.kin_aria') }}">
+            <div class="landing-container landing-kin-inner"><div><div class="landing-eyebrow">{{ __('welcome.kin_eyebrow') }}</div><h2>{{ __('welcome.kin_heading') }}</h2><p>{{ __('welcome.kin_description') }}</p></div><a class="landing-button landing-button-primary" href="{{ route('register') }}">{{ __('welcome.features_cta') }} <span aria-hidden="true" style="margin-left: 8px">→</span></a></div>
+        </section>
+
         <section id="faq" class="landing-section landing-section-soft">
             <div class="landing-container">
                 <div class="landing-section-heading"><div class="landing-eyebrow">{{ __('welcome.faq_eyebrow') }}</div><h2>{{ __('welcome.faq_heading') }}</h2></div>
@@ -658,13 +698,13 @@
         </section>
 
         <section class="landing-cta">
-            <div class="landing-container landing-cta-inner"><div><h2>{{ __('welcome.cta_heading') }}</h2><p>{{ __('welcome.cta_description') }}</p></div><a class="landing-button landing-button-primary" href="{{ route('register') }}">{{ __('welcome.create_account') }} <span aria-hidden="true" style="margin-left: 8px">→</span></a></div>
+            <div class="landing-container landing-cta-inner"><div><h2>{{ __('welcome.cta_heading') }}</h2><p>{{ __('welcome.cta_description') }}</p><ul class="landing-cta-points"><li>{{ __('welcome.cta_point_private') }}</li><li>{{ __('welcome.cta_point_free') }}</li><li>{{ __('welcome.cta_point_export') }}</li></ul></div><a class="landing-button landing-button-primary" href="{{ route('register') }}">{{ __('welcome.create_account') }} <span aria-hidden="true" style="margin-left: 8px">→</span></a></div>
         </section>
     </main>
 
     <footer class="landing-footer">
         <div class="landing-container landing-footer-inner">
-            <a class="landing-brand" href="{{ route('home') }}" aria-label="{{ __('welcome.brand_home', ['app' => 'ClearTogether']) }}"><span class="landing-brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 14c0-5.5 4.2-9 10-9 0 5.9-3.6 10-9 10" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 19c2.7-4.5 6.1-7.4 11-10M12 8c.2 2.3 1.4 3.6 3.5 4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span>ClearTogether</span></a>
+            <a class="landing-brand" href="{{ route('home') }}" aria-label="{{ __('welcome.brand_home', ['app' => config('app.name')]) }}"><img class="landing-brand-mark" src="{{ asset('images/promise-logo.png') }}" alt="" aria-hidden="true"><span>{{ config('app.name') }}</span></a>
             <div class="landing-footer-links"><a href="#features">{{ __('welcome.nav_features') }}</a><a href="#how">{{ __('welcome.footer_how') }}</a><a href="#faq">{{ __('welcome.nav_faq') }}</a><a href="{{ route('legal.privacy') }}">{{ __('welcome.footer_privacy') }}</a><a href="{{ route('legal.terms') }}">{{ __('welcome.footer_terms') }}</a></div>
             <div class="landing-language-switch" role="group" aria-label="{{ __('welcome.language_switch') }}">
                 <a href="{{ route('locale.switch', ['locale' => 'en']) }}" lang="en" hreflang="en" class="{{ app()->getLocale() === 'en' ? 'is-active' : '' }}" @if (app()->getLocale() === 'en') aria-current="page" @endif>{{ __('welcome.language_english') }}</a>
@@ -673,6 +713,7 @@
             <span>{{ __('welcome.footer_tagline') }}</span>
         </div>
     </footer>
+    <div class="landing-sticky-cta" role="group" aria-label="{{ __('welcome.sticky_aria') }}"><span>{{ __('welcome.sticky_text') }}</span><a href="{{ route('register') }}">{{ __('welcome.hero_create_account') }}</a></div>
 </div>
 </body>
 </html>

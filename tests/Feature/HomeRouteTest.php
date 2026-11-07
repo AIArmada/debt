@@ -8,14 +8,23 @@ pest()->use(RefreshDatabase::class);
 test('guest root shows the product front page', function () {
     $this->get(route('home'))
         ->assertOk()
-        ->assertSee('ClearTogether')
-        ->assertSee('One clear record, shared by both sides.')
-        ->assertSee('Track money, promises or commitments in one place')
-        ->assertSee('Share a link with the other person')
-        ->assertSee('Promises are easy. Keeping track isn’t.')
-        ->assertSee('Track any kind of promise')
+        ->assertSee('<span>Promise</span>', false)
+        ->assertSee('images/promise-logo.png', false)
+        ->assertSee('images/debt-notebook.png', false)
+        ->assertSee('images/personal-record.png', false)
+        ->assertSee('Never forget what you owe')
+        ->assertSee('including the secret ones')
+        ->assertSee('Attach the proof')
+        ->assertSee('The most important debts exist only in memory.')
+        ->assertSee('Log secret debts')
+        ->assertSee('Debts both sides accept')
+        ->assertSee('Endings for real life')
+        ->assertSee('What if they cannot pay?')
+        ->assertSee('2 receipts attached')
+        ->assertSee('If something happened to you tomorrow')
+        ->assertSee('Export anytime')
         ->assertSee('Straight answers to common questions.')
-        ->assertSee('Choose who can see each record.')
+        ->assertSee('Only you can see your records.')
         ->assertDontSee('welcome.');
 });
 
@@ -26,9 +35,11 @@ test('guest root renders Malay copy after changing the locale', function () {
 
     $this->get(route('home'))
         ->assertOk()
-        ->assertSee('Satu rekod jelas untuk kedua-dua pihak.')
-        ->assertSee('Jejaki wang, janji atau komitmen di satu tempat')
-        ->assertSee('tanpa akaun')
+        ->assertSee('Jangan lupa apa yang anda hutang')
+        ->assertSee('termasuk yang rahsia')
+        ->assertSee('tidak memerlukan akaun')
+        ->assertSee('Jika sesuatu terjadi kepada anda esok')
+        ->assertSee('Eksport bila-bila')
         ->assertDontSee('welcome.');
 });
 
