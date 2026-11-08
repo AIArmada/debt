@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\Obligation;
-use App\Models\ObligationChargeTerm;
+use App\Features\PromiseTracker\Models\Obligation;
+use App\Features\PromiseTracker\Models\ObligationChargeTerm;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<ObligationChargeTerm> */

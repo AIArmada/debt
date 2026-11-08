@@ -1,8 +1,8 @@
 <?php
 
-use App\Domain\Enums\NotificationType;
-use App\Models\NotificationPreference;
-use App\Models\User;
+use App\Features\PromiseTracker\Domain\Enums\NotificationType;
+use App\Features\PromiseTracker\Models\NotificationPreference;
+use App\Features\PromiseTracker\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 

@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\FinancialProfile;
-use App\Models\ImportBatch;
+use App\Features\PromiseTracker\Models\FinancialProfile;
+use App\Features\PromiseTracker\Models\ImportBatch;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<ImportBatch> */

@@ -17,7 +17,7 @@
                     <div class="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                         <div>
                         <div class="font-semibold">{{ $notification['title'] }}</div>
-                        @if ($notification['type'] !== \App\Domain\Enums\NotificationType::ReminderDue)
+                        @if ($notification['type'] !== \App\Features\PromiseTracker\Domain\Enums\NotificationType::ReminderDue)
                             <div class="mt-1 text-sm text-zinc-600 dark:text-zinc-300">{{ $notification['record_title'] }}</div>
                         @endif
                             <div class="mt-1 text-sm text-zinc-500">{{ $notification['profile_name'] }} · {{ $notification['age'] }}</div>
@@ -37,7 +37,7 @@
 
                     <div class="flex flex-wrap items-center gap-3">
                         <flux:button wire:click="openPromise('{{ $notification['id'] }}')" wire:loading.attr="disabled" variant="primary">{{ __('app.open_promise') }}</flux:button>
-                        @if ($notification['type'] === \App\Domain\Enums\NotificationType::ReminderDue)
+                        @if ($notification['type'] === \App\Features\PromiseTracker\Domain\Enums\NotificationType::ReminderDue)
                             <button type="button" wire:click="dismiss('{{ $notification['id'] }}')" wire:confirm="{{ __('app.dismiss_reminder_confirm') }}" wire:loading.attr="disabled" class="text-sm font-semibold text-red-700 hover:underline">{{ __('app.dismiss') }}</button>
                             <button type="button" wire:click="snooze('{{ $notification['id'] }}')" wire:loading.attr="disabled" class="text-sm font-semibold text-zinc-600 hover:underline dark:text-zinc-300">{{ __('app.snooze') }}</button>
                         @endif

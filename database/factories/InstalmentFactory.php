@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\Instalment;
-use App\Models\Obligation;
+use App\Features\PromiseTracker\Models\Instalment;
+use App\Features\PromiseTracker\Models\Obligation;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<Instalment> */

@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\Record;
-use App\Models\RecordShare;
-use App\Models\User;
+use App\Features\PromiseTracker\Models\Record;
+use App\Features\PromiseTracker\Models\RecordShare;
+use App\Features\PromiseTracker\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 

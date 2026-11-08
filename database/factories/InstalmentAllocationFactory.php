@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\Instalment;
-use App\Models\InstalmentAllocation;
-use App\Models\MoneyMovement;
+use App\Features\PromiseTracker\Models\Instalment;
+use App\Features\PromiseTracker\Models\InstalmentAllocation;
+use App\Features\PromiseTracker\Models\MoneyMovement;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<InstalmentAllocation> */

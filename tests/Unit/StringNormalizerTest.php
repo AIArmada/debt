@@ -1,6 +1,6 @@
 <?php
 
-use App\Domain\StringNormalizer;
+use App\Features\PromiseTracker\Domain\StringNormalizer;
 
 test('string normalization preserves the shared input rules', function () {
     expect(StringNormalizer::trimmed('  Promise  '))->toBe('Promise')

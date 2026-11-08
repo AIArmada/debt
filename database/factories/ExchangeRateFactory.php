@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\ExchangeRate;
-use App\Models\FinancialProfile;
+use App\Features\PromiseTracker\Models\ExchangeRate;
+use App\Features\PromiseTracker\Models\FinancialProfile;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<ExchangeRate> */

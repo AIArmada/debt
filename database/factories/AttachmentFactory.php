@@ -2,10 +2,10 @@
 
 namespace Database\Factories;
 
-use App\Domain\Enums\AttachmentCategory;
-use App\Models\Attachment;
-use App\Models\Record;
-use App\Models\User;
+use App\Features\PromiseTracker\Domain\Enums\AttachmentCategory;
+use App\Features\PromiseTracker\Models\Attachment;
+use App\Features\PromiseTracker\Models\Record;
+use App\Features\PromiseTracker\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<Attachment> */

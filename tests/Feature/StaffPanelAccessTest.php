@@ -1,14 +1,14 @@
 <?php
 
 use AIArmada\Authz\Models\Role;
-use App\Domain\Enums\MemberRole;
-use App\Domain\Enums\SupportAccessGrantStatus;
-use App\Http\Middleware\EnsureFreshStaffMfa;
-use App\Models\FinancialProfile;
-use App\Models\ProfileInvite;
-use App\Models\ProfileMember;
-use App\Models\SupportCase;
-use App\Models\User;
+use App\Features\PromiseTracker\Domain\Enums\MemberRole;
+use App\Features\PromiseTracker\Domain\Enums\SupportAccessGrantStatus;
+use App\Features\PromiseTracker\EntryPoints\Http\Middleware\EnsureFreshStaffMfa;
+use App\Features\PromiseTracker\Models\FinancialProfile;
+use App\Features\PromiseTracker\Models\ProfileInvite;
+use App\Features\PromiseTracker\Models\ProfileMember;
+use App\Features\PromiseTracker\Models\SupportCase;
+use App\Features\PromiseTracker\Models\User;
 use Database\Seeders\StaffRolesAndPermissionsSeeder;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\Facades\Filament;

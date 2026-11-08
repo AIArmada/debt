@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\File;
 
 test('promise actions stay independent from the livewire delivery layer', function () {
-    foreach (File::allFiles(app_path('Actions/Promises')) as $file) {
+    foreach (File::allFiles(app_path('Features/PromiseTracker/Actions/Promises')) as $file) {
         expect(File::get($file->getPathname()))
             ->not->toContain('App\\Livewire');
     }
@@ -19,7 +19,7 @@ test('promise views do not write to the database directly', function () {
 });
 
 test('update actions cannot write ledger identity or amount fields', function () {
-    foreach (File::allFiles(app_path('Actions/Promises')) as $file) {
+    foreach (File::allFiles(app_path('Features/PromiseTracker/Actions/Promises')) as $file) {
         if (! str_starts_with($file->getFilename(), 'Update')) {
             continue;
         }

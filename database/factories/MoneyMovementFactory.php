@@ -2,11 +2,11 @@
 
 namespace Database\Factories;
 
-use App\Domain\Enums\MoneyEntry;
-use App\Domain\Enums\MovementStatus;
-use App\Models\MoneyMovement;
-use App\Models\Obligation;
-use App\Models\User;
+use App\Features\PromiseTracker\Domain\Enums\MoneyEntry;
+use App\Features\PromiseTracker\Domain\Enums\MovementStatus;
+use App\Features\PromiseTracker\Models\MoneyMovement;
+use App\Features\PromiseTracker\Models\Obligation;
+use App\Features\PromiseTracker\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<MoneyMovement> */

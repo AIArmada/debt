@@ -1,16 +1,16 @@
 <?php
 
-use App\Domain\Enums\ClosureReason;
-use App\Domain\Enums\Direction;
-use App\Domain\Enums\MemberRole;
-use App\Domain\Enums\MoneyEntry;
-use App\Domain\Enums\MovementStatus;
-use App\Domain\Enums\ObligationStatus;
-use App\Domain\Enums\PartyKind;
-use App\Domain\Enums\PartyRole;
-use App\Domain\Enums\PartyStatus;
-use App\Domain\Enums\RecordVisibility;
-use App\Domain\Enums\SubjectType;
+use App\Features\PromiseTracker\Domain\Enums\ClosureReason;
+use App\Features\PromiseTracker\Domain\Enums\Direction;
+use App\Features\PromiseTracker\Domain\Enums\MemberRole;
+use App\Features\PromiseTracker\Domain\Enums\MoneyEntry;
+use App\Features\PromiseTracker\Domain\Enums\MovementStatus;
+use App\Features\PromiseTracker\Domain\Enums\ObligationStatus;
+use App\Features\PromiseTracker\Domain\Enums\PartyKind;
+use App\Features\PromiseTracker\Domain\Enums\PartyRole;
+use App\Features\PromiseTracker\Domain\Enums\PartyStatus;
+use App\Features\PromiseTracker\Domain\Enums\RecordVisibility;
+use App\Features\PromiseTracker\Domain\Enums\SubjectType;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 

@@ -2,10 +2,10 @@
 
 namespace Database\Factories;
 
-use App\Models\ActivityEntry;
-use App\Models\FinancialProfile;
-use App\Models\Record;
-use App\Models\User;
+use App\Features\PromiseTracker\Models\ActivityEntry;
+use App\Features\PromiseTracker\Models\FinancialProfile;
+use App\Features\PromiseTracker\Models\Record;
+use App\Features\PromiseTracker\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 

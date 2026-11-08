@@ -1,17 +1,17 @@
 <?php
 
-use App\Actions\Promises\CreatePromise;
-use App\Actions\Promises\Data\CreatePromiseData;
-use App\Domain\Enums\Direction;
-use App\Domain\Enums\MoneyEntry;
-use App\Domain\Enums\MovementStatus;
-use App\Domain\Enums\ObligationStatus;
-use App\Domain\Enums\RecordArchiveFilter;
-use App\Domain\Enums\SubjectType;
-use App\Domain\Money\Money;
-use App\Domain\Queries\DueDateQuery;
-use App\Livewire\Promises\Index as PromisesIndex;
-use App\Models\User;
+use App\Features\PromiseTracker\Actions\Promises\CreatePromise;
+use App\Features\PromiseTracker\Actions\Promises\Data\CreatePromiseData;
+use App\Features\PromiseTracker\Domain\Enums\Direction;
+use App\Features\PromiseTracker\Domain\Enums\MoneyEntry;
+use App\Features\PromiseTracker\Domain\Enums\MovementStatus;
+use App\Features\PromiseTracker\Domain\Enums\ObligationStatus;
+use App\Features\PromiseTracker\Domain\Enums\RecordArchiveFilter;
+use App\Features\PromiseTracker\Domain\Enums\SubjectType;
+use App\Features\PromiseTracker\Domain\Money\Money;
+use App\Features\PromiseTracker\Domain\Queries\DueDateQuery;
+use App\Features\PromiseTracker\EntryPoints\Livewire\Promises\Index as PromisesIndex;
+use App\Features\PromiseTracker\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 

@@ -1,7 +1,7 @@
 <?php
 
-use App\Domain\Enums\Direction;
-use App\Domain\Enums\SubjectType;
+use App\Features\PromiseTracker\Domain\Enums\Direction;
+use App\Features\PromiseTracker\Domain\Enums\SubjectType;
 
 test('direction descriptions match the promise subject type', function (SubjectType $subjectType, Direction $direction, string $description) {
     expect($direction->descriptionFor($subjectType))->toBe($description);

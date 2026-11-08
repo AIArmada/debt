@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\Obligation;
-use App\Models\ObligationShare;
-use App\Models\Party;
+use App\Features\PromiseTracker\Models\Obligation;
+use App\Features\PromiseTracker\Models\ObligationShare;
+use App\Features\PromiseTracker\Models\Party;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class ObligationShareFactory extends Factory
 {
+    protected $model = ObligationShare::class;
+
     /**
      * Define the model's default state.
      *

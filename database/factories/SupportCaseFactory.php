@@ -2,10 +2,10 @@
 
 namespace Database\Factories;
 
-use App\Domain\Enums\SupportCaseStatus;
-use App\Models\FinancialProfile;
-use App\Models\SupportCase;
-use App\Models\User;
+use App\Features\PromiseTracker\Domain\Enums\SupportCaseStatus;
+use App\Features\PromiseTracker\Models\FinancialProfile;
+use App\Features\PromiseTracker\Models\SupportCase;
+use App\Features\PromiseTracker\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class SupportCaseFactory extends Factory
 {
+    protected $model = SupportCase::class;
+
     /**
      * Define the model's default state.
      *

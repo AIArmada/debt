@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\BudgetPeriod;
-use App\Models\FinancialProfile;
+use App\Features\PromiseTracker\Models\BudgetPeriod;
+use App\Features\PromiseTracker\Models\FinancialProfile;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<BudgetPeriod> */

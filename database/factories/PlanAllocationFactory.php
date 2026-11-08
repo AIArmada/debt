@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\Obligation;
-use App\Models\PlanAllocation;
-use App\Models\RepaymentPlan;
+use App\Features\PromiseTracker\Models\Obligation;
+use App\Features\PromiseTracker\Models\PlanAllocation;
+use App\Features\PromiseTracker\Models\RepaymentPlan;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<PlanAllocation> */

@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use App\Http\Middleware\SetLocale;
+use App\Platform\Http\Middleware\SetLocale;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;

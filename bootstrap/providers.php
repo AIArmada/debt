@@ -1,13 +1,11 @@
 <?php
 
+use App\Features\PromiseTracker\FeatureServiceProvider;
 use App\Providers\AppServiceProvider;
-use App\Providers\Filament\AdminPanelProvider;
-use App\Providers\FortifyServiceProvider;
 use Spatie\MediaLibrary\MediaLibraryServiceProvider;
 
 return [
+    FeatureServiceProvider::class,
     AppServiceProvider::class,
-    AdminPanelProvider::class,
-    FortifyServiceProvider::class,
     MediaLibraryServiceProvider::class,
 ];

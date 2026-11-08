@@ -2,11 +2,11 @@
 
 namespace Database\Factories;
 
-use App\Domain\Enums\ReminderChannel;
-use App\Domain\Enums\ReminderStatus;
-use App\Models\Obligation;
-use App\Models\Reminder;
-use App\Models\User;
+use App\Features\PromiseTracker\Domain\Enums\ReminderChannel;
+use App\Features\PromiseTracker\Domain\Enums\ReminderStatus;
+use App\Features\PromiseTracker\Models\Obligation;
+use App\Features\PromiseTracker\Models\Reminder;
+use App\Features\PromiseTracker\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<Reminder> */

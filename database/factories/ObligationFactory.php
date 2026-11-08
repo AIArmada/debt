@@ -2,11 +2,11 @@
 
 namespace Database\Factories;
 
-use App\Domain\Enums\Direction;
-use App\Domain\Enums\ObligationStatus;
-use App\Domain\Enums\SubjectType;
-use App\Models\Obligation;
-use App\Models\Record;
+use App\Features\PromiseTracker\Domain\Enums\Direction;
+use App\Features\PromiseTracker\Domain\Enums\ObligationStatus;
+use App\Features\PromiseTracker\Domain\Enums\SubjectType;
+use App\Features\PromiseTracker\Models\Obligation;
+use App\Features\PromiseTracker\Models\Record;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class ObligationFactory extends Factory
 {
+    protected $model = Obligation::class;
+
     /**
      * Define the model's default state.
      *

@@ -28,36 +28,36 @@
         <fieldset>
             <legend class="mb-2 text-sm font-medium text-zinc-900 dark:text-white">{{ __('promises.kind_of_promise') }}</legend>
             <div class="grid gap-3 sm:grid-cols-3">
-                <button type="button" wire:click="selectSubjectType('{{ \App\Domain\Enums\SubjectType::Money->value }}')" wire:loading.attr="disabled" class="{{ $subjectType === \App\Domain\Enums\SubjectType::Money ? 'border-emerald-600 bg-emerald-50 text-emerald-950 ring-2 ring-emerald-600/20 dark:border-emerald-400 dark:bg-emerald-950/30 dark:text-emerald-100' : 'border-zinc-200 bg-white text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200' }} min-h-14 rounded-xl border px-4 py-3 text-start text-sm font-semibold transition">{{ __('promises.subjects.money') }}</button>
-                <button type="button" wire:click="selectSubjectType('{{ \App\Domain\Enums\SubjectType::Quantity->value }}')" wire:loading.attr="disabled" class="{{ $subjectType === \App\Domain\Enums\SubjectType::Quantity ? 'border-cyan-600 bg-cyan-50 text-cyan-950 ring-2 ring-cyan-600/20 dark:border-cyan-400 dark:bg-cyan-950/30 dark:text-cyan-100' : 'border-zinc-200 bg-white text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200' }} min-h-14 rounded-xl border px-4 py-3 text-start text-sm font-semibold transition">{{ __('promises.subjects.quantity') }}</button>
-                <button type="button" wire:click="selectSubjectType('{{ \App\Domain\Enums\SubjectType::Commitment->value }}')" wire:loading.attr="disabled" class="{{ $subjectType === \App\Domain\Enums\SubjectType::Commitment ? 'border-amber-600 bg-amber-50 text-amber-950 ring-2 ring-amber-600/20 dark:border-amber-400 dark:bg-amber-950/30 dark:text-amber-100' : 'border-zinc-200 bg-white text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200' }} min-h-14 rounded-xl border px-4 py-3 text-start text-sm font-semibold transition">{{ __('promises.subjects.commitment') }}</button>
+                <button type="button" wire:click="selectSubjectType('{{ \App\Features\PromiseTracker\Domain\Enums\SubjectType::Money->value }}')" wire:loading.attr="disabled" class="{{ $subjectType === \App\Features\PromiseTracker\Domain\Enums\SubjectType::Money ? 'border-emerald-600 bg-emerald-50 text-emerald-950 ring-2 ring-emerald-600/20 dark:border-emerald-400 dark:bg-emerald-950/30 dark:text-emerald-100' : 'border-zinc-200 bg-white text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200' }} min-h-14 rounded-xl border px-4 py-3 text-start text-sm font-semibold transition">{{ __('promises.subjects.money') }}</button>
+                <button type="button" wire:click="selectSubjectType('{{ \App\Features\PromiseTracker\Domain\Enums\SubjectType::Quantity->value }}')" wire:loading.attr="disabled" class="{{ $subjectType === \App\Features\PromiseTracker\Domain\Enums\SubjectType::Quantity ? 'border-cyan-600 bg-cyan-50 text-cyan-950 ring-2 ring-cyan-600/20 dark:border-cyan-400 dark:bg-cyan-950/30 dark:text-cyan-100' : 'border-zinc-200 bg-white text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200' }} min-h-14 rounded-xl border px-4 py-3 text-start text-sm font-semibold transition">{{ __('promises.subjects.quantity') }}</button>
+                <button type="button" wire:click="selectSubjectType('{{ \App\Features\PromiseTracker\Domain\Enums\SubjectType::Commitment->value }}')" wire:loading.attr="disabled" class="{{ $subjectType === \App\Features\PromiseTracker\Domain\Enums\SubjectType::Commitment ? 'border-amber-600 bg-amber-50 text-amber-950 ring-2 ring-amber-600/20 dark:border-amber-400 dark:bg-amber-950/30 dark:text-amber-100' : 'border-zinc-200 bg-white text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200' }} min-h-14 rounded-xl border px-4 py-3 text-start text-sm font-semibold transition">{{ __('promises.subjects.commitment') }}</button>
             </div>
         </fieldset>
 
         <fieldset>
             <legend class="mb-2 text-sm font-medium text-zinc-900 dark:text-white">{{ __('promises.direction') }}</legend>
             <div class="grid gap-3 sm:grid-cols-2">
-                <button type="button" wire:click="selectDirection('{{ \App\Domain\Enums\Direction::Payable->value }}')" wire:loading.attr="disabled" class="{{ $direction === \App\Domain\Enums\Direction::Payable->value ? 'border-emerald-600 bg-emerald-50 text-emerald-950 ring-2 ring-emerald-600/20 dark:border-emerald-400 dark:bg-emerald-950/30 dark:text-emerald-100' : 'border-zinc-200 bg-white text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200' }} min-h-16 rounded-xl border px-4 py-3 text-start text-sm font-semibold transition">
+                <button type="button" wire:click="selectDirection('{{ \App\Features\PromiseTracker\Domain\Enums\Direction::Payable->value }}')" wire:loading.attr="disabled" class="{{ $direction === \App\Features\PromiseTracker\Domain\Enums\Direction::Payable->value ? 'border-emerald-600 bg-emerald-50 text-emerald-950 ring-2 ring-emerald-600/20 dark:border-emerald-400 dark:bg-emerald-950/30 dark:text-emerald-100' : 'border-zinc-200 bg-white text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200' }} min-h-16 rounded-xl border px-4 py-3 text-start text-sm font-semibold transition">
                     <span class="block">{{ __('promises.directions.payable') }}</span>
                     <span class="mt-1 block text-xs font-normal opacity-70">{{ __('promises.direction_descriptions.payable.'.$subjectType->value) }}</span>
                 </button>
-                <button type="button" wire:click="selectDirection('{{ \App\Domain\Enums\Direction::Receivable->value }}')" wire:loading.attr="disabled" class="{{ $direction === \App\Domain\Enums\Direction::Receivable->value ? 'border-cyan-600 bg-cyan-50 text-cyan-950 ring-2 ring-cyan-600/20 dark:border-cyan-400 dark:bg-cyan-950/30 dark:text-cyan-100' : 'border-zinc-200 bg-white text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200' }} min-h-16 rounded-xl border px-4 py-3 text-start text-sm font-semibold transition">
+                <button type="button" wire:click="selectDirection('{{ \App\Features\PromiseTracker\Domain\Enums\Direction::Receivable->value }}')" wire:loading.attr="disabled" class="{{ $direction === \App\Features\PromiseTracker\Domain\Enums\Direction::Receivable->value ? 'border-cyan-600 bg-cyan-50 text-cyan-950 ring-2 ring-cyan-600/20 dark:border-cyan-400 dark:bg-cyan-950/30 dark:text-cyan-100' : 'border-zinc-200 bg-white text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200' }} min-h-16 rounded-xl border px-4 py-3 text-start text-sm font-semibold transition">
                     <span class="block">{{ __('promises.directions.receivable') }}</span>
                     <span class="mt-1 block text-xs font-normal opacity-70">{{ __('promises.direction_descriptions.receivable.'.$subjectType->value) }}</span>
                 </button>
             </div>
         </fieldset>
 
-        @if ($subjectType === \App\Domain\Enums\SubjectType::Money)
+        @if ($subjectType === \App\Features\PromiseTracker\Domain\Enums\SubjectType::Money)
             <div class="grid gap-4 sm:grid-cols-2">
                 <flux:input wire:model="amount" type="text" inputmode="decimal" :label="__('promises.how_much')" placeholder="0.00" :description="__('promises.amount_in', ['currency' => $currency])" required />
                 <flux:select wire:model="currency" :label="__('promises.currency')" required>
-                    @foreach (\App\Domain\Money\Currency::codes() as $currencyCode)
+                    @foreach (\App\Features\PromiseTracker\Domain\Money\Currency::codes() as $currencyCode)
                         <flux:select.option value="{{ $currencyCode }}">{{ $currencyCode }}</flux:select.option>
                     @endforeach
                 </flux:select>
             </div>
-        @elseif ($subjectType === \App\Domain\Enums\SubjectType::Quantity)
+        @elseif ($subjectType === \App\Features\PromiseTracker\Domain\Enums\SubjectType::Quantity)
             <div class="grid gap-4 sm:grid-cols-2">
                 <flux:input wire:model="quantityName" :label="__('promises.what_is_it')" :placeholder="__('promises.quantity_name_placeholder')" required />
                 <flux:input wire:model="quantityTotal" type="text" inputmode="decimal" :label="__('promises.how_many')" placeholder="1" required />
@@ -71,8 +71,8 @@
         <flux:textarea wire:model="note" :label="__('promises.note')" :placeholder="__('promises.optional_context')" rows="4" />
 
         <flux:select wire:model="visibility" :label="__('promises.visibility_question')" required>
-            <option value="{{ \App\Domain\Enums\RecordVisibility::Shared->value }}">{{ __('promises.shared_visibility') }}</option>
-            <option value="{{ \App\Domain\Enums\RecordVisibility::Private->value }}">{{ __('promises.private_visibility') }}</option>
+            <option value="{{ \App\Features\PromiseTracker\Domain\Enums\RecordVisibility::Shared->value }}">{{ __('promises.shared_visibility') }}</option>
+            <option value="{{ \App\Features\PromiseTracker\Domain\Enums\RecordVisibility::Private->value }}">{{ __('promises.private_visibility') }}</option>
         </flux:select>
 
         <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">

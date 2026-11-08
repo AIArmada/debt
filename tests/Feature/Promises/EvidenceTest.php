@@ -1,21 +1,21 @@
 <?php
 
-use App\Actions\Promises\AttachEvidence;
-use App\Actions\Promises\CreatePromise;
-use App\Actions\Promises\Data\AttachEvidenceData;
-use App\Actions\Promises\Data\CreatePromiseData;
-use App\Actions\Promises\Data\RecordMovementData;
-use App\Actions\Promises\Data\VoidMovementData;
-use App\Actions\Promises\DetachEvidence;
-use App\Actions\Promises\RecordMoneyMovement;
-use App\Actions\Promises\VoidMovement;
-use App\Domain\Enums\AttachmentCategory;
-use App\Domain\Enums\Direction;
-use App\Domain\Enums\MemberRole;
-use App\Livewire\Promises\Show as PromiseShow;
-use App\Models\ActivityEntry;
-use App\Models\Attachment;
-use App\Models\User;
+use App\Features\PromiseTracker\Actions\Promises\AttachEvidence;
+use App\Features\PromiseTracker\Actions\Promises\CreatePromise;
+use App\Features\PromiseTracker\Actions\Promises\Data\AttachEvidenceData;
+use App\Features\PromiseTracker\Actions\Promises\Data\CreatePromiseData;
+use App\Features\PromiseTracker\Actions\Promises\Data\RecordMovementData;
+use App\Features\PromiseTracker\Actions\Promises\Data\VoidMovementData;
+use App\Features\PromiseTracker\Actions\Promises\DetachEvidence;
+use App\Features\PromiseTracker\Actions\Promises\RecordMoneyMovement;
+use App\Features\PromiseTracker\Actions\Promises\VoidMovement;
+use App\Features\PromiseTracker\Domain\Enums\AttachmentCategory;
+use App\Features\PromiseTracker\Domain\Enums\Direction;
+use App\Features\PromiseTracker\Domain\Enums\MemberRole;
+use App\Features\PromiseTracker\EntryPoints\Livewire\Promises\Show as PromiseShow;
+use App\Features\PromiseTracker\Models\ActivityEntry;
+use App\Features\PromiseTracker\Models\Attachment;
+use App\Features\PromiseTracker\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;

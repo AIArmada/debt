@@ -1,6 +1,6 @@
 <?php
 
-use App\Domain\Money\Money;
+use App\Features\PromiseTracker\Domain\Money\Money;
 
 test('display formats minor units without applying Money value validation', function () {
     expect(Money::display(1250, ' usd '))->toBe('$12.50')

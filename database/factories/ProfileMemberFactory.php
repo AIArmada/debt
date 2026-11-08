@@ -2,15 +2,17 @@
 
 namespace Database\Factories;
 
-use App\Domain\Enums\MemberRole;
-use App\Models\FinancialProfile;
-use App\Models\ProfileMember;
-use App\Models\User;
+use App\Features\PromiseTracker\Domain\Enums\MemberRole;
+use App\Features\PromiseTracker\Models\FinancialProfile;
+use App\Features\PromiseTracker\Models\ProfileMember;
+use App\Features\PromiseTracker\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<ProfileMember> */
 class ProfileMemberFactory extends Factory
 {
+    protected $model = ProfileMember::class;
+
     /** @return array<string, mixed> */
     public function definition(): array
     {

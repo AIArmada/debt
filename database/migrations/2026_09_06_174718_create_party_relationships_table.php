@@ -1,6 +1,6 @@
 <?php
 
-use App\Domain\Enums\PartyRelationshipKind;
+use App\Features\PromiseTracker\Domain\Enums\PartyRelationshipKind;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;

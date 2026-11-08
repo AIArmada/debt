@@ -1,0 +1,45 @@
+<?php
+
+namespace App\Features\PromiseTracker\Actions\Promises\Data;
+
+use App\Features\PromiseTracker\Domain\Enums\Direction;
+use App\Features\PromiseTracker\Domain\Enums\SubjectType;
+use App\Features\PromiseTracker\Domain\StringNormalizer;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+
+final readonly class AddObligationData
+{
+    private function __construct(
+        public Direction $direction,
+        public ?string $dueOn,
+        public ?string $note,
+        public PromiseSubjectData $subject,
+    ) {}
+
+    /** @return array<string, array<int, mixed>> */
+    public static function rules(): array
+    {
+        return [
+            'direction' => ['required', Rule::enum(Direction::class)],
+            'dueOn' => ['nullable', 'date'],
+            'note' => ['nullable', 'string', 'max:4000'],
+            ...PromiseSubjectData::rules(),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $input
+     */
+    public static function fromInput(array $input, string $currency): self
+    {
+        $validated = Validator::make($input + ['subjectType' => SubjectType::Money->value], self::rules())->validate();
+
+        return new self(
+            Direction::fromRequest($validated['direction']),
+            $validated['dueOn'] ?? null,
+            StringNormalizer::optionalTrimmed($validated['note'] ?? null),
+            PromiseSubjectData::fromInput($validated, $currency),
+        );
+    }
+}

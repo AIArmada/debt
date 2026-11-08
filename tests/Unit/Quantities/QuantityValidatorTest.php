@@ -1,6 +1,6 @@
 <?php
 
-use App\Domain\Quantities\QuantityValidator;
+use App\Features\PromiseTracker\Domain\Quantities\QuantityValidator;
 
 test('quantity zero detection is shared by quantity input boundaries', function () {
     expect(QuantityValidator::isZero('0'))->toBeTrue()

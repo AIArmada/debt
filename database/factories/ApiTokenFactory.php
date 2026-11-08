@@ -2,10 +2,10 @@
 
 namespace Database\Factories;
 
-use App\Domain\Enums\ApiTokenAbility;
-use App\Models\ApiToken;
-use App\Models\FinancialProfile;
-use App\Models\User;
+use App\Features\PromiseTracker\Domain\Enums\ApiTokenAbility;
+use App\Features\PromiseTracker\Models\ApiToken;
+use App\Features\PromiseTracker\Models\FinancialProfile;
+use App\Features\PromiseTracker\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<ApiToken> */

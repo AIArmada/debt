@@ -1,19 +1,19 @@
 <?php
 
-use App\Domain\ActivityLabels;
-use App\Domain\Enums\Direction;
-use App\Domain\Enums\ObligationStatus;
-use App\Domain\Enums\ReminderChannel;
-use App\Domain\Enums\ReminderStatus;
-use App\Domain\Enums\SubjectType;
-use App\Domain\Queries\RecordActivity;
-use App\Models\ActivityEntry;
-use App\Models\Attachment;
-use App\Models\MoneyMovement;
-use App\Models\QuantityReturn;
-use App\Models\Reminder;
-use App\Models\User;
-use App\Services\ActivityLogger;
+use App\Features\PromiseTracker\Domain\ActivityLabels;
+use App\Features\PromiseTracker\Domain\Enums\Direction;
+use App\Features\PromiseTracker\Domain\Enums\ObligationStatus;
+use App\Features\PromiseTracker\Domain\Enums\ReminderChannel;
+use App\Features\PromiseTracker\Domain\Enums\ReminderStatus;
+use App\Features\PromiseTracker\Domain\Enums\SubjectType;
+use App\Features\PromiseTracker\Domain\Queries\RecordActivity;
+use App\Features\PromiseTracker\Models\ActivityEntry;
+use App\Features\PromiseTracker\Models\Attachment;
+use App\Features\PromiseTracker\Models\MoneyMovement;
+use App\Features\PromiseTracker\Models\QuantityReturn;
+use App\Features\PromiseTracker\Models\Reminder;
+use App\Features\PromiseTracker\Models\User;
+use App\Features\PromiseTracker\Persistence\ActivityLogger;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);

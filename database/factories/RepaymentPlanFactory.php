@@ -2,10 +2,10 @@
 
 namespace Database\Factories;
 
-use App\Domain\Enums\PlanStatus;
-use App\Domain\Enums\PlanStrategy;
-use App\Models\BudgetPeriod;
-use App\Models\RepaymentPlan;
+use App\Features\PromiseTracker\Domain\Enums\PlanStatus;
+use App\Features\PromiseTracker\Domain\Enums\PlanStrategy;
+use App\Features\PromiseTracker\Models\BudgetPeriod;
+use App\Features\PromiseTracker\Models\RepaymentPlan;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<RepaymentPlan> */

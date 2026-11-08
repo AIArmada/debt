@@ -2,20 +2,20 @@
 
 namespace Tests\Feature\Promises;
 
-use App\Actions\Promises\AddRecordGuarantor;
-use App\Actions\Promises\CreatePromise;
-use App\Actions\Promises\CreateRecordShare;
-use App\Actions\Promises\Data\CreatePromiseData;
-use App\Actions\Promises\Data\CreateRecordShareData;
-use App\Actions\Promises\Data\RecordGuarantorData;
-use App\Actions\Promises\RemoveRecordGuarantor;
-use App\Domain\Enums\Direction;
-use App\Domain\Enums\MemberRole;
-use App\Domain\Enums\PartyKind;
-use App\Domain\Enums\PartyRole;
-use App\Domain\Enums\PartyStatus;
-use App\Models\ProfileMember;
-use App\Models\User;
+use App\Features\PromiseTracker\Actions\Promises\AddRecordGuarantor;
+use App\Features\PromiseTracker\Actions\Promises\CreatePromise;
+use App\Features\PromiseTracker\Actions\Promises\CreateRecordShare;
+use App\Features\PromiseTracker\Actions\Promises\Data\CreatePromiseData;
+use App\Features\PromiseTracker\Actions\Promises\Data\CreateRecordShareData;
+use App\Features\PromiseTracker\Actions\Promises\Data\RecordGuarantorData;
+use App\Features\PromiseTracker\Actions\Promises\RemoveRecordGuarantor;
+use App\Features\PromiseTracker\Domain\Enums\Direction;
+use App\Features\PromiseTracker\Domain\Enums\MemberRole;
+use App\Features\PromiseTracker\Domain\Enums\PartyKind;
+use App\Features\PromiseTracker\Domain\Enums\PartyRole;
+use App\Features\PromiseTracker\Domain\Enums\PartyStatus;
+use App\Features\PromiseTracker\Models\ProfileMember;
+use App\Features\PromiseTracker\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

@@ -1,21 +1,21 @@
 <?php
 
-use App\Actions\Promises\CreateBudgetPeriod;
-use App\Actions\Promises\CreatePromise;
-use App\Actions\Promises\Data\CreateBudgetPeriodData;
-use App\Actions\Promises\Data\CreatePromiseData;
-use App\Actions\Promises\GeneratePlan;
-use App\Domain\Enums\Direction;
-use App\Domain\Enums\MoneyEntry;
-use App\Domain\Enums\MovementStatus;
-use App\Domain\Enums\PlanStrategy;
-use App\Domain\Queries\PromiseFreeProjection;
-use App\Models\BudgetPeriod;
-use App\Models\FinancialProfile;
-use App\Models\Obligation;
-use App\Models\ObligationChargeTerm;
-use App\Models\Record;
-use App\Models\User;
+use App\Features\PromiseTracker\Actions\Promises\CreateBudgetPeriod;
+use App\Features\PromiseTracker\Actions\Promises\CreatePromise;
+use App\Features\PromiseTracker\Actions\Promises\Data\CreateBudgetPeriodData;
+use App\Features\PromiseTracker\Actions\Promises\Data\CreatePromiseData;
+use App\Features\PromiseTracker\Actions\Promises\GeneratePlan;
+use App\Features\PromiseTracker\Domain\Enums\Direction;
+use App\Features\PromiseTracker\Domain\Enums\MoneyEntry;
+use App\Features\PromiseTracker\Domain\Enums\MovementStatus;
+use App\Features\PromiseTracker\Domain\Enums\PlanStrategy;
+use App\Features\PromiseTracker\Domain\Queries\PromiseFreeProjection;
+use App\Features\PromiseTracker\Models\BudgetPeriod;
+use App\Features\PromiseTracker\Models\FinancialProfile;
+use App\Features\PromiseTracker\Models\Obligation;
+use App\Features\PromiseTracker\Models\ObligationChargeTerm;
+use App\Features\PromiseTracker\Models\Record;
+use App\Features\PromiseTracker\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 

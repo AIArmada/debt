@@ -1,9 +1,9 @@
 <?php
 
-use App\Domain\Enums\Direction;
-use App\Domain\Enums\ObligationStatus;
-use App\Models\FinancialProfile;
-use App\Models\User;
+use App\Features\PromiseTracker\Domain\Enums\Direction;
+use App\Features\PromiseTracker\Domain\Enums\ObligationStatus;
+use App\Features\PromiseTracker\Models\FinancialProfile;
+use App\Features\PromiseTracker\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 

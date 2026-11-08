@@ -2,15 +2,15 @@
 
 namespace Tests\Feature;
 
-use App\Actions\Promises\CreatePromise;
-use App\Actions\Promises\CreateRecordShare;
-use App\Actions\Promises\Data\CreatePromiseData;
-use App\Actions\Promises\Data\CreateRecordShareData;
-use App\Domain\Enums\Direction;
-use App\Domain\Presenters\HijriDatePresenter;
-use App\Livewire\Parties\Index as PeopleIndex;
-use App\Livewire\Profiles\Settings as ProfileSettings;
-use App\Models\User;
+use App\Features\PromiseTracker\Actions\Promises\CreatePromise;
+use App\Features\PromiseTracker\Actions\Promises\CreateRecordShare;
+use App\Features\PromiseTracker\Actions\Promises\Data\CreatePromiseData;
+use App\Features\PromiseTracker\Actions\Promises\Data\CreateRecordShareData;
+use App\Features\PromiseTracker\Domain\Enums\Direction;
+use App\Features\PromiseTracker\Domain\Presenters\HijriDatePresenter;
+use App\Features\PromiseTracker\EntryPoints\Livewire\Parties\Index as PeopleIndex;
+use App\Features\PromiseTracker\EntryPoints\Livewire\Profiles\Settings as ProfileSettings;
+use App\Features\PromiseTracker\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use IntlCalendar;
