@@ -1,9 +1,9 @@
 <?php
 
-use App\Domain\Enums\ObligationStatus;
-use App\Domain\Queries\RecordStatusQuery;
-use App\Models\Obligation;
-use App\Models\Record;
+use App\Features\PromiseTracker\Domain\Enums\ObligationStatus;
+use App\Features\PromiseTracker\Domain\Queries\RecordStatusQuery;
+use App\Features\PromiseTracker\Models\Obligation;
+use App\Features\PromiseTracker\Models\Record;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 test('record status query accepts enum-casted obligation statuses', function () {

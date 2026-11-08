@@ -12,7 +12,7 @@
         <flux:heading size="lg">Invite a member</flux:heading>
         <form wire:submit="invite" class="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_12rem_auto] sm:items-end">
             <flux:input wire:model="email" type="email" label="Email" required />
-            <flux:select wire:model="role" label="Role"><option value="{{ \App\Domain\Enums\MemberRole::Viewer->value }}">Viewer</option><option value="{{ \App\Domain\Enums\MemberRole::Editor->value }}">Editor</option></flux:select>
+            <flux:select wire:model="role" label="Role"><option value="{{ \App\Features\PromiseTracker\Domain\Enums\MemberRole::Viewer->value }}">Viewer</option><option value="{{ \App\Features\PromiseTracker\Domain\Enums\MemberRole::Editor->value }}">Editor</option></flux:select>
             <flux:button type="submit" variant="primary" wire:loading.attr="disabled">Invite</flux:button>
         </form>
     </section>
@@ -22,7 +22,7 @@
             @foreach ($members as $member)
                 <div wire:key="member-{{ $member->id }}" class="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
                     <div><div class="font-medium">{{ $member->user->name }}</div><div class="text-sm text-zinc-500">{{ $member->user->email }}</div></div>
-                    <div class="flex items-center gap-3">@if ($member->role !== \App\Domain\Enums\MemberRole::Owner)<select wire:change="changeRole('{{ $member->id }}', $event.target.value)" wire:loading.attr="disabled" class="rounded-lg border-zinc-300 bg-transparent text-sm"><option value="{{ \App\Domain\Enums\MemberRole::Viewer->value }}" @selected($member->role === \App\Domain\Enums\MemberRole::Viewer)>Viewer</option><option value="{{ \App\Domain\Enums\MemberRole::Editor->value }}" @selected($member->role === \App\Domain\Enums\MemberRole::Editor)>Editor</option></select><flux:button wire:click="remove('{{ $member->id }}')" wire:confirm="Remove this member?" variant="ghost" wire:loading.attr="disabled">Remove</flux:button>@else<span class="text-sm text-zinc-500">Owner</span>@endif</div>
+                    <div class="flex items-center gap-3">@if ($member->role !== \App\Features\PromiseTracker\Domain\Enums\MemberRole::Owner)<select wire:change="changeRole('{{ $member->id }}', $event.target.value)" wire:loading.attr="disabled" class="rounded-lg border-zinc-300 bg-transparent text-sm"><option value="{{ \App\Features\PromiseTracker\Domain\Enums\MemberRole::Viewer->value }}" @selected($member->role === \App\Features\PromiseTracker\Domain\Enums\MemberRole::Viewer)>Viewer</option><option value="{{ \App\Features\PromiseTracker\Domain\Enums\MemberRole::Editor->value }}" @selected($member->role === \App\Features\PromiseTracker\Domain\Enums\MemberRole::Editor)>Editor</option></select><flux:button wire:click="remove('{{ $member->id }}')" wire:confirm="Remove this member?" variant="ghost" wire:loading.attr="disabled">Remove</flux:button>@else<span class="text-sm text-zinc-500">Owner</span>@endif</div>
                 </div>
             @endforeach
         </div>

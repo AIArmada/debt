@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Domain\Enums\ImportRowStatus;
-use App\Models\ImportBatch;
-use App\Models\ImportRow;
+use App\Features\PromiseTracker\Domain\Enums\ImportRowStatus;
+use App\Features\PromiseTracker\Models\ImportBatch;
+use App\Features\PromiseTracker\Models\ImportRow;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<ImportRow> */

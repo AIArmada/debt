@@ -1,7 +1,7 @@
 <?php
 
-use App\Domain\Enums\PlanStatus;
-use App\Domain\Enums\PlanStrategy;
+use App\Features\PromiseTracker\Domain\Enums\PlanStatus;
+use App\Features\PromiseTracker\Domain\Enums\PlanStrategy;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;

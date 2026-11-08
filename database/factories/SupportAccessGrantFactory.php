@@ -2,10 +2,10 @@
 
 namespace Database\Factories;
 
-use App\Domain\Enums\SupportAccessGrantStatus;
-use App\Models\SupportAccessGrant;
-use App\Models\SupportCase;
-use App\Models\User;
+use App\Features\PromiseTracker\Domain\Enums\SupportAccessGrantStatus;
+use App\Features\PromiseTracker\Models\SupportAccessGrant;
+use App\Features\PromiseTracker\Models\SupportCase;
+use App\Features\PromiseTracker\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class SupportAccessGrantFactory extends Factory
 {
+    protected $model = SupportAccessGrant::class;
+
     /**
      * Define the model's default state.
      *

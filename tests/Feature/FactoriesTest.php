@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\FinancialProfile;
-use App\Models\MoneyMovement;
-use App\Models\ProfileMember;
-use App\Models\Record;
+use App\Features\PromiseTracker\Models\FinancialProfile;
+use App\Features\PromiseTracker\Models\MoneyMovement;
+use App\Features\PromiseTracker\Models\ProfileMember;
+use App\Features\PromiseTracker\Models\Record;
 use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

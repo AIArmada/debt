@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use AIArmada\Authz\Models\Permission;
 use AIArmada\Authz\Models\Role;
-use App\Models\User;
+use App\Features\PromiseTracker\Models\User;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Contracts\Permission as PermissionContract;
 

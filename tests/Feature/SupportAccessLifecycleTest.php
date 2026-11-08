@@ -1,17 +1,17 @@
 <?php
 
 use AIArmada\Authz\Models\Role;
-use App\Actions\Staff\ApproveSupportAccess;
-use App\Actions\Staff\CloseSupportCase;
-use App\Actions\Staff\OpenSupportCase;
-use App\Actions\Staff\RequestSupportAccess;
-use App\Actions\Staff\RevokeSupportAccess;
-use App\Domain\Enums\SupportAccessGrantStatus;
-use App\Domain\Enums\SupportCaseStatus;
-use App\Models\FinancialProfile;
-use App\Models\SupportAuditEntry;
-use App\Models\SupportCase;
-use App\Models\User;
+use App\Features\PromiseTracker\Actions\Staff\ApproveSupportAccess;
+use App\Features\PromiseTracker\Actions\Staff\CloseSupportCase;
+use App\Features\PromiseTracker\Actions\Staff\OpenSupportCase;
+use App\Features\PromiseTracker\Actions\Staff\RequestSupportAccess;
+use App\Features\PromiseTracker\Actions\Staff\RevokeSupportAccess;
+use App\Features\PromiseTracker\Domain\Enums\SupportAccessGrantStatus;
+use App\Features\PromiseTracker\Domain\Enums\SupportCaseStatus;
+use App\Features\PromiseTracker\Models\FinancialProfile;
+use App\Features\PromiseTracker\Models\SupportAuditEntry;
+use App\Features\PromiseTracker\Models\SupportCase;
+use App\Features\PromiseTracker\Models\User;
 use Database\Seeders\StaffRolesAndPermissionsSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;

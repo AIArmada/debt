@@ -1,9 +1,8 @@
 <?php
 
-use App\Http\Middleware\DisableAuthzImpersonationRoutes;
-use App\Http\Middleware\HandleApiToken;
-use App\Http\Middleware\SecurityHeaders;
-use App\Http\Middleware\SetLocale;
+use App\Platform\Http\Middleware\DisableAuthzImpersonationRoutes;
+use App\Platform\Http\Middleware\SecurityHeaders;
+use App\Platform\Http\Middleware\SetLocale;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -14,8 +13,6 @@ use Illuminate\Routing\Exceptions\InvalidSignatureException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
-        web: __DIR__.'/../routes/web.php',
-        api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
@@ -29,7 +26,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(SecurityHeaders::class);
         $middleware->prepend(DisableAuthzImpersonationRoutes::class);
         $middleware->web(append: [SetLocale::class]);
-        $middleware->alias(['api.token' => HandleApiToken::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (InvalidSignatureException $exception, Request $request): ?Response {

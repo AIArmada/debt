@@ -1,33 +1,33 @@
 <?php
 
-use App\Actions\Promises\AcknowledgeShare;
-use App\Actions\Promises\ConfirmProposedMovement;
-use App\Actions\Promises\CreatePromise;
-use App\Actions\Promises\CreateRecordShare;
-use App\Actions\Promises\Data\AcknowledgeShareData;
-use App\Actions\Promises\Data\CreatePromiseData;
-use App\Actions\Promises\Data\CreateRecordShareData;
-use App\Actions\Promises\Data\RecordMovementData;
-use App\Actions\Promises\Data\SaveChargeTermsData;
-use App\Actions\Promises\Data\VoidMovementData;
-use App\Actions\Promises\DismissProposedMovement;
-use App\Actions\Promises\RecordMoneyMovement;
-use App\Actions\Promises\SaveChargeTerms;
-use App\Actions\Promises\VoidMovement;
-use App\Domain\Enums\Direction;
-use App\Domain\Enums\MoneyEntry;
-use App\Domain\Enums\MovementStatus;
-use App\Domain\Enums\ObligationStatus;
-use App\Domain\Queries\BalanceBreakdown;
-use App\Domain\Queries\ChargeSchedulePreview;
-use App\Domain\Queries\ChargeTermsHash;
-use App\Domain\Queries\OutstandingBalance;
-use App\Livewire\Promises\Show as PromiseShow;
-use App\Models\Obligation;
-use App\Models\ObligationChargeTerm;
-use App\Models\Record;
-use App\Models\User;
-use App\Services\GenerateCharges;
+use App\Features\PromiseTracker\Actions\Promises\AcknowledgeShare;
+use App\Features\PromiseTracker\Actions\Promises\ConfirmProposedMovement;
+use App\Features\PromiseTracker\Actions\Promises\CreatePromise;
+use App\Features\PromiseTracker\Actions\Promises\CreateRecordShare;
+use App\Features\PromiseTracker\Actions\Promises\Data\AcknowledgeShareData;
+use App\Features\PromiseTracker\Actions\Promises\Data\CreatePromiseData;
+use App\Features\PromiseTracker\Actions\Promises\Data\CreateRecordShareData;
+use App\Features\PromiseTracker\Actions\Promises\Data\RecordMovementData;
+use App\Features\PromiseTracker\Actions\Promises\Data\SaveChargeTermsData;
+use App\Features\PromiseTracker\Actions\Promises\Data\VoidMovementData;
+use App\Features\PromiseTracker\Actions\Promises\DismissProposedMovement;
+use App\Features\PromiseTracker\Actions\Promises\RecordMoneyMovement;
+use App\Features\PromiseTracker\Actions\Promises\SaveChargeTerms;
+use App\Features\PromiseTracker\Actions\Promises\VoidMovement;
+use App\Features\PromiseTracker\Domain\Enums\Direction;
+use App\Features\PromiseTracker\Domain\Enums\MoneyEntry;
+use App\Features\PromiseTracker\Domain\Enums\MovementStatus;
+use App\Features\PromiseTracker\Domain\Enums\ObligationStatus;
+use App\Features\PromiseTracker\Domain\Queries\BalanceBreakdown;
+use App\Features\PromiseTracker\Domain\Queries\ChargeSchedulePreview;
+use App\Features\PromiseTracker\Domain\Queries\ChargeTermsHash;
+use App\Features\PromiseTracker\Domain\Queries\OutstandingBalance;
+use App\Features\PromiseTracker\EntryPoints\Livewire\Promises\Show as PromiseShow;
+use App\Features\PromiseTracker\Models\Obligation;
+use App\Features\PromiseTracker\Models\ObligationChargeTerm;
+use App\Features\PromiseTracker\Models\Record;
+use App\Features\PromiseTracker\Models\User;
+use App\Features\PromiseTracker\Persistence\GenerateCharges;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
@@ -724,7 +724,7 @@ test('monthly charge series return to the original month end after February clam
 test('penalties are proposed and the due command is idempotent while skipping inactive obligations', function () {
     $user = User::factory()->create();
     $profile = $user->financialProfiles()->firstOrFail();
-    $profile->forceFill(['interest_free_mode' => false])->save();
+    $profile->forceFill(['interest_free_mode' => false, 'timezone' => 'UTC'])->save();
     $createPromise = fn (string $name): Obligation => app(CreatePromise::class)->handle($user, $profile, CreatePromiseData::fromInput([
         'partyName' => $name,
         'direction' => Direction::Payable->value,

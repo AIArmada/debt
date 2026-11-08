@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\User;
+use App\Features\PromiseTracker\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 

@@ -19,8 +19,8 @@
         @endif
         <flux:text class="mt-2 leading-6">{{ __('promises.keep_context') }}</flux:text>
         <div class="mt-3 flex flex-wrap items-center gap-2">
-            <x-status-badge :tone="$record->visibility === \App\Domain\Enums\RecordVisibility::Private ? 'warning' : 'info'" :label="__('promises.visibility_labels.'.$record->visibility->value)" />
-            @if ($obligation->status === \App\Domain\Enums\ObligationStatus::Settled && $obligation->closure_reason)
+            <x-status-badge :tone="$record->visibility === \App\Features\PromiseTracker\Domain\Enums\RecordVisibility::Private ? 'warning' : 'info'" :label="__('promises.visibility_labels.'.$record->visibility->value)" />
+            @if ($obligation->status === \App\Features\PromiseTracker\Domain\Enums\ObligationStatus::Settled && $obligation->closure_reason)
                 <span class="text-sm text-zinc-500">{{ __('promises.closure_reasons.'.$obligation->closure_reason->value) }}</span>
             @endif
         </div>
@@ -48,7 +48,7 @@
                         <flux:heading size="lg">{{ __('promises.message') }}</flux:heading>
                         <flux:text class="mt-1">{{ __('promises.not_sent_automatically') }}</flux:text>
                     </div>
-                    @if ($chargeObligation->direction === \App\Domain\Enums\Direction::Payable)
+                    @if ($chargeObligation->direction === \App\Features\PromiseTracker\Domain\Enums\Direction::Payable)
                         <flux:button type="button" wire:click="requestPauseMessage" variant="ghost">{{ __('promises.request_pause') }}</flux:button>
                     @endif
                 </div>
@@ -94,7 +94,7 @@
         <section class="app-card rounded-2xl p-5 sm:p-7">
             <form wire:submit="saveVisibility" class="flex flex-col gap-3 sm:flex-row sm:items-end">
                 <flux:select wire:model="visibility" :label="__('promises.visibility')">
-                    @foreach (\App\Domain\Enums\RecordVisibility::cases() as $recordVisibility)
+                    @foreach (\App\Features\PromiseTracker\Domain\Enums\RecordVisibility::cases() as $recordVisibility)
                         <flux:select.option value="{{ $recordVisibility->value }}">{{ __('promises.visibility_labels.'.$recordVisibility->value) }}</flux:select.option>
                     @endforeach
                 </flux:select>
@@ -166,7 +166,7 @@
     </section>
 
     @foreach ($obligations as $shareObligation)
-        @if ($shareObligation->subject_type === \App\Domain\Enums\SubjectType::Money && $shareObligation->moneySubject)
+        @if ($shareObligation->subject_type === \App\Features\PromiseTracker\Domain\Enums\SubjectType::Money && $shareObligation->moneySubject)
             <section wire:key="obligation-shares-{{ $shareObligation->id }}" class="app-card space-y-5 rounded-2xl p-5 sm:p-7">
                 <div>
                     <flux:heading size="lg">{{ __('promises.obligation_shares') }}</flux:heading>
@@ -177,7 +177,7 @@
                         @foreach ($shareObligation->shares->sortBy('party_id') as $share)
                             <div class="flex items-center justify-between gap-3 text-sm">
                                 <span>{{ $share->party?->displayName() }} · {{ number_format($share->share_bps / 100, 2) }}%</span>
-                                <span class="font-semibold">{{ \App\Domain\Money\Money::display($shareAmounts[$shareObligation->id][$share->party_id] ?? 0, $shareObligation->moneySubject->currency) }}</span>
+                                <span class="font-semibold">{{ \App\Features\PromiseTracker\Domain\Money\Money::display($shareAmounts[$shareObligation->id][$share->party_id] ?? 0, $shareObligation->moneySubject->currency) }}</span>
                             </div>
                         @endforeach
                     </div>
@@ -240,7 +240,7 @@
                 <form wire:submit="saveEvidence" class="mt-5 grid gap-3 border-t border-zinc-200/80 pt-5 sm:grid-cols-3 dark:border-zinc-700/80">
                     <input wire:model="evidenceFile" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.txt,.csv,.doc,.docx,.xls,.xlsx" class="block w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm sm:col-span-2" />
                     <flux:select wire:model="evidenceCategory" :label="__('promises.category')">
-                        @foreach (\App\Domain\Enums\AttachmentCategory::cases() as $category)
+                        @foreach (\App\Features\PromiseTracker\Domain\Enums\AttachmentCategory::cases() as $category)
                             <flux:select.option value="{{ $category->value }}">{{ __('promises.attachment_categories.'.$category->value) }}</flux:select.option>
                         @endforeach
                     </flux:select>
@@ -260,17 +260,17 @@
                 <div class="text-sm text-zinc-500">{{ __('promises.directions.'.$obligation->direction->value) }}</div>
                 @foreach ($positions as $position)
                     <div wire:key="position-{{ $position['currency'] }}" class="mt-2">
-                        <div class="text-3xl font-semibold tracking-tight">{{ \App\Domain\Money\Money::display($position['amount'], $position['currency']) }}</div>
-                        <div class="mt-1 text-sm {{ $position['direction'] === \App\Domain\Enums\Direction::Receivable ? 'text-cyan-700' : 'text-emerald-700' }}">{{ $position['direction'] ? __('promises.directions.'.$position['direction']->value) : __('promises.statuses.settled') }} · {{ $position['currency'] }}</div>
+                        <div class="text-3xl font-semibold tracking-tight">{{ \App\Features\PromiseTracker\Domain\Money\Money::display($position['amount'], $position['currency']) }}</div>
+                        <div class="mt-1 text-sm {{ $position['direction'] === \App\Features\PromiseTracker\Domain\Enums\Direction::Receivable ? 'text-cyan-700' : 'text-emerald-700' }}">{{ $position['direction'] ? __('promises.directions.'.$position['direction']->value) : __('promises.statuses.settled') }} · {{ $position['currency'] }}</div>
                     </div>
                 @endforeach
                 @foreach ($balanceBreakdowns as $currency => $breakdown)
                     <dl wire:key="breakdown-{{ $currency }}" class="mt-4 grid grid-cols-2 gap-x-6 gap-y-1 text-xs text-zinc-500 sm:grid-cols-3">
-                        <div><dt>{{ __('promises.borrowed') }}</dt><dd class="font-medium text-zinc-800 dark:text-zinc-200">{{ \App\Domain\Money\Money::display($breakdown['principal_in'], $currency) }}</dd></div>
-                        <div><dt>{{ __('promises.charges') }}</dt><dd class="font-medium text-zinc-800 dark:text-zinc-200">{{ \App\Domain\Money\Money::display($breakdown['charges_in'], $currency) }}</dd></div>
-                        <div><dt>{{ __('promises.paid') }}</dt><dd class="font-medium text-zinc-800 dark:text-zinc-200">{{ \App\Domain\Money\Money::display($breakdown['settled_total'], $currency) }}</dd></div>
-                        <div><dt>{{ __('promises.remaining_principal') }}</dt><dd class="font-medium text-zinc-800 dark:text-zinc-200">{{ \App\Domain\Money\Money::display($breakdown['unpaid_principal'], $currency) }}</dd></div>
-                        <div><dt>{{ __('promises.remaining_charges') }}</dt><dd class="font-medium text-zinc-800 dark:text-zinc-200">{{ \App\Domain\Money\Money::display($breakdown['unpaid_charges'], $currency) }}</dd></div>
+                        <div><dt>{{ __('promises.borrowed') }}</dt><dd class="font-medium text-zinc-800 dark:text-zinc-200">{{ \App\Features\PromiseTracker\Domain\Money\Money::display($breakdown['principal_in'], $currency) }}</dd></div>
+                        <div><dt>{{ __('promises.charges') }}</dt><dd class="font-medium text-zinc-800 dark:text-zinc-200">{{ \App\Features\PromiseTracker\Domain\Money\Money::display($breakdown['charges_in'], $currency) }}</dd></div>
+                        <div><dt>{{ __('promises.paid') }}</dt><dd class="font-medium text-zinc-800 dark:text-zinc-200">{{ \App\Features\PromiseTracker\Domain\Money\Money::display($breakdown['settled_total'], $currency) }}</dd></div>
+                        <div><dt>{{ __('promises.remaining_principal') }}</dt><dd class="font-medium text-zinc-800 dark:text-zinc-200">{{ \App\Features\PromiseTracker\Domain\Money\Money::display($breakdown['unpaid_principal'], $currency) }}</dd></div>
+                        <div><dt>{{ __('promises.remaining_charges') }}</dt><dd class="font-medium text-zinc-800 dark:text-zinc-200">{{ \App\Features\PromiseTracker\Domain\Money\Money::display($breakdown['unpaid_charges'], $currency) }}</dd></div>
                     </dl>
                 @endforeach
             </div>
@@ -278,11 +278,11 @@
                 @if ($obligation->due_on)
                     <div class="text-sm text-zinc-500">{{ __('promises.final_due', ['date' => $obligation->due_on->format('d M Y')]) }}@if ($hijriDueDates[$obligation->getKey()] ?? null) · {{ $hijriDueDates[$obligation->getKey()] }} {{ __('promises.hijri_suffix') }}@endif</div>
                 @endif
-                <x-status-badge :tone="match ($obligation->status) { \App\Domain\Enums\ObligationStatus::Settled => 'success', \App\Domain\Enums\ObligationStatus::Disputed => 'danger', \App\Domain\Enums\ObligationStatus::Paused => 'warning', default => 'info' }" :label="__('promises.statuses.'.$obligation->status->value)" />
+                <x-status-badge :tone="match ($obligation->status) { \App\Features\PromiseTracker\Domain\Enums\ObligationStatus::Settled => 'success', \App\Features\PromiseTracker\Domain\Enums\ObligationStatus::Disputed => 'danger', \App\Features\PromiseTracker\Domain\Enums\ObligationStatus::Paused => 'warning', default => 'info' }" :label="__('promises.statuses.'.$obligation->status->value)" />
             </div>
         </div>
 
-        @if ($obligation->subject_type === \App\Domain\Enums\SubjectType::Money && $obligation->status !== \App\Domain\Enums\ObligationStatus::Settled)
+        @if ($obligation->subject_type === \App\Features\PromiseTracker\Domain\Enums\SubjectType::Money && $obligation->status !== \App\Features\PromiseTracker\Domain\Enums\ObligationStatus::Settled)
             <div class="mt-6 border-t border-zinc-200/80 pt-5 dark:border-zinc-700/80">
                 @can('update', $record)
                 <form wire:submit="recordPartial" class="grid gap-3 sm:grid-cols-[minmax(0,12rem)_minmax(0,1fr)_auto] sm:items-end">
@@ -305,19 +305,19 @@
             </div>
         @endif
 
-        @if ($obligation->subject_type === \App\Domain\Enums\SubjectType::Quantity && $obligation->quantitySubject && $quantityPosition)
+        @if ($obligation->subject_type === \App\Features\PromiseTracker\Domain\Enums\SubjectType::Quantity && $obligation->quantitySubject && $quantityPosition)
             <div class="mt-6 border-t border-zinc-200/80 pt-5 dark:border-zinc-700/80">
                 <div class="flex items-start justify-between gap-4">
                     <div>
                         <flux:heading size="lg">{{ $obligation->quantitySubject->name }}</flux:heading>
                         <flux:text class="mt-1">{{ __('promises.quantity_progress', ['returned' => $quantityPosition['returned'], 'total' => $quantityPosition['total'], 'unit' => $obligation->quantitySubject->unit]) }}</flux:text>
                     </div>
-                    <x-status-badge :tone="$obligation->status === \App\Domain\Enums\ObligationStatus::Settled ? 'success' : 'info'" :label="__('promises.statuses.'.$obligation->status->value)" />
+                    <x-status-badge :tone="$obligation->status === \App\Features\PromiseTracker\Domain\Enums\ObligationStatus::Settled ? 'success' : 'info'" :label="__('promises.statuses.'.$obligation->status->value)" />
                 </div>
                 <div class="mt-4 h-2 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
                     <div class="h-full rounded-full bg-cyan-600" style="width: {{ min(100, ((float) $quantityPosition['returned'] / max(0.0001, (float) $quantityPosition['total'])) * 100) }}%"></div>
                 </div>
-                @if ($obligation->status !== \App\Domain\Enums\ObligationStatus::Settled)
+                @if ($obligation->status !== \App\Features\PromiseTracker\Domain\Enums\ObligationStatus::Settled)
                     @can('update', $record)
                     <form wire:submit="recordQuantityReturn" class="mt-5 grid gap-3 sm:grid-cols-[minmax(0,10rem)_minmax(0,10rem)_minmax(0,1fr)_auto] sm:items-end">
                         <flux:input wire:model="quantityReturn" :label="__('promises.return')" placeholder="0" inputmode="decimal" />
@@ -330,7 +330,7 @@
             </div>
         @endif
 
-        @if ($obligation->subject_type === \App\Domain\Enums\SubjectType::Commitment && $obligation->commitmentSubject)
+        @if ($obligation->subject_type === \App\Features\PromiseTracker\Domain\Enums\SubjectType::Commitment && $obligation->commitmentSubject)
             <div class="mt-6 border-t border-zinc-200/80 pt-5 dark:border-zinc-700/80">
                 <flux:heading size="lg">{{ __('promises.completion') }}</flux:heading>
                 <blockquote class="mt-3 border-s-2 border-amber-400 ps-4 text-sm text-zinc-700 dark:text-zinc-200">{{ $obligation->commitmentSubject->done_criteria }}</blockquote>
@@ -354,7 +354,7 @@
         @endif
     </section>
 
-    @if ($chargeObligation instanceof \App\Models\Obligation)
+    @if ($chargeObligation instanceof \App\Features\PromiseTracker\Models\Obligation)
         <section class="app-card space-y-5 rounded-2xl p-5 sm:p-7">
             <div class="flex flex-wrap items-start justify-between gap-3">
                 <div>
@@ -367,7 +367,7 @@
             </div>
             @if ($instalments->isNotEmpty())
                 <div>
-                    <div class="flex justify-between text-sm"><span>{{ __('promises.total_paid') }}</span><span>{{ \App\Domain\Money\Money::display($instalmentPaid, $chargeObligation->moneySubject->currency) }} / {{ \App\Domain\Money\Money::display($instalmentTotal, $chargeObligation->moneySubject->currency) }}</span></div>
+                    <div class="flex justify-between text-sm"><span>{{ __('promises.total_paid') }}</span><span>{{ \App\Features\PromiseTracker\Domain\Money\Money::display($instalmentPaid, $chargeObligation->moneySubject->currency) }} / {{ \App\Features\PromiseTracker\Domain\Money\Money::display($instalmentTotal, $chargeObligation->moneySubject->currency) }}</span></div>
                     <div class="mt-2 h-2 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
                         <div class="h-full rounded-full bg-emerald-600" style="width: {{ $instalmentTotal > 0 ? min(100, ($instalmentPaid / $instalmentTotal) * 100) : 0 }}%"></div>
                     </div>
@@ -379,15 +379,15 @@
                         <div wire:key="instalment-{{ $instalment->id }}" class="rounded-xl border px-3 py-3 {{ $isNextInstalment ? 'border-emerald-300 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/30' : 'border-zinc-200 dark:border-zinc-700' }}">
                             <div class="flex flex-wrap items-center justify-between gap-2">
                                 <div class="font-medium">#{{ $instalment->sequence }} · {{ $instalment->due_on->format('d M Y') }}{{ $isNextInstalment ? ' · '.__('promises.next') : '' }}</div>
-                                <x-status-badge :tone="match ($instalmentStatus) { \App\Domain\Enums\InstalmentStatus::Settled => 'success', \App\Domain\Enums\InstalmentStatus::Overdue => 'danger', default => 'info' }" :label="__('promises.instalment_statuses.'.$instalmentStatus->value)" />
+                                <x-status-badge :tone="match ($instalmentStatus) { \App\Features\PromiseTracker\Domain\Enums\InstalmentStatus::Settled => 'success', \App\Features\PromiseTracker\Domain\Enums\InstalmentStatus::Overdue => 'danger', default => 'info' }" :label="__('promises.instalment_statuses.'.$instalmentStatus->value)" />
                             </div>
-                            <div class="mt-1 text-sm text-zinc-600 dark:text-zinc-300">{{ __('promises.paid_of', ['paid' => \App\Domain\Money\Money::display($instalment->paid_minor, $instalment->currency), 'amount' => \App\Domain\Money\Money::display($instalment->amount_minor, $instalment->currency)]) }}</div>
+                            <div class="mt-1 text-sm text-zinc-600 dark:text-zinc-300">{{ __('promises.paid_of', ['paid' => \App\Features\PromiseTracker\Domain\Money\Money::display($instalment->paid_minor, $instalment->currency), 'amount' => \App\Features\PromiseTracker\Domain\Money\Money::display($instalment->amount_minor, $instalment->currency)]) }}</div>
                         </div>
                     @endforeach
                 </div>
             @endif
             @can('update', $record)
-                @if ($instalments->isEmpty() && $chargeObligation->status === \App\Domain\Enums\ObligationStatus::Open)
+                @if ($instalments->isEmpty() && $chargeObligation->status === \App\Features\PromiseTracker\Domain\Enums\ObligationStatus::Open)
                     <form wire:submit="generateInstalments" class="grid gap-3 border-t border-zinc-200/80 pt-5 sm:grid-cols-2 dark:border-zinc-700/80">
                         <flux:input wire:model="instalmentCount" type="number" min="1" max="600" :label="__('promises.number_of_instalments')" required />
                         <flux:select wire:model="instalmentFrequency" :label="__('promises.frequency')">
@@ -431,7 +431,7 @@
                     <div><dt class="text-zinc-500">{{ __('promises.kind') }}</dt><dd class="font-medium">{{ $profile->interest_free_mode && $chargeTerms->kind === 'interest' ? __('charges.guard.interest_blocked') : __('promises.charge_kind_values.'.$chargeTerms->kind) }}</dd></div>
                     <div><dt class="text-zinc-500">{{ __('promises.rate') }}</dt><dd class="font-medium">{{ $chargeTermsGuardedAccrual ? ($chargeTerms->kind === 'interest' ? __('charges.guard.interest_blocked') : __('charges.guard.non_fixed_profit_blocked')) : ($chargeTerms->rate === null ? '—' : rtrim(rtrim((string) $chargeTerms->rate, '0'), '.')) }}</dd></div>
                     <div><dt class="text-zinc-500">{{ __('promises.basis_period') }}</dt><dd class="font-medium">{{ $chargeTermsGuardedAccrual ? ($chargeTerms->kind === 'interest' ? __('charges.guard.interest_blocked') : __('charges.guard.non_fixed_profit_blocked')) : ($chargeTerms->basis ? ($chargeTerms->basis === 'fixed_total' ? __('charges.fixed_total.label') : __('promises.charge_basis_values.'.$chargeTerms->basis)) : '—').' · '.($chargeTerms->period ? __('promises.charge_period_values.'.$chargeTerms->period) : '—') }}</dd></div>
-                    <div><dt class="text-zinc-500">{{ __('promises.lifetime_cap') }}</dt><dd class="font-medium">{{ $chargeTerms->cap_minor === null ? __('app.none') : \App\Domain\Money\Money::display((int) $chargeTerms->cap_minor, (string) $chargeObligation->moneySubject->currency) }}</dd></div>
+                    <div><dt class="text-zinc-500">{{ __('promises.lifetime_cap') }}</dt><dd class="font-medium">{{ $chargeTerms->cap_minor === null ? __('app.none') : \App\Features\PromiseTracker\Domain\Money\Money::display((int) $chargeTerms->cap_minor, (string) $chargeObligation->moneySubject->currency) }}</dd></div>
                     <div><dt class="text-zinc-500">{{ __('promises.allocation') }}</dt><dd class="font-medium">{{ __('promises.allocation_values.'.$chargeTerms->allocation_order) }}</dd></div>
                     <div><dt class="text-zinc-500">{{ __('promises.terms_acceptance') }}</dt><dd class="font-medium">{{ $chargeTermsAccepted ? __('promises.accepted') : __('promises.not_accepted') }}</dd></div>
                     @if ($chargeTerms->basis === 'fixed_total')
@@ -541,7 +541,7 @@
                         @foreach ($chargePreview as $preview)
                             <div wire:key="preview-{{ $loop->index }}" class="flex flex-wrap justify-between gap-2 text-sm">
                                 <span>{{ \Illuminate\Support\Carbon::parse($preview['period_start'])->format('d M Y') }} – {{ \Illuminate\Support\Carbon::parse($preview['period_end'])->format('d M Y') }}</span>
-                                <span class="font-medium">{{ \App\Domain\Money\Money::display($preview['amount_minor'], $preview['currency']) }}</span>
+                                <span class="font-medium">{{ \App\Features\PromiseTracker\Domain\Money\Money::display($preview['amount_minor'], $preview['currency']) }}</span>
                             </div>
                         @endforeach
                     </div>
@@ -562,7 +562,7 @@
                         @foreach ($proposedCharges as $proposedCharge)
                             <div wire:key="proposed-charge-{{ $proposedCharge->id }}" class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-zinc-200 px-3 py-3 text-sm dark:border-zinc-700">
                                 <div>
-                                    <div class="font-medium">{{ __('promises.money_entries.'.$proposedCharge->entry->value) }} · {{ \App\Domain\Money\Money::display($proposedCharge->amount_minor, $proposedCharge->currency) }}</div>
+                                    <div class="font-medium">{{ __('promises.money_entries.'.$proposedCharge->entry->value) }} · {{ \App\Features\PromiseTracker\Domain\Money\Money::display($proposedCharge->amount_minor, $proposedCharge->currency) }}</div>
                                     <div class="text-xs text-zinc-500">{{ __('promises.proposed_not_included', ['date' => $proposedCharge->occurred_on->format('d M Y')]) }}</div>
                                 </div>
                                 @can('update', $record)
@@ -611,7 +611,7 @@
             <flux:heading size="lg">{{ __('promises.promise_parts') }}</flux:heading>
             <flux:text class="mt-1">{{ __('promises.parts_intro') }}</flux:text>
             </div>
-            <x-status-badge :tone="match ($recordStatus) { \App\Domain\Enums\ObligationStatus::Settled => 'success', \App\Domain\Enums\ObligationStatus::Disputed => 'danger', \App\Domain\Enums\ObligationStatus::Paused => 'warning', default => 'info' }" :label="__('promises.statuses.'.$recordStatus->value)" />
+            <x-status-badge :tone="match ($recordStatus) { \App\Features\PromiseTracker\Domain\Enums\ObligationStatus::Settled => 'success', \App\Features\PromiseTracker\Domain\Enums\ObligationStatus::Disputed => 'danger', \App\Features\PromiseTracker\Domain\Enums\ObligationStatus::Paused => 'warning', default => 'info' }" :label="__('promises.statuses.'.$recordStatus->value)" />
         </div>
         <div class="mt-5 divide-y divide-zinc-200/80 rounded-xl border border-zinc-200/80 dark:divide-zinc-700/80 dark:border-zinc-700/80">
             @foreach ($obligations as $part)
@@ -619,9 +619,9 @@
                     <div>
                         <div class="font-medium">{{ __('promises.subjects.'.$part->subject_type->value) }} · {{ __('promises.directions.'.$part->direction->value) }}</div>
                         <div class="text-sm text-zinc-500">
-                            @if ($part->subject_type === \App\Domain\Enums\SubjectType::Money && $part->moneySubject)
+                            @if ($part->subject_type === \App\Features\PromiseTracker\Domain\Enums\SubjectType::Money && $part->moneySubject)
                                 {{ $part->moneySubject->currency }} {{ __('promises.money_subject') }}
-                            @elseif ($part->subject_type === \App\Domain\Enums\SubjectType::Quantity && $part->quantitySubject)
+                            @elseif ($part->subject_type === \App\Features\PromiseTracker\Domain\Enums\SubjectType::Quantity && $part->quantitySubject)
                                 {{ $part->quantitySubject->name }} · {{ $part->quantitySubject->unit }}
                             @elseif ($part->commitmentSubject)
                                 {{ $part->commitmentSubject->done_criteria }}
@@ -629,18 +629,18 @@
                         </div>
                     </div>
                     <div class="flex flex-wrap items-center gap-2">
-                        <x-status-badge :tone="match ($part->status) { \App\Domain\Enums\ObligationStatus::Settled => 'success', \App\Domain\Enums\ObligationStatus::Disputed => 'danger', \App\Domain\Enums\ObligationStatus::Paused => 'warning', default => 'info' }" :label="__('promises.statuses.'.$part->status->value)" />
-                        @if ($part->status === \App\Domain\Enums\ObligationStatus::Settled && $part->closure_reason)
+                        <x-status-badge :tone="match ($part->status) { \App\Features\PromiseTracker\Domain\Enums\ObligationStatus::Settled => 'success', \App\Features\PromiseTracker\Domain\Enums\ObligationStatus::Disputed => 'danger', \App\Features\PromiseTracker\Domain\Enums\ObligationStatus::Paused => 'warning', default => 'info' }" :label="__('promises.statuses.'.$part->status->value)" />
+                        @if ($part->status === \App\Features\PromiseTracker\Domain\Enums\ObligationStatus::Settled && $part->closure_reason)
                             <span class="text-xs text-zinc-500">{{ __('promises.closure_reasons.'.$part->closure_reason->value) }}</span>
                         @endif
                         @can('update', $record)
-                        @if ($part->status === \App\Domain\Enums\ObligationStatus::Open)
+                        @if ($part->status === \App\Features\PromiseTracker\Domain\Enums\ObligationStatus::Open)
                             <button type="button" wire:click="pauseObligation('{{ $part->id }}')" wire:loading.attr="disabled" class="text-xs text-amber-700 hover:underline">{{ __('promises.pause') }}</button>
                             <button type="button" wire:click="disputeObligation('{{ $part->id }}')" wire:confirm="{{ __('promises.dispute_confirm') }}" wire:loading.attr="disabled" class="text-xs text-red-700 hover:underline">{{ __('promises.dispute') }}</button>
-                        @elseif ($part->status === \App\Domain\Enums\ObligationStatus::Paused)
+                        @elseif ($part->status === \App\Features\PromiseTracker\Domain\Enums\ObligationStatus::Paused)
                             <button type="button" wire:click="resumeObligation('{{ $part->id }}')" wire:loading.attr="disabled" class="text-xs text-emerald-700 hover:underline">{{ __('promises.resume') }}</button>
                             <button type="button" wire:click="disputeObligation('{{ $part->id }}')" wire:confirm="{{ __('promises.dispute_confirm') }}" wire:loading.attr="disabled" class="text-xs text-red-700 hover:underline">{{ __('promises.dispute') }}</button>
-                        @elseif ($part->status === \App\Domain\Enums\ObligationStatus::Disputed)
+                        @elseif ($part->status === \App\Features\PromiseTracker\Domain\Enums\ObligationStatus::Disputed)
                             <button type="button" wire:click="resolveDispute('{{ $part->id }}')" wire:loading.attr="disabled" class="text-xs text-emerald-700 hover:underline">{{ __('promises.resolve_dispute') }}</button>
                         @endif
                         @endcan
@@ -653,19 +653,19 @@
                 <flux:heading size="sm">{{ __('promises.add_another_part') }}</flux:heading>
                 <div class="grid gap-3 sm:grid-cols-3">
                     <flux:select wire:model="partDirection" :label="__('promises.direction')">
-                        <option value="{{ \App\Domain\Enums\Direction::Payable->value }}">{{ __('promises.directions.payable') }}</option>
-                        <option value="{{ \App\Domain\Enums\Direction::Receivable->value }}">{{ __('promises.directions.receivable') }}</option>
+                        <option value="{{ \App\Features\PromiseTracker\Domain\Enums\Direction::Payable->value }}">{{ __('promises.directions.payable') }}</option>
+                        <option value="{{ \App\Features\PromiseTracker\Domain\Enums\Direction::Receivable->value }}">{{ __('promises.directions.receivable') }}</option>
                     </flux:select>
                     <flux:select wire:model.live="partSubjectType" :label="__('promises.subject')">
-                        <option value="{{ \App\Domain\Enums\SubjectType::Money->value }}">{{ __('promises.subjects.money') }}</option>
-                        <option value="{{ \App\Domain\Enums\SubjectType::Quantity->value }}">{{ __('promises.subjects.quantity') }}</option>
-                        <option value="{{ \App\Domain\Enums\SubjectType::Commitment->value }}">{{ __('promises.subjects.commitment') }}</option>
+                        <option value="{{ \App\Features\PromiseTracker\Domain\Enums\SubjectType::Money->value }}">{{ __('promises.subjects.money') }}</option>
+                        <option value="{{ \App\Features\PromiseTracker\Domain\Enums\SubjectType::Quantity->value }}">{{ __('promises.subjects.quantity') }}</option>
+                        <option value="{{ \App\Features\PromiseTracker\Domain\Enums\SubjectType::Commitment->value }}">{{ __('promises.subjects.commitment') }}</option>
                     </flux:select>
                     <flux:input wire:model="partDueOn" type="date" :label="__('promises.due_date')" />
                 </div>
-                @if ($partSubjectType === \App\Domain\Enums\SubjectType::Money->value)
+                @if ($partSubjectType === \App\Features\PromiseTracker\Domain\Enums\SubjectType::Money->value)
                     <flux:input wire:model="partAmount" :label="__('promises.amount')" inputmode="decimal" placeholder="0.00" />
-                @elseif ($partSubjectType === \App\Domain\Enums\SubjectType::Quantity->value)
+                @elseif ($partSubjectType === \App\Features\PromiseTracker\Domain\Enums\SubjectType::Quantity->value)
                     <div class="grid gap-3 sm:grid-cols-3">
                         <flux:input wire:model="partQuantityName" :label="__('promises.what_is_it')" />
                         <flux:input wire:model="partQuantityTotal" :label="__('promises.how_many')" inputmode="decimal" />
@@ -695,7 +695,7 @@
                     <div wire:key="reminder-{{ $reminder->id }}" class="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-zinc-50 px-3 py-2 text-sm dark:bg-zinc-900">
                         <span>{{ __('promises.reminder_statuses.'.$reminder->status->value) }} · {{ $reminder->remind_on->format('d M Y') }}</span>
                         @can('update', $record)
-                            @if ($reminder->status !== \App\Domain\Enums\ReminderStatus::Dismissed && $reminder->status !== \App\Domain\Enums\ReminderStatus::Sent)
+                            @if ($reminder->status !== \App\Features\PromiseTracker\Domain\Enums\ReminderStatus::Dismissed && $reminder->status !== \App\Features\PromiseTracker\Domain\Enums\ReminderStatus::Sent)
                                 <div class="flex gap-2">
                                     <button type="button" wire:click="snoozeReminder('{{ $reminder->id }}')" wire:loading.attr="disabled" class="text-zinc-500 hover:underline">{{ __('app.snooze') }}</button>
                                     <button type="button" wire:click="dismissReminder('{{ $reminder->id }}')" wire:confirm="{{ __('promises.dismiss_reminder_confirm') }}" wire:loading.attr="disabled" class="text-red-700 hover:underline">{{ __('promises.dismiss') }}</button>
@@ -714,16 +714,16 @@
             <flux:text class="mt-1 text-sm">{{ __('promises.history_intro') }}</flux:text>
         </div>
         <div class="divide-y divide-zinc-200/80 dark:divide-zinc-700/80">
-            @if ($obligation->subject_type === \App\Domain\Enums\SubjectType::Money)
+            @if ($obligation->subject_type === \App\Features\PromiseTracker\Domain\Enums\SubjectType::Money)
                 @forelse ($movements as $movement)
                 <div id="history" wire:key="movement-{{ $movement->id }}" class="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <div class="font-medium">{{ __('promises.money_entries.'.$movement->entry->value) }}</div>
                         <div class="mt-1 text-sm text-zinc-500">{{ $movement->occurred_on->format('d M Y') }}{{ $movement->note ? ' · '.$movement->note : '' }}</div>
-                        @if ($movement->status === \App\Domain\Enums\MovementStatus::Proposed)
+                        @if ($movement->status === \App\Features\PromiseTracker\Domain\Enums\MovementStatus::Proposed)
                             <div class="mt-1 text-xs text-amber-700">{{ __('promises.proposed_not_balance') }}</div>
                         @endif
-                        @if ($movement->status === \App\Domain\Enums\MovementStatus::Voided)
+                        @if ($movement->status === \App\Features\PromiseTracker\Domain\Enums\MovementStatus::Voided)
                             <div class="mt-1 text-xs text-red-700">{{ __('promises.voided_reason', ['reason' => $movement->void_reason]) }}</div>
                         @endif
                         @if ($movement->attachments->isNotEmpty())
@@ -735,7 +735,7 @@
                         @endif
                     </div>
                     <div class="flex items-center gap-4 sm:text-right">
-                        <div class="font-semibold">{{ \App\Domain\Money\Money::display($movement->amount_minor, $movement->currency) }}</div>
+                        <div class="font-semibold">{{ \App\Features\PromiseTracker\Domain\Money\Money::display($movement->amount_minor, $movement->currency) }}</div>
                         @can('update', $record)
                             @if ($evidenceMovementId === (string) $movement->id)
                                 <span class="text-xs font-semibold text-emerald-700">{{ __('promises.selected_for_evidence') }}</span>
@@ -743,7 +743,7 @@
                                 <button type="button" wire:click="prepareMovementEvidence('{{ $movement->id }}')" x-on:click="document.getElementById('evidence')?.scrollIntoView({ behavior: 'smooth', block: 'start' })" wire:loading.attr="disabled" class="text-xs font-semibold text-emerald-700 hover:underline">{{ __('promises.attach') }}</button>
                             @endif
                         @endcan
-                        @if ($movement->status === \App\Domain\Enums\MovementStatus::Confirmed)
+                        @if ($movement->status === \App\Features\PromiseTracker\Domain\Enums\MovementStatus::Confirmed)
                             @can('update', $record)
                                 <button type="button" wire:click="voidMovement('{{ $movement->id }}')" wire:confirm="{{ __('promises.void_confirm') }}" wire:loading.attr="disabled" class="text-xs font-semibold text-red-700 hover:underline">{{ __('promises.void') }}</button>
                             @endcan
@@ -753,13 +753,13 @@
                 @empty
                     <div class="px-5 py-8 text-sm text-zinc-500">{{ __('promises.no_movements') }}</div>
                 @endforelse
-            @elseif ($obligation->subject_type === \App\Domain\Enums\SubjectType::Quantity)
+            @elseif ($obligation->subject_type === \App\Features\PromiseTracker\Domain\Enums\SubjectType::Quantity)
                 @forelse ($returns as $return)
                     <div wire:key="quantity-return-{{ $return->id }}" class="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                             <div class="font-medium">{{ __('promises.returned_quantity', ['quantity' => $return->quantity, 'unit' => $obligation->quantitySubject?->unit]) }}</div>
                             <div class="mt-1 text-sm text-zinc-500">{{ $return->occurred_on->format('d M Y') }}{{ $return->note ? ' · '.$return->note : '' }}</div>
-                            @if ($return->status === \App\Domain\Enums\MovementStatus::Voided)
+                            @if ($return->status === \App\Features\PromiseTracker\Domain\Enums\MovementStatus::Voided)
                                 <div class="mt-1 text-xs text-red-700">{{ __('promises.voided_reason', ['reason' => $return->void_reason]) }}</div>
                             @endif
                             @if ($return->attachments->isNotEmpty())
@@ -797,7 +797,7 @@
                 <div wire:key="activity-{{ $activity->id }}" class="flex gap-3 text-sm">
                     <div class="mt-1 size-2 shrink-0 rounded-full bg-zinc-300 dark:bg-zinc-600"></div>
                     <div>
-                        <div class="font-medium">{{ \App\Domain\ActivityLabels::label($activity->action) }}</div>
+                        <div class="font-medium">{{ \App\Features\PromiseTracker\Domain\ActivityLabels::label($activity->action) }}</div>
                         <div class="mt-1 text-zinc-500">{{ $activity->actor?->name ?? __('promises.system') }} · {{ $activity->occurred_at->format('d M Y, H:i') }}</div>
                     </div>
                 </div>

@@ -1,7 +1,7 @@
 <?php
 
-use App\Domain\Enums\ReminderChannel;
-use App\Domain\Enums\ReminderStatus;
+use App\Features\PromiseTracker\Domain\Enums\ReminderChannel;
+use App\Features\PromiseTracker\Domain\Enums\ReminderStatus;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;

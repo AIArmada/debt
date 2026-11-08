@@ -1,0 +1,24 @@
+<?php
+
+namespace App\Features\PromiseTracker\Domain\Enums;
+
+enum RecordArchiveFilter: string
+{
+    case Active = 'active';
+    case Open = 'open';
+    case Paused = 'paused';
+    case Disputed = 'disputed';
+    case Settled = 'settled';
+    case DueSoon = 'due-soon';
+    case Overdue = 'overdue';
+    case Archived = 'archived';
+    case All = 'all';
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::DueSoon => 'Due soon',
+            default => ucfirst($this->value),
+        };
+    }
+}

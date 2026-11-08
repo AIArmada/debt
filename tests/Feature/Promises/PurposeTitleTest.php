@@ -1,13 +1,13 @@
 <?php
 
-use App\Actions\Promises\CreatePromise;
-use App\Actions\Promises\Data\CreatePromiseData;
-use App\Domain\Enums\Direction;
-use App\Domain\Queries\PromiseShowData;
-use App\Livewire\Promises\Create as CreatePromiseComponent;
-use App\Livewire\Promises\Index as PromisesIndex;
-use App\Livewire\Promises\Show as PromiseShow;
-use App\Models\User;
+use App\Features\PromiseTracker\Actions\Promises\CreatePromise;
+use App\Features\PromiseTracker\Actions\Promises\Data\CreatePromiseData;
+use App\Features\PromiseTracker\Domain\Enums\Direction;
+use App\Features\PromiseTracker\Domain\Queries\PromiseShowData;
+use App\Features\PromiseTracker\EntryPoints\Livewire\Promises\Create as CreatePromiseComponent;
+use App\Features\PromiseTracker\EntryPoints\Livewire\Promises\Index as PromisesIndex;
+use App\Features\PromiseTracker\EntryPoints\Livewire\Promises\Show as PromiseShow;
+use App\Features\PromiseTracker\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 

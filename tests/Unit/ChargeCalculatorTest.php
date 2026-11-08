@@ -1,7 +1,7 @@
 <?php
 
-use App\Domain\Charges\ChargeCalculator;
-use App\Models\ObligationChargeTerm;
+use App\Features\PromiseTracker\Domain\Charges\ChargeCalculator;
+use App\Features\PromiseTracker\Models\ObligationChargeTerm;
 use Carbon\CarbonImmutable;
 
 test('flat monthly rate uses the original principal and rounds to minor units', function () {

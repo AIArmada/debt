@@ -2,16 +2,18 @@
 
 namespace Database\Factories;
 
-use App\Domain\Enums\PartyRelationshipKind;
-use App\Models\FinancialProfile;
-use App\Models\Party;
-use App\Models\PartyRelationship;
-use App\Models\User;
+use App\Features\PromiseTracker\Domain\Enums\PartyRelationshipKind;
+use App\Features\PromiseTracker\Models\FinancialProfile;
+use App\Features\PromiseTracker\Models\Party;
+use App\Features\PromiseTracker\Models\PartyRelationship;
+use App\Features\PromiseTracker\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<PartyRelationship> */
 class PartyRelationshipFactory extends Factory
 {
+    protected $model = PartyRelationship::class;
+
     /** @return array<string, mixed> */
     public function definition(): array
     {

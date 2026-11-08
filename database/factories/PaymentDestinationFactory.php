@@ -2,15 +2,17 @@
 
 namespace Database\Factories;
 
-use App\Domain\Enums\PaymentDestinationKind;
-use App\Models\Party;
-use App\Models\PaymentDestination;
-use App\Models\User;
+use App\Features\PromiseTracker\Domain\Enums\PaymentDestinationKind;
+use App\Features\PromiseTracker\Models\Party;
+use App\Features\PromiseTracker\Models\PaymentDestination;
+use App\Features\PromiseTracker\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<PaymentDestination> */
 class PaymentDestinationFactory extends Factory
 {
+    protected $model = PaymentDestination::class;
+
     /** @return array<string, mixed> */
     public function definition(): array
     {

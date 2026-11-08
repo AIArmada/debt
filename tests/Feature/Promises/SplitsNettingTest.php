@@ -2,21 +2,21 @@
 
 namespace Tests\Feature\Promises;
 
-use App\Actions\Promises\CreatePromise;
-use App\Actions\Promises\Data\CreatePromiseData;
-use App\Actions\Promises\Data\SetObligationSharesData;
-use App\Actions\Promises\SetObligationShares;
-use App\Domain\Enums\Direction;
-use App\Domain\Enums\PartyKind;
-use App\Domain\Enums\PartyStatus;
-use App\Domain\Money\LargestRemainderAllocator;
-use App\Domain\Queries\NettingSuggestion;
-use App\Domain\Queries\PartyExposure;
-use App\Models\FinancialProfile;
-use App\Models\Obligation;
-use App\Models\Party;
-use App\Models\Record;
-use App\Models\User;
+use App\Features\PromiseTracker\Actions\Promises\CreatePromise;
+use App\Features\PromiseTracker\Actions\Promises\Data\CreatePromiseData;
+use App\Features\PromiseTracker\Actions\Promises\Data\SetObligationSharesData;
+use App\Features\PromiseTracker\Actions\Promises\SetObligationShares;
+use App\Features\PromiseTracker\Domain\Enums\Direction;
+use App\Features\PromiseTracker\Domain\Enums\PartyKind;
+use App\Features\PromiseTracker\Domain\Enums\PartyStatus;
+use App\Features\PromiseTracker\Domain\Money\LargestRemainderAllocator;
+use App\Features\PromiseTracker\Domain\Queries\NettingSuggestion;
+use App\Features\PromiseTracker\Domain\Queries\PartyExposure;
+use App\Features\PromiseTracker\Models\FinancialProfile;
+use App\Features\PromiseTracker\Models\Obligation;
+use App\Features\PromiseTracker\Models\Party;
+use App\Features\PromiseTracker\Models\Record;
+use App\Features\PromiseTracker\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;

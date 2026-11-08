@@ -1,0 +1,21 @@
+includes:
+    - ../vendor/larastan/larastan/extension.neon
+
+parameters:
+    # Standalone architecture rules only. Keep the project's normal PHPStan level/config too.
+    customRulesetUsed: true
+    paths:
+        - ../app
+        - ../routes
+    excludePaths:
+        analyse:
+            - ../app/Features/*/Database/Migrations/*
+    tmpDir: ../storage/framework/cache/architecture-phpstan
+
+services:
+    -
+        class: LaravelAgentArchitecture\OwnedWriteRule
+        arguments:
+            projectRoot: %currentWorkingDirectory%
+        tags:
+            - phpstan.rules.rule

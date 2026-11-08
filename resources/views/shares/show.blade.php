@@ -26,7 +26,7 @@
                 @forelse ($balances as $balance)
                     <div class="flex flex-wrap items-center justify-between gap-3 text-sm">
                         <span>{{ $balance['obligation_title'] }} · {{ $balance['direction'] }}</span>
-                        <span class="font-semibold">{{ \App\Domain\Money\Money::display($balance['amount_minor'], $balance['currency']) }}</span>
+                        <span class="font-semibold">{{ \App\Features\PromiseTracker\Domain\Money\Money::display($balance['amount_minor'], $balance['currency']) }}</span>
                     </div>
                 @empty
                     <p class="text-sm text-zinc-500">{{ __('share.no_balance') }}</p>
@@ -41,13 +41,13 @@
                     <div class="rounded-xl bg-zinc-50 px-4 py-3 text-sm dark:bg-zinc-900">
                         <div class="font-medium">{{ $breakdown['obligation_title'] }} · {{ $breakdown['currency'] }}</div>
                         <div class="mt-1 text-zinc-600 dark:text-zinc-300">
-                            {{ __('share.borrowed') }} {{ \App\Domain\Money\Money::display($breakdown['borrowed_minor'], $breakdown['currency']) }}
-                            · {{ __('share.charges') }} {{ \App\Domain\Money\Money::display($breakdown['charges_minor'], $breakdown['currency']) }}
-                            · {{ __('share.paid') }} {{ \App\Domain\Money\Money::display($breakdown['paid_minor'], $breakdown['currency']) }}
+                            {{ __('share.borrowed') }} {{ \App\Features\PromiseTracker\Domain\Money\Money::display($breakdown['borrowed_minor'], $breakdown['currency']) }}
+                            · {{ __('share.charges') }} {{ \App\Features\PromiseTracker\Domain\Money\Money::display($breakdown['charges_minor'], $breakdown['currency']) }}
+                            · {{ __('share.paid') }} {{ \App\Features\PromiseTracker\Domain\Money\Money::display($breakdown['paid_minor'], $breakdown['currency']) }}
                         </div>
                         <div class="mt-1 text-zinc-500 dark:text-zinc-400">
-                            {{ __('share.unpaid_principal') }} {{ \App\Domain\Money\Money::display($breakdown['unpaid_principal_minor'], $breakdown['currency']) }}
-                            · {{ __('share.unpaid_charges') }} {{ \App\Domain\Money\Money::display($breakdown['unpaid_charges_minor'], $breakdown['currency']) }}
+                            {{ __('share.unpaid_principal') }} {{ \App\Features\PromiseTracker\Domain\Money\Money::display($breakdown['unpaid_principal_minor'], $breakdown['currency']) }}
+                            · {{ __('share.unpaid_charges') }} {{ \App\Features\PromiseTracker\Domain\Money\Money::display($breakdown['unpaid_charges_minor'], $breakdown['currency']) }}
                         </div>
                     </div>
                 @empty
@@ -62,7 +62,7 @@
                 @forelse ($instalments as $instalment)
                     <div class="flex flex-wrap items-center justify-between gap-3 py-3 text-sm">
                         <span>{{ __('share.instalment_sequence', ['sequence' => $instalment['sequence']]) }} · {{ $instalment['due_on'] }} · {{ __('share.instalment_statuses.'.$instalment['status']) }}</span>
-                        <span class="font-semibold">{{ \App\Domain\Money\Money::display($instalment['paid_minor'], $instalment['currency']) }} / {{ \App\Domain\Money\Money::display($instalment['amount_minor'], $instalment['currency']) }}</span>
+                        <span class="font-semibold">{{ \App\Features\PromiseTracker\Domain\Money\Money::display($instalment['paid_minor'], $instalment['currency']) }} / {{ \App\Features\PromiseTracker\Domain\Money\Money::display($instalment['amount_minor'], $instalment['currency']) }}</span>
                     </div>
                 @empty
                     <p class="py-3 text-sm text-zinc-500">{{ __('share.no_instalments') }}</p>
@@ -82,14 +82,14 @@
                         </div>
                         <div class="mt-1 text-zinc-600 dark:text-zinc-300">{{ __('share.grace_period', ['days' => $term['grace_days'], 'allocation' => __('share.allocation_orders.'.$term['allocation_order'])]) }}</div>
                         @if ($term['cap_minor'] !== null)
-                            <div class="mt-1 text-zinc-600 dark:text-zinc-300">{{ __('share.lifetime_cap', ['amount' => \App\Domain\Money\Money::display($term['cap_minor'], $term['currency'])]) }}</div>
+                            <div class="mt-1 text-zinc-600 dark:text-zinc-300">{{ __('share.lifetime_cap', ['amount' => \App\Features\PromiseTracker\Domain\Money\Money::display($term['cap_minor'], $term['currency'])]) }}</div>
                         @endif
                         @if ($term['total_payable_minor'] !== null)
-                            <div class="mt-1 text-zinc-600 dark:text-zinc-300">{{ __('share.total_payable', ['amount' => \App\Domain\Money\Money::display($term['total_payable_minor'], $term['currency'])]) }}</div>
+                            <div class="mt-1 text-zinc-600 dark:text-zinc-300">{{ __('share.total_payable', ['amount' => \App\Features\PromiseTracker\Domain\Money\Money::display($term['total_payable_minor'], $term['currency'])]) }}</div>
                         @endif
                         @if ($term['penalty_kind'] !== 'none')
                             @if ($term['penalty_kind'] === 'fixed')
-                                <div class="mt-1 text-zinc-600 dark:text-zinc-300">{{ __('share.fixed_penalty', ['amount' => \App\Domain\Money\Money::display($term['penalty_value'], $term['currency'])]) }}</div>
+                                <div class="mt-1 text-zinc-600 dark:text-zinc-300">{{ __('share.fixed_penalty', ['amount' => \App\Features\PromiseTracker\Domain\Money\Money::display($term['penalty_value'], $term['currency'])]) }}</div>
                             @elseif ($term['penalty_kind'] === 'percent_of_overdue')
                                 <div class="mt-1 text-zinc-600 dark:text-zinc-300">{{ __('share.percentage_penalty', ['percent' => number_format($term['penalty_value'] / 100, 2)]) }}</div>
                             @endif
@@ -116,7 +116,7 @@
                 @forelse ($movements as $movement)
                     <div class="flex flex-wrap items-center justify-between gap-3 py-3 text-sm">
                         <span>{{ $movement['title'] }} · {{ __('share.money_entries.'.$movement['entry']) }} · {{ $movement['occurred_on'] }}</span>
-                        <span class="font-semibold">{{ \App\Domain\Money\Money::display($movement['amount_minor'], $movement['currency']) }}</span>
+                        <span class="font-semibold">{{ \App\Features\PromiseTracker\Domain\Money\Money::display($movement['amount_minor'], $movement['currency']) }}</span>
                     </div>
                 @empty
                     <p class="py-3 text-sm text-zinc-500">{{ __('share.no_movements') }}</p>

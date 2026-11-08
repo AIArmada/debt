@@ -1,17 +1,17 @@
 <?php
 
-use App\Actions\Promises\CreateApiToken;
-use App\Actions\Promises\Data\CreateApiTokenData;
-use App\Actions\Promises\Data\UpdateFinancialProfileData;
-use App\Actions\Promises\RevokeApiToken;
-use App\Actions\Promises\UpdateFinancialProfile;
-use App\Domain\Enums\ApiTokenAbility;
-use App\Domain\Enums\MemberRole;
-use App\Livewire\Profiles\Settings as ProfileSettings;
-use App\Livewire\Profiles\Tokens as ProfileTokens;
-use App\Models\ApiToken;
-use App\Models\ProfileMember;
-use App\Models\User;
+use App\Features\PromiseTracker\Actions\Promises\CreateApiToken;
+use App\Features\PromiseTracker\Actions\Promises\Data\CreateApiTokenData;
+use App\Features\PromiseTracker\Actions\Promises\Data\UpdateFinancialProfileData;
+use App\Features\PromiseTracker\Actions\Promises\RevokeApiToken;
+use App\Features\PromiseTracker\Actions\Promises\UpdateFinancialProfile;
+use App\Features\PromiseTracker\Domain\Enums\ApiTokenAbility;
+use App\Features\PromiseTracker\Domain\Enums\MemberRole;
+use App\Features\PromiseTracker\EntryPoints\Livewire\Profiles\Settings as ProfileSettings;
+use App\Features\PromiseTracker\EntryPoints\Livewire\Profiles\Tokens as ProfileTokens;
+use App\Features\PromiseTracker\Models\ApiToken;
+use App\Features\PromiseTracker\Models\ProfileMember;
+use App\Features\PromiseTracker\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;

@@ -1,6 +1,6 @@
 <?php
 
-use App\Domain\Enums\AttachmentCategory;
+use App\Features\PromiseTracker\Domain\Enums\AttachmentCategory;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;

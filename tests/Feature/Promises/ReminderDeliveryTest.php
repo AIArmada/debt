@@ -1,19 +1,19 @@
 <?php
 
-use App\Actions\Promises\CreatePromise;
-use App\Actions\Promises\Data\CreatePromiseData;
-use App\Actions\Promises\Data\ScheduleReminderData;
-use App\Actions\Promises\ScheduleReminder;
-use App\Domain\Enums\Direction;
-use App\Domain\Enums\MemberRole;
-use App\Domain\Enums\NotificationType;
-use App\Domain\Enums\ReminderChannel;
-use App\Domain\Enums\ReminderStatus;
-use App\Domain\Queries\OutstandingBalance;
-use App\Models\NotificationPreference;
-use App\Models\ProfileMember;
-use App\Models\Reminder;
-use App\Models\User;
+use App\Features\PromiseTracker\Actions\Promises\CreatePromise;
+use App\Features\PromiseTracker\Actions\Promises\Data\CreatePromiseData;
+use App\Features\PromiseTracker\Actions\Promises\Data\ScheduleReminderData;
+use App\Features\PromiseTracker\Actions\Promises\ScheduleReminder;
+use App\Features\PromiseTracker\Domain\Enums\Direction;
+use App\Features\PromiseTracker\Domain\Enums\MemberRole;
+use App\Features\PromiseTracker\Domain\Enums\NotificationType;
+use App\Features\PromiseTracker\Domain\Enums\ReminderChannel;
+use App\Features\PromiseTracker\Domain\Enums\ReminderStatus;
+use App\Features\PromiseTracker\Domain\Queries\OutstandingBalance;
+use App\Features\PromiseTracker\Models\NotificationPreference;
+use App\Features\PromiseTracker\Models\ProfileMember;
+use App\Features\PromiseTracker\Models\Reminder;
+use App\Features\PromiseTracker\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;

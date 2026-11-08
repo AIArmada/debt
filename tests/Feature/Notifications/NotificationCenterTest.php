@@ -1,15 +1,15 @@
 <?php
 
-use App\Actions\Promises\CreatePromise;
-use App\Actions\Promises\Data\CreatePromiseData;
-use App\Domain\Enums\Direction;
-use App\Domain\Enums\ReminderChannel;
-use App\Domain\Enums\ReminderStatus;
-use App\Livewire\Notifications\NotificationCenter;
-use App\Models\Record;
-use App\Models\Reminder;
-use App\Models\User;
-use App\Notifications\ReminderDue;
+use App\Features\PromiseTracker\Actions\Promises\CreatePromise;
+use App\Features\PromiseTracker\Actions\Promises\Data\CreatePromiseData;
+use App\Features\PromiseTracker\Domain\Enums\Direction;
+use App\Features\PromiseTracker\Domain\Enums\ReminderChannel;
+use App\Features\PromiseTracker\Domain\Enums\ReminderStatus;
+use App\Features\PromiseTracker\EntryPoints\Livewire\Notifications\NotificationCenter;
+use App\Features\PromiseTracker\Models\Record;
+use App\Features\PromiseTracker\Models\Reminder;
+use App\Features\PromiseTracker\Models\User;
+use App\Features\PromiseTracker\Notifications\ReminderDue;
 use Filament\Notifications\Livewire\Notifications as FilamentNotifications;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Notifications\DatabaseNotification;

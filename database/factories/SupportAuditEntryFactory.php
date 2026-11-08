@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\SupportAuditEntry;
-use App\Models\SupportCase;
-use App\Models\User;
+use App\Features\PromiseTracker\Models\SupportAuditEntry;
+use App\Features\PromiseTracker\Models\SupportCase;
+use App\Features\PromiseTracker\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class SupportAuditEntryFactory extends Factory
 {
+    protected $model = SupportAuditEntry::class;
+
     /**
      * Define the model's default state.
      *

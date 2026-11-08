@@ -13,11 +13,11 @@
             </flux:sidebar.header>
 
             @php($currentProfile = request()->route('profile'))
-            @php($accessibleProfiles = app(\App\Services\ProfileAccess::class)->accessibleProfiles(auth()->user())->get())
+            @php($accessibleProfiles = app(\App\Features\PromiseTracker\Services\ProfileAccess::class)->accessibleProfiles(auth()->user())->get())
             <div class="px-3 py-3">
                 <flux:dropdown align="start">
                     <flux:button variant="subtle" class="w-full justify-between" data-test="profile-switcher">
-                        <span class="truncate">{{ $currentProfile instanceof \App\Models\FinancialProfile ? $currentProfile->name : __('app.your_profiles') }}</span>
+                        <span class="truncate">{{ $currentProfile instanceof \App\Features\PromiseTracker\Models\FinancialProfile ? $currentProfile->name : __('app.your_profiles') }}</span>
                         <flux:icon name="chevron-down" class="size-4" />
                     </flux:button>
                     <flux:menu>
@@ -45,7 +45,7 @@
                     <flux:sidebar.item icon="arrow-path-rounded-square" :href="$currentProfile ? route('exchange-rates.index', ['profile' => $currentProfile]) : route('home')" :current="request()->routeIs('exchange-rates.*')" wire:navigate>
                         {{ __('app.currency') }}
                     </flux:sidebar.item>
-                    <flux:sidebar.item icon="cog" :href="$currentProfile instanceof \App\Models\FinancialProfile ? route('profile-settings.edit', ['profile' => $currentProfile]) : route('profile.edit')" :current="request()->routeIs('profile.edit', 'profile-settings.*', 'profile-tokens.*')" wire:navigate>
+                    <flux:sidebar.item icon="cog" :href="$currentProfile instanceof \App\Features\PromiseTracker\Models\FinancialProfile ? route('profile-settings.edit', ['profile' => $currentProfile]) : route('profile.edit')" :current="request()->routeIs('profile.edit', 'profile-settings.*', 'profile-tokens.*')" wire:navigate>
                         {{ __('app.settings') }}
                     </flux:sidebar.item>
                     <flux:sidebar.item icon="lifebuoy" :href="route('help.promise-support')" :current="request()->routeIs('help.*')" wire:navigate>

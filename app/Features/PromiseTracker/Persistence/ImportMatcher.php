@@ -1,0 +1,57 @@
+<?php
+
+namespace App\Features\PromiseTracker\Persistence;
+
+use App\Features\PromiseTracker\Domain\Enums\Direction;
+use App\Features\PromiseTracker\Domain\Enums\MoneyEntry;
+use App\Features\PromiseTracker\Domain\Enums\ObligationStatus;
+use App\Features\PromiseTracker\Domain\Enums\SubjectType;
+use App\Features\PromiseTracker\Domain\Queries\OutstandingBalance;
+use App\Features\PromiseTracker\Domain\Queries\RecordVisibilityQuery;
+use App\Features\PromiseTracker\Domain\StringNormalizer;
+use App\Features\PromiseTracker\Models\ImportRow;
+use App\Features\PromiseTracker\Models\Obligation;
+use App\Features\PromiseTracker\Models\Record;
+use App\Features\PromiseTracker\Models\User;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+
+final class ImportMatcher
+{
+    public function __construct(
+        private readonly OutstandingBalance $outstandingBalance,
+        private readonly RecordVisibilityQuery $recordVisibilityQuery,
+    ) {}
+
+    public function suggest(ImportRow $row, User $user): ?Obligation
+    {
+        $row->loadMissing('batch.profile');
+        $obligations = $this->recordVisibilityQuery->forUser($row->batch->profile->records()->getQuery(), $user)
+            ->where('is_archived', false)
+            ->with(['obligations.moneySubject', 'obligations.record.partyLinks.party'])
+            ->get()
+            ->flatMap(static fn (Record $record): EloquentCollection => $record->obligations)
+            ->filter(fn (Obligation $obligation): bool => $obligation->subject_type === SubjectType::Money
+                && $obligation->status === ObligationStatus::Open
+                && $obligation->moneySubject?->currency === $row->currency
+                && ($this->outstandingBalance->forObligation($obligation)[$row->currency] ?? 0) >= $row->amount_minor)
+            ->sortBy(function (Obligation $obligation) use ($row): array {
+                $dateDistance = abs($obligation->due_on?->diffInDays($row->occurred_on) ?? 3650);
+                $description = StringNormalizer::lowercase((string) $row->description);
+                $nameMatch = $description !== '' && str_contains(StringNormalizer::lowercase((string) $obligation->title), $description) ? 0 : 1;
+
+                return [$nameMatch, $dateDistance, $obligation->getKey()];
+            })
+            ->first();
+
+        if (! $obligations instanceof Obligation) {
+            return null;
+        }
+
+        $row->forceFill([
+            'suggested_obligation_id' => $obligations->getKey(),
+            'suggested_entry' => ($obligations->direction === Direction::Payable ? MoneyEntry::Payment : MoneyEntry::Collection)->value,
+        ])->save();
+
+        return $obligations;
+    }
+}

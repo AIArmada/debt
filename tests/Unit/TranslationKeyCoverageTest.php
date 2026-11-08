@@ -2,21 +2,21 @@
 
 namespace Tests\Unit;
 
-use App\Domain\Communication\MessageTemplates;
-use App\Domain\Enums\AttachmentCategory;
-use App\Domain\Enums\ClosureReason;
-use App\Domain\Enums\Direction;
-use App\Domain\Enums\InstalmentStatus;
-use App\Domain\Enums\MoneyEntry;
-use App\Domain\Enums\ObligationStatus;
-use App\Domain\Enums\PartyKind;
-use App\Domain\Enums\PartyRelationshipKind;
-use App\Domain\Enums\PaymentDestinationKind;
-use App\Domain\Enums\PlanStrategy;
-use App\Domain\Enums\RecordArchiveFilter;
-use App\Domain\Enums\RecordVisibility;
-use App\Domain\Enums\ReminderStatus;
-use App\Domain\Enums\SubjectType;
+use App\Features\PromiseTracker\Domain\Communication\MessageTemplates;
+use App\Features\PromiseTracker\Domain\Enums\AttachmentCategory;
+use App\Features\PromiseTracker\Domain\Enums\ClosureReason;
+use App\Features\PromiseTracker\Domain\Enums\Direction;
+use App\Features\PromiseTracker\Domain\Enums\InstalmentStatus;
+use App\Features\PromiseTracker\Domain\Enums\MoneyEntry;
+use App\Features\PromiseTracker\Domain\Enums\ObligationStatus;
+use App\Features\PromiseTracker\Domain\Enums\PartyKind;
+use App\Features\PromiseTracker\Domain\Enums\PartyRelationshipKind;
+use App\Features\PromiseTracker\Domain\Enums\PaymentDestinationKind;
+use App\Features\PromiseTracker\Domain\Enums\PlanStrategy;
+use App\Features\PromiseTracker\Domain\Enums\RecordArchiveFilter;
+use App\Features\PromiseTracker\Domain\Enums\RecordVisibility;
+use App\Features\PromiseTracker\Domain\Enums\ReminderStatus;
+use App\Features\PromiseTracker\Domain\Enums\SubjectType;
 use FilesystemIterator;
 use PHPUnit\Framework\TestCase;
 use RecursiveDirectoryIterator;

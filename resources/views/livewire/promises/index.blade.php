@@ -12,7 +12,7 @@
     </div>
 
     <div class="flex flex-wrap gap-3 text-sm">
-        @foreach (\App\Domain\Enums\RecordArchiveFilter::cases() as $filter)
+        @foreach (\App\Features\PromiseTracker\Domain\Enums\RecordArchiveFilter::cases() as $filter)
             <button type="button" wire:click="$set('statusFilter', '{{ $filter->value }}')" wire:loading.attr="disabled" class="{{ $statusFilter === $filter->value ? 'font-semibold text-emerald-700' : 'text-zinc-500' }}">{{ __('promises.filters.'.$filter->value) }} <span class="text-xs">({{ $filterCounts[$filter->value] ?? 0 }})</span></button>
         @endforeach
     </div>
@@ -22,7 +22,7 @@
             <flux:text>{{ __('promises.to_pay') }}</flux:text>
             <div class="mt-3 space-y-1 text-2xl font-semibold tracking-tight">
                 @forelse ($totals['to_pay'] as $currency => $amount)
-                    <div>{{ \App\Domain\Money\Money::display($amount, $currency) }}</div>
+                    <div>{{ \App\Features\PromiseTracker\Domain\Money\Money::display($amount, $currency) }}</div>
                 @empty
                     <div>—</div>
                 @endforelse
@@ -33,7 +33,7 @@
             <flux:text>{{ __('promises.to_receive') }}</flux:text>
             <div class="mt-3 space-y-1 text-2xl font-semibold tracking-tight text-cyan-800">
                 @forelse ($totals['to_receive'] as $currency => $amount)
-                    <div>{{ \App\Domain\Money\Money::display($amount, $currency) }}</div>
+                    <div>{{ \App\Features\PromiseTracker\Domain\Money\Money::display($amount, $currency) }}</div>
                 @empty
                     <div>—</div>
                 @endforelse
@@ -90,14 +90,14 @@
                         </div>
                     </div>
                     <div class="shrink-0 text-left sm:text-right">
-                        <x-status-badge :tone="match ($statuses[$record->id] ?? \App\Domain\Enums\ObligationStatus::Open) { \App\Domain\Enums\ObligationStatus::Settled => 'success', \App\Domain\Enums\ObligationStatus::Disputed => 'danger', \App\Domain\Enums\ObligationStatus::Paused => 'warning', default => 'info' }" :label="__('promises.statuses.'.($statuses[$record->id] ?? \App\Domain\Enums\ObligationStatus::Open)->value)" />
+                        <x-status-badge :tone="match ($statuses[$record->id] ?? \App\Features\PromiseTracker\Domain\Enums\ObligationStatus::Open) { \App\Features\PromiseTracker\Domain\Enums\ObligationStatus::Settled => 'success', \App\Features\PromiseTracker\Domain\Enums\ObligationStatus::Disputed => 'danger', \App\Features\PromiseTracker\Domain\Enums\ObligationStatus::Paused => 'warning', default => 'info' }" :label="__('promises.statuses.'.($statuses[$record->id] ?? \App\Features\PromiseTracker\Domain\Enums\ObligationStatus::Open)->value)" />
                         @forelse ($balances[$record->id] ?? [] as $position)
-                            <div class="font-semibold">{{ \App\Domain\Money\Money::display($position['amount'], $position['currency']) }}</div>
+                            <div class="font-semibold">{{ \App\Features\PromiseTracker\Domain\Money\Money::display($position['amount'], $position['currency']) }}</div>
                             <div class="text-xs text-zinc-500">{{ __('promises.directions.'.$position['direction']->value) }} · {{ $position['currency'] }}</div>
                             <div class="text-xs text-zinc-500">
-                                {{ __('promises.breakdown.borrowed') }} {{ \App\Domain\Money\Money::display($position['borrowed_minor'], $position['currency']) }}
-                                · {{ __('promises.breakdown.charges') }} {{ \App\Domain\Money\Money::display($position['charges_minor'], $position['currency']) }}
-                                · {{ __('promises.breakdown.paid') }} {{ \App\Domain\Money\Money::display($position['paid_minor'], $position['currency']) }}
+                                {{ __('promises.breakdown.borrowed') }} {{ \App\Features\PromiseTracker\Domain\Money\Money::display($position['borrowed_minor'], $position['currency']) }}
+                                · {{ __('promises.breakdown.charges') }} {{ \App\Features\PromiseTracker\Domain\Money\Money::display($position['charges_minor'], $position['currency']) }}
+                                · {{ __('promises.breakdown.paid') }} {{ \App\Features\PromiseTracker\Domain\Money\Money::display($position['paid_minor'], $position['currency']) }}
                             </div>
                         @empty
                         @endforelse

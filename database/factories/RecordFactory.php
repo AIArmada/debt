@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Domain\Enums\RecordVisibility;
-use App\Models\FinancialProfile;
-use App\Models\Record;
+use App\Features\PromiseTracker\Domain\Enums\RecordVisibility;
+use App\Features\PromiseTracker\Models\FinancialProfile;
+use App\Features\PromiseTracker\Models\Record;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class RecordFactory extends Factory
 {
+    protected $model = Record::class;
+
     /**
      * Define the model's default state.
      *

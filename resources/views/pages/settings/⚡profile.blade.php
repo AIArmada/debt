@@ -1,11 +1,11 @@
 <?php
 
-use App\Concerns\ProfileValidationRules;
-use App\Actions\Promises\Data\UpdateUserLocaleData;
-use App\Actions\Promises\UpdateUserLocale;
-use App\Domain\Enums\NotificationType;
-use App\Models\NotificationPreference;
-use App\Models\User;
+use App\Features\PromiseTracker\Concerns\ProfileValidationRules;
+use App\Features\PromiseTracker\Actions\Promises\Data\UpdateUserLocaleData;
+use App\Features\PromiseTracker\Actions\Promises\UpdateUserLocale;
+use App\Features\PromiseTracker\Domain\Enums\NotificationType;
+use App\Features\PromiseTracker\Models\NotificationPreference;
+use App\Features\PromiseTracker\Models\User;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;

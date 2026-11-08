@@ -6,7 +6,7 @@
         <flux:text class="mt-2">{{ __('app.party_exposure_intro', ['kind' => __('app.party_kinds.'.$party->kind->value)]) }}</flux:text>
         @can('update', $party)
             <div class="mt-4">
-                @if ($party->status === \App\Domain\Enums\PartyStatus::Active)
+                @if ($party->status === \App\Features\PromiseTracker\Domain\Enums\PartyStatus::Active)
                     <flux:button wire:click="archive" :wire:confirm="__('app.archive_person_confirm')" variant="ghost" wire:loading.attr="disabled">{{ __('app.archive_person') }}</flux:button>
                 @else
                     <flux:button wire:click="restore" :wire:confirm="__('app.restore_person_confirm')" variant="ghost" wire:loading.attr="disabled">{{ __('app.restore_person') }}</flux:button>
@@ -31,7 +31,7 @@
                     <form wire:submit="applyOffset('{{ $suggestion['payable_id'] }}', '{{ $suggestion['receivable_id'] }}')" wire:key="offset-{{ $suggestion['key'] }}" class="grid gap-3 rounded-xl border border-zinc-200 p-3 sm:grid-cols-[minmax(0,1fr)_10rem_auto] sm:items-end dark:border-zinc-700">
                         <div class="text-sm">
                             <div class="font-medium">{{ $suggestion['payable_title'] }} ↔ {{ $suggestion['receivable_title'] }}</div>
-                            <div class="mt-1 text-zinc-500">{{ $suggestion['currency'] }} · {{ __('app.suggested_amount') }} {{ \App\Domain\Money\Money::display($suggestion['amount_minor'], $suggestion['currency']) }}</div>
+                            <div class="mt-1 text-zinc-500">{{ $suggestion['currency'] }} · {{ __('app.suggested_amount') }} {{ \App\Features\PromiseTracker\Domain\Money\Money::display($suggestion['amount_minor'], $suggestion['currency']) }}</div>
                         </div>
                         <flux:input wire:model="offsetAmounts.{{ $suggestion['key'] }}" label="{{ __('app.offset_amount') }}" inputmode="decimal" />
                         <flux:button type="submit" variant="primary" wire:loading.attr="disabled">{{ __('app.apply_offset') }}</flux:button>
@@ -44,11 +44,11 @@
     <div class="grid gap-4 sm:grid-cols-2">
         <div class="app-metric app-metric-primary rounded-2xl p-5">
             <flux:text>{{ __('promises.to_pay') }}</flux:text>
-            <div class="mt-3 space-y-1 text-2xl font-semibold">@forelse ($exposure['to_pay'] as $currency => $amount)<div>{{ \App\Domain\Money\Money::display($amount, $currency) }}</div>@empty<div>—</div>@endforelse</div>
+            <div class="mt-3 space-y-1 text-2xl font-semibold">@forelse ($exposure['to_pay'] as $currency => $amount)<div>{{ \App\Features\PromiseTracker\Domain\Money\Money::display($amount, $currency) }}</div>@empty<div>—</div>@endforelse</div>
         </div>
     <div class="app-metric app-metric-secondary rounded-2xl p-5">
             <flux:text>{{ __('promises.to_receive') }}</flux:text>
-            <div class="mt-3 space-y-1 text-2xl font-semibold text-cyan-800">@forelse ($exposure['to_receive'] as $currency => $amount)<div>{{ \App\Domain\Money\Money::display($amount, $currency) }}</div>@empty<div>—</div>@endforelse</div>
+            <div class="mt-3 space-y-1 text-2xl font-semibold text-cyan-800">@forelse ($exposure['to_receive'] as $currency => $amount)<div>{{ \App\Features\PromiseTracker\Domain\Money\Money::display($amount, $currency) }}</div>@empty<div>—</div>@endforelse</div>
         </div>
     </div>
 

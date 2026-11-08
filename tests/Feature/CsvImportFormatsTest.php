@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Actions\Promises\Data\ImportCsvData;
-use App\Actions\Promises\ImportCsv;
-use App\Models\User;
+use App\Features\PromiseTracker\Actions\Promises\Data\ImportCsvData;
+use App\Features\PromiseTracker\Actions\Promises\ImportCsv;
+use App\Features\PromiseTracker\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\ValidationException;

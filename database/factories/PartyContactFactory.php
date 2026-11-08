@@ -2,14 +2,16 @@
 
 namespace Database\Factories;
 
-use App\Models\Party;
-use App\Models\PartyContact;
-use App\Models\User;
+use App\Features\PromiseTracker\Models\Party;
+use App\Features\PromiseTracker\Models\PartyContact;
+use App\Features\PromiseTracker\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<PartyContact> */
 class PartyContactFactory extends Factory
 {
+    protected $model = PartyContact::class;
+
     /** @return array<string, mixed> */
     public function definition(): array
     {

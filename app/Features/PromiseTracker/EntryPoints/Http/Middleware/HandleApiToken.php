@@ -1,0 +1,46 @@
+<?php
+
+namespace App\Features\PromiseTracker\EntryPoints\Http\Middleware;
+
+use App\Features\PromiseTracker\Actions\Auth\TouchApiToken;
+use App\Features\PromiseTracker\Domain\Enums\ApiTokenAbility;
+use App\Features\PromiseTracker\Models\ApiToken;
+use App\Features\PromiseTracker\Models\User;
+use App\Features\PromiseTracker\Services\ProfileAccess;
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+final class HandleApiToken
+{
+    public function __construct(
+        private readonly ProfileAccess $profileAccess,
+        private readonly TouchApiToken $touchApiToken,
+    ) {}
+
+    public function handle(Request $request, Closure $next): Response
+    {
+        $plainToken = $request->bearerToken();
+        $token = $plainToken === null ? null : ApiToken::query()->with(['user', 'profile'])->where('token_hash', hash('sha256', $plainToken))->first();
+
+        if ($token === null) {
+            return response()->json(['message' => 'Authentication required.'], 401);
+        }
+
+        if (! $this->profileAccess->role($token->user, $token->profile)) {
+            return response()->json(['message' => 'Authentication required.'], 401);
+        }
+
+        $ability = $request->isMethodSafe() ? ApiTokenAbility::Read : ApiTokenAbility::Write;
+        if (! $token->allows($ability)) {
+            return response()->json(['message' => "This token is not allowed to {$ability->value}."], 403);
+        }
+
+        $this->touchApiToken->handle($token);
+        $request->setUserResolver(fn (): User => $token->user);
+        $request->attributes->set('api_token', $token);
+        $request->attributes->set('api_profile', $token->profile);
+
+        return $next($request);
+    }
+}

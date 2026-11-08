@@ -2,11 +2,11 @@
 
 use AIArmada\Authz\Guard\SessionGuard as AuthzSessionGuard;
 use AIArmada\Authz\Models\Role;
-use App\Actions\Staff\AssignStaffRole;
-use App\Actions\Staff\RevokeStaffRole;
-use App\Models\SupportAuditEntry;
-use App\Models\User;
-use App\Services\SupportAuditLogger;
+use App\Features\PromiseTracker\Actions\Staff\AssignStaffRole;
+use App\Features\PromiseTracker\Actions\Staff\RevokeStaffRole;
+use App\Features\PromiseTracker\Models\SupportAuditEntry;
+use App\Features\PromiseTracker\Models\User;
+use App\Features\PromiseTracker\Persistence\SupportAuditLogger;
 use Database\Seeders\StaffRolesAndPermissionsSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\QueryException;
