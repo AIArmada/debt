@@ -23,7 +23,7 @@ public boundary is worth introducing.
 | Staff/support workflows | `Actions/Staff`, `Actions/Support` |
 | Notification read state | `Actions/Notifications` |
 | Authentication actions, logout | `Actions/Auth` |
-| Shared action input DTOs | `Actions/Data` |
+| Shared action input DTOs | `Actions/Data`; feature-local DTOs may sit beside their action |
 | Cross-cutting write helpers | `Persistence` |
 | Reads, value objects, enums, queries | `Domain`, `Services` |
 | HTTP, Livewire, Filament, commands, jobs | `EntryPoints`, `Commands`, `Jobs` |
