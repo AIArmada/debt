@@ -1,14 +1,14 @@
 <?php
 
-use App\Features\PromiseTracker\Actions\Promises\AttachEvidence;
-use App\Features\PromiseTracker\Actions\Promises\CreatePromise;
-use App\Features\PromiseTracker\Actions\Promises\Data\AttachEvidenceData;
-use App\Features\PromiseTracker\Actions\Promises\Data\CreatePromiseData;
-use App\Features\PromiseTracker\Actions\Promises\Data\RecordMovementData;
-use App\Features\PromiseTracker\Actions\Promises\Data\VoidMovementData;
-use App\Features\PromiseTracker\Actions\Promises\DetachEvidence;
-use App\Features\PromiseTracker\Actions\Promises\RecordMoneyMovement;
-use App\Features\PromiseTracker\Actions\Promises\VoidMovement;
+use App\Features\PromiseTracker\Actions\Data\AttachEvidenceData;
+use App\Features\PromiseTracker\Actions\Data\CreatePromiseData;
+use App\Features\PromiseTracker\Actions\Data\RecordMovementData;
+use App\Features\PromiseTracker\Actions\Data\VoidMovementData;
+use App\Features\PromiseTracker\Actions\Evidence\AttachEvidence;
+use App\Features\PromiseTracker\Actions\Evidence\DetachEvidence;
+use App\Features\PromiseTracker\Actions\Money\RecordMoneyMovement;
+use App\Features\PromiseTracker\Actions\Money\VoidMovement;
+use App\Features\PromiseTracker\Actions\Records\CreatePromise;
 use App\Features\PromiseTracker\Domain\Enums\AttachmentCategory;
 use App\Features\PromiseTracker\Domain\Enums\Direction;
 use App\Features\PromiseTracker\Domain\Enums\MemberRole;

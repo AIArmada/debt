@@ -1,12 +1,12 @@
 <?php
 
-use App\Features\PromiseTracker\Actions\Promises\AcknowledgeShare;
-use App\Features\PromiseTracker\Actions\Promises\CreatePromise;
-use App\Features\PromiseTracker\Actions\Promises\CreateRecordShare;
-use App\Features\PromiseTracker\Actions\Promises\Data\AcknowledgeShareData;
-use App\Features\PromiseTracker\Actions\Promises\Data\CreatePromiseData;
-use App\Features\PromiseTracker\Actions\Promises\Data\CreateRecordShareData;
-use App\Features\PromiseTracker\Actions\Promises\RevokeRecordShare;
+use App\Features\PromiseTracker\Actions\Data\AcknowledgeShareData;
+use App\Features\PromiseTracker\Actions\Data\CreatePromiseData;
+use App\Features\PromiseTracker\Actions\Data\CreateRecordShareData;
+use App\Features\PromiseTracker\Actions\Records\CreatePromise;
+use App\Features\PromiseTracker\Actions\Shares\AcknowledgeShare;
+use App\Features\PromiseTracker\Actions\Shares\CreateRecordShare;
+use App\Features\PromiseTracker\Actions\Shares\RevokeRecordShare;
 use App\Features\PromiseTracker\Domain\Enums\Direction;
 use App\Features\PromiseTracker\Domain\Enums\MemberRole;
 use App\Features\PromiseTracker\Domain\Enums\MoneyEntry;

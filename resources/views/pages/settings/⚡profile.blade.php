@@ -1,8 +1,8 @@
 <?php
 
 use App\Features\PromiseTracker\Concerns\ProfileValidationRules;
-use App\Features\PromiseTracker\Actions\Promises\Data\UpdateUserLocaleData;
-use App\Features\PromiseTracker\Actions\Promises\UpdateUserLocale;
+use App\Features\PromiseTracker\Actions\Data\UpdateUserLocaleData;
+use App\Features\PromiseTracker\Actions\Profiles\UpdateUserLocale;
 use App\Features\PromiseTracker\Domain\Enums\NotificationType;
 use App\Features\PromiseTracker\Models\NotificationPreference;
 use App\Features\PromiseTracker\Models\User;

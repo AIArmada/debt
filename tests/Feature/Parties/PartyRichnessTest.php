@@ -1,5 +1,8 @@
 <?php
 
+use App\Features\PromiseTracker\Actions\Data\CreatePromiseData;
+use App\Features\PromiseTracker\Actions\Data\RecordMovementData;
+use App\Features\PromiseTracker\Actions\Money\RecordMoneyMovement;
 use App\Features\PromiseTracker\Actions\Parties\AddPartyContact;
 use App\Features\PromiseTracker\Actions\Parties\AddPartyRelationship;
 use App\Features\PromiseTracker\Actions\Parties\AddPaymentDestination;
@@ -12,10 +15,7 @@ use App\Features\PromiseTracker\Actions\Parties\RemovePaymentDestination;
 use App\Features\PromiseTracker\Actions\Parties\RevealPaymentDestination;
 use App\Features\PromiseTracker\Actions\Parties\SetPrimaryContact;
 use App\Features\PromiseTracker\Actions\Parties\VerifyPaymentDestination;
-use App\Features\PromiseTracker\Actions\Promises\CreatePromise;
-use App\Features\PromiseTracker\Actions\Promises\Data\CreatePromiseData;
-use App\Features\PromiseTracker\Actions\Promises\Data\RecordMovementData;
-use App\Features\PromiseTracker\Actions\Promises\RecordMoneyMovement;
+use App\Features\PromiseTracker\Actions\Records\CreatePromise;
 use App\Features\PromiseTracker\Domain\Enums\Direction;
 use App\Features\PromiseTracker\Domain\Enums\MemberRole;
 use App\Features\PromiseTracker\Domain\Enums\PartyKind;

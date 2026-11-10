@@ -2,18 +2,18 @@
 
 namespace Tests\Feature;
 
-use App\Features\PromiseTracker\Actions\Promises\CreatePromise;
-use App\Features\PromiseTracker\Actions\Promises\CreateRecordShare;
-use App\Features\PromiseTracker\Actions\Promises\Data\CreatePromiseData;
-use App\Features\PromiseTracker\Actions\Promises\Data\CreateRecordShareData;
-use App\Features\PromiseTracker\Actions\Promises\Data\GenerateInstalmentScheduleData;
-use App\Features\PromiseTracker\Actions\Promises\Data\ImportProfileExportData;
-use App\Features\PromiseTracker\Actions\Promises\Data\RecordMovementData;
-use App\Features\PromiseTracker\Actions\Promises\Data\SetObligationSharesData;
-use App\Features\PromiseTracker\Actions\Promises\GenerateInstalmentSchedule;
-use App\Features\PromiseTracker\Actions\Promises\ImportProfileExport;
-use App\Features\PromiseTracker\Actions\Promises\RecordMoneyMovement;
-use App\Features\PromiseTracker\Actions\Promises\SetObligationShares;
+use App\Features\PromiseTracker\Actions\Data\CreatePromiseData;
+use App\Features\PromiseTracker\Actions\Data\CreateRecordShareData;
+use App\Features\PromiseTracker\Actions\Data\GenerateInstalmentScheduleData;
+use App\Features\PromiseTracker\Actions\Data\ImportProfileExportData;
+use App\Features\PromiseTracker\Actions\Data\RecordMovementData;
+use App\Features\PromiseTracker\Actions\Data\SetObligationSharesData;
+use App\Features\PromiseTracker\Actions\Imports\ImportProfileExport;
+use App\Features\PromiseTracker\Actions\Money\GenerateInstalmentSchedule;
+use App\Features\PromiseTracker\Actions\Money\RecordMoneyMovement;
+use App\Features\PromiseTracker\Actions\Obligations\SetObligationShares;
+use App\Features\PromiseTracker\Actions\Records\CreatePromise;
+use App\Features\PromiseTracker\Actions\Shares\CreateRecordShare;
 use App\Features\PromiseTracker\Domain\Enums\AttachmentCategory;
 use App\Features\PromiseTracker\Domain\Enums\Direction;
 use App\Features\PromiseTracker\Domain\Enums\ObligationStatus;

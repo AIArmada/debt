@@ -2,10 +2,10 @@
 
 namespace App\Features\PromiseTracker\EntryPoints\Http\Controllers;
 
-use App\Features\PromiseTracker\Actions\Promises\AcknowledgeShare;
-use App\Features\PromiseTracker\Actions\Promises\Data\AcknowledgeShareData;
-use App\Features\PromiseTracker\Actions\Promises\Data\DisputeShareData;
-use App\Features\PromiseTracker\Actions\Promises\DisputeShare;
+use App\Features\PromiseTracker\Actions\Data\AcknowledgeShareData;
+use App\Features\PromiseTracker\Actions\Data\DisputeShareData;
+use App\Features\PromiseTracker\Actions\Shares\AcknowledgeShare;
+use App\Features\PromiseTracker\Actions\Shares\DisputeShare;
 use App\Features\PromiseTracker\Domain\Queries\RecordShareView;
 use App\Features\PromiseTracker\Models\RecordShare;
 use Illuminate\Contracts\View\View as ViewResponse;

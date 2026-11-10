@@ -2,8 +2,8 @@
 
 namespace App\Features\PromiseTracker\EntryPoints\Http\Controllers;
 
-use App\Features\PromiseTracker\Actions\Promises\Data\UpdateUserLocaleData;
-use App\Features\PromiseTracker\Actions\Promises\UpdateUserLocale;
+use App\Features\PromiseTracker\Actions\Data\UpdateUserLocaleData;
+use App\Features\PromiseTracker\Actions\Profiles\UpdateUserLocale;
 use App\Features\PromiseTracker\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;

@@ -1,21 +1,21 @@
 <?php
 
-use App\Features\PromiseTracker\Actions\Promises\CompleteCommitment;
-use App\Features\PromiseTracker\Actions\Promises\CorrectQuantityReturn;
-use App\Features\PromiseTracker\Actions\Promises\CreatePromise;
-use App\Features\PromiseTracker\Actions\Promises\Data\CompleteCommitmentData;
-use App\Features\PromiseTracker\Actions\Promises\Data\CorrectQuantityReturnData;
-use App\Features\PromiseTracker\Actions\Promises\Data\CreatePromiseData;
-use App\Features\PromiseTracker\Actions\Promises\Data\RecordMovementData;
-use App\Features\PromiseTracker\Actions\Promises\Data\RecordQuantityReturnData;
-use App\Features\PromiseTracker\Actions\Promises\Data\SaveNoteData;
-use App\Features\PromiseTracker\Actions\Promises\Data\SettleObligationData;
-use App\Features\PromiseTracker\Actions\Promises\Data\VoidMovementData;
-use App\Features\PromiseTracker\Actions\Promises\RecordMoneyMovement;
-use App\Features\PromiseTracker\Actions\Promises\ReturnQuantity;
-use App\Features\PromiseTracker\Actions\Promises\SaveNote;
-use App\Features\PromiseTracker\Actions\Promises\SettleObligation;
-use App\Features\PromiseTracker\Actions\Promises\VoidMovement;
+use App\Features\PromiseTracker\Actions\Data\CompleteCommitmentData;
+use App\Features\PromiseTracker\Actions\Data\CorrectQuantityReturnData;
+use App\Features\PromiseTracker\Actions\Data\CreatePromiseData;
+use App\Features\PromiseTracker\Actions\Data\RecordMovementData;
+use App\Features\PromiseTracker\Actions\Data\RecordQuantityReturnData;
+use App\Features\PromiseTracker\Actions\Data\SaveNoteData;
+use App\Features\PromiseTracker\Actions\Data\SettleObligationData;
+use App\Features\PromiseTracker\Actions\Data\VoidMovementData;
+use App\Features\PromiseTracker\Actions\Money\RecordMoneyMovement;
+use App\Features\PromiseTracker\Actions\Money\VoidMovement;
+use App\Features\PromiseTracker\Actions\Obligations\CompleteCommitment;
+use App\Features\PromiseTracker\Actions\Obligations\SettleObligation;
+use App\Features\PromiseTracker\Actions\Quantities\CorrectQuantityReturn;
+use App\Features\PromiseTracker\Actions\Quantities\ReturnQuantity;
+use App\Features\PromiseTracker\Actions\Records\CreatePromise;
+use App\Features\PromiseTracker\Actions\Records\SaveNote;
 use App\Features\PromiseTracker\Domain\Enums\Direction;
 use App\Features\PromiseTracker\Domain\Enums\MoneyEntry;
 use App\Features\PromiseTracker\Domain\Enums\MovementStatus;

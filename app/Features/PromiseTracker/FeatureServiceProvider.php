@@ -10,19 +10,6 @@ use App\Features\PromiseTracker\Commands\SendDueReminders;
 use App\Features\PromiseTracker\Domain\Queries\OutstandingBalance;
 use App\Features\PromiseTracker\EntryPoints\Auth\FortifyServiceProvider;
 use App\Features\PromiseTracker\EntryPoints\Filament\AdminPanelProvider;
-use App\Features\PromiseTracker\EntryPoints\Livewire\ExchangeRates\Index as ExchangeRatesIndex;
-use App\Features\PromiseTracker\EntryPoints\Livewire\Imports\Index as ImportsIndex;
-use App\Features\PromiseTracker\EntryPoints\Livewire\Members\Index as MembersIndex;
-use App\Features\PromiseTracker\EntryPoints\Livewire\Notifications\NotificationCenter;
-use App\Features\PromiseTracker\EntryPoints\Livewire\Parties\Index as PartiesIndex;
-use App\Features\PromiseTracker\EntryPoints\Livewire\Parties\Show as PartyShow;
-use App\Features\PromiseTracker\EntryPoints\Livewire\Plans\Index as PlansIndex;
-use App\Features\PromiseTracker\EntryPoints\Livewire\Plans\Show as PlansShow;
-use App\Features\PromiseTracker\EntryPoints\Livewire\Profiles\Settings as ProfileSettings;
-use App\Features\PromiseTracker\EntryPoints\Livewire\Profiles\Tokens as ProfileTokens;
-use App\Features\PromiseTracker\EntryPoints\Livewire\Promises\Create as CreatePromise;
-use App\Features\PromiseTracker\EntryPoints\Livewire\Promises\Index as PromisesIndex;
-use App\Features\PromiseTracker\EntryPoints\Livewire\Promises\Show as ShowPromise;
 use App\Features\PromiseTracker\Listeners\CreatePersonalProfileForUser;
 use App\Features\PromiseTracker\Models\Attachment;
 use App\Features\PromiseTracker\Models\FinancialProfile;
@@ -82,19 +69,7 @@ final class FeatureServiceProvider extends FeatureModule
             SendDueReminders::class,
         ]);
 
-        Livewire::component('exchange-rates.index', ExchangeRatesIndex::class);
-        Livewire::component('imports.index', ImportsIndex::class);
-        Livewire::component('members.index', MembersIndex::class);
-        Livewire::component('notifications.notification-center', NotificationCenter::class);
-        Livewire::component('parties.index', PartiesIndex::class);
-        Livewire::component('parties.show', PartyShow::class);
-        Livewire::component('plans.index', PlansIndex::class);
-        Livewire::component('plans.show', PlansShow::class);
-        Livewire::component('profiles.settings', ProfileSettings::class);
-        Livewire::component('profiles.tokens', ProfileTokens::class);
-        Livewire::component('promises.create', CreatePromise::class);
-        Livewire::component('promises.index', PromisesIndex::class);
-        Livewire::component('promises.show', ShowPromise::class);
+        Livewire::addLocation(classNamespace: 'App\Features\PromiseTracker\EntryPoints\Livewire');
 
         Gate::policy(FinancialProfile::class, FinancialProfilePolicy::class);
         Gate::policy(Attachment::class, AttachmentPolicy::class);

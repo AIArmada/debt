@@ -2,7 +2,7 @@
 
 namespace App\Features\PromiseTracker\EntryPoints\Http\Controllers;
 
-use App\Features\PromiseTracker\Actions\Promises\AcceptInvitation;
+use App\Features\PromiseTracker\Actions\Profiles\AcceptInvitation;
 use App\Features\PromiseTracker\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;

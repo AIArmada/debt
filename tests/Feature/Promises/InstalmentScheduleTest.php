@@ -1,17 +1,17 @@
 <?php
 
-use App\Features\PromiseTracker\Actions\Promises\ConfirmProposedMovement;
-use App\Features\PromiseTracker\Actions\Promises\CreatePromise;
-use App\Features\PromiseTracker\Actions\Promises\Data\CreatePromiseData;
-use App\Features\PromiseTracker\Actions\Promises\Data\GenerateInstalmentScheduleData;
-use App\Features\PromiseTracker\Actions\Promises\Data\RecordMovementData;
-use App\Features\PromiseTracker\Actions\Promises\Data\SettleObligationData;
-use App\Features\PromiseTracker\Actions\Promises\Data\VoidMovementData;
-use App\Features\PromiseTracker\Actions\Promises\GenerateInstalmentSchedule;
-use App\Features\PromiseTracker\Actions\Promises\RecordMoneyMovement;
-use App\Features\PromiseTracker\Actions\Promises\RegenerateInstalments;
-use App\Features\PromiseTracker\Actions\Promises\SettleObligation;
-use App\Features\PromiseTracker\Actions\Promises\VoidMovement;
+use App\Features\PromiseTracker\Actions\Data\CreatePromiseData;
+use App\Features\PromiseTracker\Actions\Data\GenerateInstalmentScheduleData;
+use App\Features\PromiseTracker\Actions\Data\RecordMovementData;
+use App\Features\PromiseTracker\Actions\Data\SettleObligationData;
+use App\Features\PromiseTracker\Actions\Data\VoidMovementData;
+use App\Features\PromiseTracker\Actions\Money\ConfirmProposedMovement;
+use App\Features\PromiseTracker\Actions\Money\GenerateInstalmentSchedule;
+use App\Features\PromiseTracker\Actions\Money\RecordMoneyMovement;
+use App\Features\PromiseTracker\Actions\Money\RegenerateInstalments;
+use App\Features\PromiseTracker\Actions\Money\VoidMovement;
+use App\Features\PromiseTracker\Actions\Obligations\SettleObligation;
+use App\Features\PromiseTracker\Actions\Records\CreatePromise;
 use App\Features\PromiseTracker\Domain\Enums\Direction;
 use App\Features\PromiseTracker\Domain\Enums\InstalmentStatus;
 use App\Features\PromiseTracker\Domain\Enums\MoneyEntry;

@@ -2,7 +2,7 @@
 
 namespace App\Features\PromiseTracker\EntryPoints\Livewire\Plans;
 
-use App\Features\PromiseTracker\Actions\Promises\GeneratePlan;
+use App\Features\PromiseTracker\Actions\Plans\GeneratePlan;
 use App\Features\PromiseTracker\Domain\Enums\PlanStatus;
 use App\Features\PromiseTracker\Domain\Enums\PlanStrategy;
 use App\Features\PromiseTracker\Domain\Queries\PlanProgress;

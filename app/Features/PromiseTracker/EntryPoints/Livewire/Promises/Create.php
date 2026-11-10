@@ -2,8 +2,8 @@
 
 namespace App\Features\PromiseTracker\EntryPoints\Livewire\Promises;
 
-use App\Features\PromiseTracker\Actions\Promises\CreatePromise as CreatePromiseAction;
-use App\Features\PromiseTracker\Actions\Promises\Data\CreatePromiseData;
+use App\Features\PromiseTracker\Actions\Data\CreatePromiseData;
+use App\Features\PromiseTracker\Actions\Records\CreatePromise as CreatePromiseAction;
 use App\Features\PromiseTracker\Domain\Enums\Direction;
 use App\Features\PromiseTracker\Domain\Enums\PartyStatus;
 use App\Features\PromiseTracker\Domain\Enums\RecordVisibility;

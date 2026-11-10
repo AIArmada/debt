@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Features\PromiseTracker\Actions\Promises\CreatePromise;
-use App\Features\PromiseTracker\Actions\Promises\CreateRecordShare;
-use App\Features\PromiseTracker\Actions\Promises\Data\CreatePromiseData;
-use App\Features\PromiseTracker\Actions\Promises\Data\CreateRecordShareData;
+use App\Features\PromiseTracker\Actions\Data\CreatePromiseData;
+use App\Features\PromiseTracker\Actions\Data\CreateRecordShareData;
+use App\Features\PromiseTracker\Actions\Records\CreatePromise;
+use App\Features\PromiseTracker\Actions\Shares\CreateRecordShare;
 use App\Features\PromiseTracker\Domain\Enums\Direction;
 use App\Features\PromiseTracker\Domain\Presenters\HijriDatePresenter;
 use App\Features\PromiseTracker\EntryPoints\Livewire\Parties\Index as PeopleIndex;

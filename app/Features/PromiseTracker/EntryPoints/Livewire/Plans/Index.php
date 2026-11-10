@@ -2,8 +2,8 @@
 
 namespace App\Features\PromiseTracker\EntryPoints\Livewire\Plans;
 
-use App\Features\PromiseTracker\Actions\Promises\CreateBudgetPeriod;
-use App\Features\PromiseTracker\Actions\Promises\Data\CreateBudgetPeriodData;
+use App\Features\PromiseTracker\Actions\Data\CreateBudgetPeriodData;
+use App\Features\PromiseTracker\Actions\Plans\CreateBudgetPeriod;
 use App\Features\PromiseTracker\Models\FinancialProfile;
 use App\Features\PromiseTracker\Models\User;
 use Illuminate\Contracts\View\View;

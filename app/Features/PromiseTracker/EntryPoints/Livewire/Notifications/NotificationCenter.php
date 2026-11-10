@@ -2,10 +2,10 @@
 
 namespace App\Features\PromiseTracker\EntryPoints\Livewire\Notifications;
 
+use App\Features\PromiseTracker\Actions\Data\SnoozeReminderData;
 use App\Features\PromiseTracker\Actions\Notifications\MarkNotificationsRead;
-use App\Features\PromiseTracker\Actions\Promises\Data\SnoozeReminderData;
-use App\Features\PromiseTracker\Actions\Promises\DismissReminder;
-use App\Features\PromiseTracker\Actions\Promises\SnoozeReminder;
+use App\Features\PromiseTracker\Actions\Reminders\DismissReminder;
+use App\Features\PromiseTracker\Actions\Reminders\SnoozeReminder;
 use App\Features\PromiseTracker\Domain\Enums\Direction;
 use App\Features\PromiseTracker\Domain\Enums\NotificationType;
 use App\Features\PromiseTracker\Domain\Money\Money;

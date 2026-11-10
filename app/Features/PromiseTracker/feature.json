@@ -7,106 +7,106 @@
     ],
     "table:api_tokens": [
       "App\\Features\\PromiseTracker\\Actions\\Auth\\TouchApiToken",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\CreateApiToken",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\RevokeApiToken"
+      "App\\Features\\PromiseTracker\\Actions\\Profiles\\CreateApiToken",
+      "App\\Features\\PromiseTracker\\Actions\\Profiles\\RevokeApiToken"
     ],
     "table:attachments": [
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\AttachEvidence",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\DetachEvidence",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\ImportProfileExport"
+      "App\\Features\\PromiseTracker\\Actions\\Evidence\\AttachEvidence",
+      "App\\Features\\PromiseTracker\\Actions\\Evidence\\DetachEvidence",
+      "App\\Features\\PromiseTracker\\Actions\\Imports\\ImportProfileExport"
     ],
     "table:budget_periods": [
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\CreateBudgetPeriod"
+      "App\\Features\\PromiseTracker\\Actions\\Plans\\CreateBudgetPeriod"
     ],
     "table:commitment_subjects": [
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\PromiseSubjectWriter",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\CompleteCommitment",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\ImportProfileExport",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\ReopenCommitment"
+      "App\\Features\\PromiseTracker\\Persistence\\PromiseSubjectWriter",
+      "App\\Features\\PromiseTracker\\Actions\\Obligations\\CompleteCommitment",
+      "App\\Features\\PromiseTracker\\Actions\\Imports\\ImportProfileExport",
+      "App\\Features\\PromiseTracker\\Actions\\Obligations\\ReopenCommitment"
     ],
     "table:exchange_rates": [
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\SetExchangeRate"
+      "App\\Features\\PromiseTracker\\Actions\\Profiles\\SetExchangeRate"
     ],
     "table:financial_profiles": [
       "App\\Features\\PromiseTracker\\Actions\\Profiles\\CreatePersonalProfile",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\ImportProfileExport",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\UpdateFinancialProfile"
+      "App\\Features\\PromiseTracker\\Actions\\Imports\\ImportProfileExport",
+      "App\\Features\\PromiseTracker\\Actions\\Profiles\\UpdateFinancialProfile"
     ],
     "table:import_batches": [
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\ImportCsv"
+      "App\\Features\\PromiseTracker\\Actions\\Imports\\ImportCsv"
     ],
     "table:import_rows": [
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\ConfirmImportRow",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\DismissImportRow",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\ImportCsv",
+      "App\\Features\\PromiseTracker\\Actions\\Imports\\ConfirmImportRow",
+      "App\\Features\\PromiseTracker\\Actions\\Imports\\DismissImportRow",
+      "App\\Features\\PromiseTracker\\Actions\\Imports\\ImportCsv",
       "App\\Features\\PromiseTracker\\Persistence\\ImportMatcher"
     ],
     "table:instalment_allocations": [
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\ImportProfileExport",
+      "App\\Features\\PromiseTracker\\Actions\\Imports\\ImportProfileExport",
       "App\\Features\\PromiseTracker\\Persistence\\InstalmentAllocator"
     ],
     "table:instalments": [
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\GenerateInstalmentSchedule",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\ImportProfileExport",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\RegenerateInstalments",
+      "App\\Features\\PromiseTracker\\Actions\\Money\\GenerateInstalmentSchedule",
+      "App\\Features\\PromiseTracker\\Actions\\Imports\\ImportProfileExport",
+      "App\\Features\\PromiseTracker\\Actions\\Money\\RegenerateInstalments",
       "App\\Features\\PromiseTracker\\Persistence\\InstalmentAllocator"
     ],
     "table:money_movements": [
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\ImportProfileExport",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\OffsetObligations",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\RecordMoneyMovement",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\VoidMovement",
+      "App\\Features\\PromiseTracker\\Actions\\Imports\\ImportProfileExport",
+      "App\\Features\\PromiseTracker\\Actions\\Money\\OffsetObligations",
+      "App\\Features\\PromiseTracker\\Actions\\Money\\RecordMoneyMovement",
+      "App\\Features\\PromiseTracker\\Actions\\Money\\VoidMovement",
       "App\\Features\\PromiseTracker\\Persistence\\GenerateCharges",
       "App\\Features\\PromiseTracker\\Persistence\\MovementConfirmation",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\DismissProposedMovement",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\SaveChargeTerms"
+      "App\\Features\\PromiseTracker\\Actions\\Money\\DismissProposedMovement",
+      "App\\Features\\PromiseTracker\\Actions\\Obligations\\SaveChargeTerms"
     ],
     "table:money_subjects": [
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\ImportProfileExport",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\PromiseSubjectWriter"
+      "App\\Features\\PromiseTracker\\Actions\\Imports\\ImportProfileExport",
+      "App\\Features\\PromiseTracker\\Persistence\\PromiseSubjectWriter"
     ],
     "table:notifications": [
       "App\\Features\\PromiseTracker\\Actions\\Notifications\\MarkNotificationsRead",
       "App\\Features\\PromiseTracker\\Actions\\Reminders\\SendDueReminders"
     ],
     "table:notification_preferences": [
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\UpdateFinancialProfile"
+      "App\\Features\\PromiseTracker\\Actions\\Profiles\\UpdateFinancialProfile"
     ],
     "table:obligation_charge_terms": [
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\ImportProfileExport",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\SaveChargeTerms",
+      "App\\Features\\PromiseTracker\\Actions\\Imports\\ImportProfileExport",
+      "App\\Features\\PromiseTracker\\Actions\\Obligations\\SaveChargeTerms",
       "App\\Features\\PromiseTracker\\Persistence\\GenerateCharges",
       "App\\Features\\PromiseTracker\\Persistence\\MovementConfirmation",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\AcknowledgeShare",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\RecordMoneyMovement"
+      "App\\Features\\PromiseTracker\\Actions\\Shares\\AcknowledgeShare",
+      "App\\Features\\PromiseTracker\\Actions\\Money\\RecordMoneyMovement"
     ],
     "table:obligation_shares": [
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\ImportProfileExport",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\SetObligationShares"
+      "App\\Features\\PromiseTracker\\Actions\\Imports\\ImportProfileExport",
+      "App\\Features\\PromiseTracker\\Actions\\Obligations\\SetObligationShares"
     ],
     "table:obligations": [
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\AddObligation",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\ChangeObligationStatus",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\CompleteCommitment",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\CreatePromise",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\DisputeShare",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\ImportProfileExport",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\OffsetObligations",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\RecordMoneyMovement",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\ReopenCommitment",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\UpdatePromiseDetails",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\VoidMovement",
+      "App\\Features\\PromiseTracker\\Actions\\Obligations\\AddObligation",
+      "App\\Features\\PromiseTracker\\Actions\\Obligations\\ChangeObligationStatus",
+      "App\\Features\\PromiseTracker\\Actions\\Obligations\\CompleteCommitment",
+      "App\\Features\\PromiseTracker\\Actions\\Records\\CreatePromise",
+      "App\\Features\\PromiseTracker\\Actions\\Shares\\DisputeShare",
+      "App\\Features\\PromiseTracker\\Actions\\Imports\\ImportProfileExport",
+      "App\\Features\\PromiseTracker\\Actions\\Money\\OffsetObligations",
+      "App\\Features\\PromiseTracker\\Actions\\Money\\RecordMoneyMovement",
+      "App\\Features\\PromiseTracker\\Actions\\Obligations\\ReopenCommitment",
+      "App\\Features\\PromiseTracker\\Actions\\Records\\UpdatePromiseDetails",
+      "App\\Features\\PromiseTracker\\Actions\\Money\\VoidMovement",
       "App\\Features\\PromiseTracker\\Persistence\\GenerateCharges",
       "App\\Features\\PromiseTracker\\Persistence\\MovementConfirmation",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\CorrectQuantityReturn",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\ReturnQuantity"
+      "App\\Features\\PromiseTracker\\Actions\\Quantities\\CorrectQuantityReturn",
+      "App\\Features\\PromiseTracker\\Actions\\Quantities\\ReturnQuantity"
     ],
     "table:parties": [
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\AddRecordGuarantor",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\ArchiveParty",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\ImportProfileExport",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\ResolveCounterparty",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\RestoreParty"
+      "App\\Features\\PromiseTracker\\Actions\\Records\\AddRecordGuarantor",
+      "App\\Features\\PromiseTracker\\Actions\\Parties\\ArchiveParty",
+      "App\\Features\\PromiseTracker\\Actions\\Imports\\ImportProfileExport",
+      "App\\Features\\PromiseTracker\\Actions\\Parties\\ResolveCounterparty",
+      "App\\Features\\PromiseTracker\\Actions\\Parties\\RestoreParty"
     ],
     "table:party_contacts": [
       "App\\Features\\PromiseTracker\\Actions\\Parties\\AddPartyContact",
@@ -123,60 +123,60 @@
       "App\\Features\\PromiseTracker\\Actions\\Parties\\VerifyPaymentDestination"
     ],
     "table:plan_allocations": [
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\GeneratePlan"
+      "App\\Features\\PromiseTracker\\Actions\\Plans\\GeneratePlan"
     ],
     "table:profile_invites": [
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\AcceptInvitation",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\InviteMember",
+      "App\\Features\\PromiseTracker\\Actions\\Profiles\\AcceptInvitation",
+      "App\\Features\\PromiseTracker\\Actions\\Profiles\\InviteMember",
       "App\\Features\\PromiseTracker\\Actions\\Staff\\RevokeProfileInvite"
     ],
     "table:profile_members": [
       "App\\Features\\PromiseTracker\\Actions\\Profiles\\CreatePersonalProfile",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\AcceptInvitation",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\ChangeMemberRole",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\RemoveMember",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\ImportProfileExport"
+      "App\\Features\\PromiseTracker\\Actions\\Profiles\\AcceptInvitation",
+      "App\\Features\\PromiseTracker\\Actions\\Profiles\\ChangeMemberRole",
+      "App\\Features\\PromiseTracker\\Actions\\Profiles\\RemoveMember",
+      "App\\Features\\PromiseTracker\\Actions\\Imports\\ImportProfileExport"
     ],
     "table:quantity_returns": [
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\CorrectQuantityReturn",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\ImportProfileExport",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\ReturnQuantity"
+      "App\\Features\\PromiseTracker\\Actions\\Quantities\\CorrectQuantityReturn",
+      "App\\Features\\PromiseTracker\\Actions\\Imports\\ImportProfileExport",
+      "App\\Features\\PromiseTracker\\Actions\\Quantities\\ReturnQuantity"
     ],
     "table:quantity_subjects": [
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\ImportProfileExport",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\PromiseSubjectWriter"
+      "App\\Features\\PromiseTracker\\Actions\\Imports\\ImportProfileExport",
+      "App\\Features\\PromiseTracker\\Persistence\\PromiseSubjectWriter"
     ],
     "table:record_parties": [
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\AddRecordGuarantor",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\CreatePromise",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\ImportProfileExport",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\RemoveRecordGuarantor"
+      "App\\Features\\PromiseTracker\\Actions\\Records\\AddRecordGuarantor",
+      "App\\Features\\PromiseTracker\\Actions\\Records\\CreatePromise",
+      "App\\Features\\PromiseTracker\\Actions\\Imports\\ImportProfileExport",
+      "App\\Features\\PromiseTracker\\Actions\\Records\\RemoveRecordGuarantor"
     ],
     "table:record_shares": [
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\AcknowledgeShare",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\CreateRecordShare",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\DisputeShare",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\ImportProfileExport",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\RevokeRecordShare"
+      "App\\Features\\PromiseTracker\\Actions\\Shares\\AcknowledgeShare",
+      "App\\Features\\PromiseTracker\\Actions\\Shares\\CreateRecordShare",
+      "App\\Features\\PromiseTracker\\Actions\\Shares\\DisputeShare",
+      "App\\Features\\PromiseTracker\\Actions\\Imports\\ImportProfileExport",
+      "App\\Features\\PromiseTracker\\Actions\\Shares\\RevokeRecordShare"
     ],
     "table:records": [
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\ArchiveRecord",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\CreatePromise",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\DeleteRecord",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\ImportProfileExport",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\RestoreRecord",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\SaveNote",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\SetRecordVisibility",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\UpdatePromiseDetails"
+      "App\\Features\\PromiseTracker\\Actions\\Records\\ArchiveRecord",
+      "App\\Features\\PromiseTracker\\Actions\\Records\\CreatePromise",
+      "App\\Features\\PromiseTracker\\Actions\\Records\\DeleteRecord",
+      "App\\Features\\PromiseTracker\\Actions\\Imports\\ImportProfileExport",
+      "App\\Features\\PromiseTracker\\Actions\\Records\\RestoreRecord",
+      "App\\Features\\PromiseTracker\\Actions\\Records\\SaveNote",
+      "App\\Features\\PromiseTracker\\Actions\\Records\\SetRecordVisibility",
+      "App\\Features\\PromiseTracker\\Actions\\Records\\UpdatePromiseDetails"
     ],
     "table:reminders": [
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\DismissReminder",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\ScheduleReminder",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\SnoozeReminder",
+      "App\\Features\\PromiseTracker\\Actions\\Reminders\\DismissReminder",
+      "App\\Features\\PromiseTracker\\Actions\\Reminders\\ScheduleReminder",
+      "App\\Features\\PromiseTracker\\Actions\\Reminders\\SnoozeReminder",
       "App\\Features\\PromiseTracker\\Actions\\Reminders\\SendDueReminders"
     ],
     "table:repayment_plans": [
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\GeneratePlan"
+      "App\\Features\\PromiseTracker\\Actions\\Plans\\GeneratePlan"
     ],
     "table:support_access_grants": [
       "App\\Features\\PromiseTracker\\Actions\\Staff\\ApproveSupportAccess",
@@ -194,14 +194,18 @@
     "table:users": [
       "App\\Features\\PromiseTracker\\Actions\\Auth\\CreateNewUser",
       "App\\Features\\PromiseTracker\\Actions\\Auth\\ResetUserPassword",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\UpdateUserLocale",
+      "App\\Features\\PromiseTracker\\Actions\\Profiles\\UpdateUserLocale",
       "App\\Features\\PromiseTracker\\Persistence\\SaveAppAuthenticationSecret"
     ],
     "store:private": [
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\AttachEvidence",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\DetachEvidence",
-      "App\\Features\\PromiseTracker\\Actions\\Promises\\ImportProfileExport",
+      "App\\Features\\PromiseTracker\\Actions\\Evidence\\AttachEvidence",
+      "App\\Features\\PromiseTracker\\Actions\\Evidence\\DetachEvidence",
+      "App\\Features\\PromiseTracker\\Actions\\Imports\\ImportProfileExport",
       "App\\Features\\PromiseTracker\\Persistence\\ProfileExportStorage"
+    ],
+    "table:model_has_roles": [
+      "App\\Features\\PromiseTracker\\Actions\\Staff\\AssignStaffRole",
+      "App\\Features\\PromiseTracker\\Actions\\Staff\\RevokeStaffRole"
     ]
   }
 }

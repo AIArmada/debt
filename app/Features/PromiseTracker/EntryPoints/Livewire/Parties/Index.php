@@ -2,8 +2,8 @@
 
 namespace App\Features\PromiseTracker\EntryPoints\Livewire\Parties;
 
-use App\Features\PromiseTracker\Actions\Promises\Data\ResolveCounterpartyData;
-use App\Features\PromiseTracker\Actions\Promises\ResolveCounterparty;
+use App\Features\PromiseTracker\Actions\Data\ResolveCounterpartyData;
+use App\Features\PromiseTracker\Actions\Parties\ResolveCounterparty;
 use App\Features\PromiseTracker\Domain\Enums\PartyKind;
 use App\Features\PromiseTracker\Domain\Enums\PartyStatus;
 use App\Features\PromiseTracker\Domain\Queries\NettingSuggestion;

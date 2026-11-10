@@ -1,14 +1,14 @@
 <?php
 
-use App\Features\PromiseTracker\Actions\Promises\CreateApiToken;
-use App\Features\PromiseTracker\Actions\Promises\CreatePromise;
-use App\Features\PromiseTracker\Actions\Promises\Data\CreateApiTokenData;
-use App\Features\PromiseTracker\Actions\Promises\Data\CreatePromiseData;
-use App\Features\PromiseTracker\Actions\Promises\Data\SetExchangeRateData;
-use App\Features\PromiseTracker\Actions\Promises\Data\UpdatePromiseDetailsData;
-use App\Features\PromiseTracker\Actions\Promises\DeleteRecord;
-use App\Features\PromiseTracker\Actions\Promises\SetExchangeRate;
-use App\Features\PromiseTracker\Actions\Promises\UpdatePromiseDetails;
+use App\Features\PromiseTracker\Actions\Data\CreateApiTokenData;
+use App\Features\PromiseTracker\Actions\Data\CreatePromiseData;
+use App\Features\PromiseTracker\Actions\Data\SetExchangeRateData;
+use App\Features\PromiseTracker\Actions\Data\UpdatePromiseDetailsData;
+use App\Features\PromiseTracker\Actions\Profiles\CreateApiToken;
+use App\Features\PromiseTracker\Actions\Profiles\SetExchangeRate;
+use App\Features\PromiseTracker\Actions\Records\CreatePromise;
+use App\Features\PromiseTracker\Actions\Records\DeleteRecord;
+use App\Features\PromiseTracker\Actions\Records\UpdatePromiseDetails;
 use App\Features\PromiseTracker\Domain\Enums\ApiTokenAbility;
 use App\Features\PromiseTracker\Domain\Enums\Direction;
 use App\Features\PromiseTracker\Domain\Enums\MemberRole;

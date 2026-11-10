@@ -55,7 +55,8 @@ final class OwnedWriteRule implements Rule
             'increment', 'decrement', 'incrementquietly', 'decrementquietly', 'touch', 'touchquietly', 'touchowners',
             'incrementeach', 'decrementeach', 'insert', 'insertgetid', 'insertorignore', 'insertusing', 'upsert',
             'truncate', 'attach', 'detach', 'sync', 'syncwithoutdetaching', 'syncwithpivotvalues', 'toggle', 'updateexistingpivot',
-            'savemany', 'savemanyquietly', 'createmany', 'createmanyquietly', 'updatefrom', 'statement', 'unprepared', 'affectingstatement'];
+            'savemany', 'savemanyquietly', 'createmany', 'createmanyquietly', 'updatefrom', 'statement', 'unprepared', 'affectingstatement',
+            'assignrole', 'removerole', 'syncroles', 'givepermissionto', 'revokepermissionto', 'syncpermissions'];
         $stores = ['put', 'putfile', 'putfileas', 'set', 'setex', 'setnx', 'mset', 'hset', 'hmset', 'hdel', 'del',
             'rpush', 'lpush', 'lpop', 'rpop', 'sadd', 'srem', 'zadd', 'zrem', 'write', 'writestream',
             'delete', 'deletedirectory', 'makedirectory', 'copy', 'move', 'append', 'prepend',
@@ -81,6 +82,21 @@ final class OwnedWriteRule implements Rule
         $class = $scope->getClassReflection()?->getName();
         $resources = $class === null ? [] : ($this->catalog['writes'][$class] ?? []);
         $resource = $database ? $this->tableResource($node) : null;
+
+        // Spatie/Authz role and permission methods write package-managed pivot tables,
+        // so the receiver type (User/Role) would otherwise hide the actual resource.
+        $packagePivotResources = [
+            'assignrole' => 'table:model_has_roles',
+            'removerole' => 'table:model_has_roles',
+            'syncroles' => 'table:model_has_roles',
+            'givepermissionto' => 'table:model_has_permissions',
+            'revokepermissionto' => 'table:model_has_permissions',
+            'syncpermissions' => 'table:model_has_permissions',
+        ];
+        if ($resource === null && $database && isset($packagePivotResources[$method])) {
+            $resource = $packagePivotResources[$method];
+        }
+
         $modelClasses = $type->getObjectClassNames();
         $relatedTypes = [
             $type->getTemplateType('Illuminate\Database\Eloquent\Builder', 'TModel'),

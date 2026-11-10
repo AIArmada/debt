@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Features\PromiseTracker\Actions\Promises\Data\ImportCsvData;
-use App\Features\PromiseTracker\Actions\Promises\ImportCsv;
+use App\Features\PromiseTracker\Actions\Data\ImportCsvData;
+use App\Features\PromiseTracker\Actions\Imports\ImportCsv;
 use App\Features\PromiseTracker\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;

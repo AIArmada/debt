@@ -2,14 +2,14 @@
 
 namespace Tests\Feature\Promises;
 
-use App\Features\PromiseTracker\Actions\Promises\CreatePromise;
-use App\Features\PromiseTracker\Actions\Promises\Data\CreatePromiseData;
-use App\Features\PromiseTracker\Actions\Promises\Data\GenerateInstalmentScheduleData;
-use App\Features\PromiseTracker\Actions\Promises\Data\OffsetObligationsData;
-use App\Features\PromiseTracker\Actions\Promises\Data\VoidMovementData;
-use App\Features\PromiseTracker\Actions\Promises\GenerateInstalmentSchedule;
-use App\Features\PromiseTracker\Actions\Promises\OffsetObligations;
-use App\Features\PromiseTracker\Actions\Promises\VoidMovement;
+use App\Features\PromiseTracker\Actions\Data\CreatePromiseData;
+use App\Features\PromiseTracker\Actions\Data\GenerateInstalmentScheduleData;
+use App\Features\PromiseTracker\Actions\Data\OffsetObligationsData;
+use App\Features\PromiseTracker\Actions\Data\VoidMovementData;
+use App\Features\PromiseTracker\Actions\Money\GenerateInstalmentSchedule;
+use App\Features\PromiseTracker\Actions\Money\OffsetObligations;
+use App\Features\PromiseTracker\Actions\Money\VoidMovement;
+use App\Features\PromiseTracker\Actions\Records\CreatePromise;
 use App\Features\PromiseTracker\Domain\Enums\ClosureReason;
 use App\Features\PromiseTracker\Domain\Enums\Direction;
 use App\Features\PromiseTracker\Domain\Enums\MoneyEntry;

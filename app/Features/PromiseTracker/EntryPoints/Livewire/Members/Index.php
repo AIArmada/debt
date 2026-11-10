@@ -2,11 +2,11 @@
 
 namespace App\Features\PromiseTracker\EntryPoints\Livewire\Members;
 
-use App\Features\PromiseTracker\Actions\Promises\ChangeMemberRole;
-use App\Features\PromiseTracker\Actions\Promises\Data\ChangeMemberRoleData;
-use App\Features\PromiseTracker\Actions\Promises\Data\InviteMemberData;
-use App\Features\PromiseTracker\Actions\Promises\InviteMember;
-use App\Features\PromiseTracker\Actions\Promises\RemoveMember;
+use App\Features\PromiseTracker\Actions\Data\ChangeMemberRoleData;
+use App\Features\PromiseTracker\Actions\Data\InviteMemberData;
+use App\Features\PromiseTracker\Actions\Profiles\ChangeMemberRole;
+use App\Features\PromiseTracker\Actions\Profiles\InviteMember;
+use App\Features\PromiseTracker\Actions\Profiles\RemoveMember;
 use App\Features\PromiseTracker\Domain\Enums\MemberRole;
 use App\Features\PromiseTracker\Models\FinancialProfile;
 use App\Features\PromiseTracker\Models\User;

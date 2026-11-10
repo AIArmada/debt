@@ -2,13 +2,13 @@
 
 namespace Tests\Feature\Promises;
 
-use App\Features\PromiseTracker\Actions\Promises\AddRecordGuarantor;
-use App\Features\PromiseTracker\Actions\Promises\CreatePromise;
-use App\Features\PromiseTracker\Actions\Promises\CreateRecordShare;
-use App\Features\PromiseTracker\Actions\Promises\Data\CreatePromiseData;
-use App\Features\PromiseTracker\Actions\Promises\Data\CreateRecordShareData;
-use App\Features\PromiseTracker\Actions\Promises\Data\RecordGuarantorData;
-use App\Features\PromiseTracker\Actions\Promises\RemoveRecordGuarantor;
+use App\Features\PromiseTracker\Actions\Data\CreatePromiseData;
+use App\Features\PromiseTracker\Actions\Data\CreateRecordShareData;
+use App\Features\PromiseTracker\Actions\Data\RecordGuarantorData;
+use App\Features\PromiseTracker\Actions\Records\AddRecordGuarantor;
+use App\Features\PromiseTracker\Actions\Records\CreatePromise;
+use App\Features\PromiseTracker\Actions\Records\RemoveRecordGuarantor;
+use App\Features\PromiseTracker\Actions\Shares\CreateRecordShare;
 use App\Features\PromiseTracker\Domain\Enums\Direction;
 use App\Features\PromiseTracker\Domain\Enums\MemberRole;
 use App\Features\PromiseTracker\Domain\Enums\PartyKind;

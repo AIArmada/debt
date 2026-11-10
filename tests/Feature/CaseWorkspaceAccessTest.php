@@ -1,7 +1,7 @@
 <?php
 
 use AIArmada\Authz\Models\Role;
-use App\Features\PromiseTracker\Actions\Promises\AcceptInvitation;
+use App\Features\PromiseTracker\Actions\Profiles\AcceptInvitation;
 use App\Features\PromiseTracker\Actions\Staff\CloseSupportCase;
 use App\Features\PromiseTracker\Actions\Staff\RevokeProfileInvite;
 use App\Features\PromiseTracker\Actions\Staff\RevokeSupportAccess;

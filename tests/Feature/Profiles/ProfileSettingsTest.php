@@ -1,10 +1,10 @@
 <?php
 
-use App\Features\PromiseTracker\Actions\Promises\CreateApiToken;
-use App\Features\PromiseTracker\Actions\Promises\Data\CreateApiTokenData;
-use App\Features\PromiseTracker\Actions\Promises\Data\UpdateFinancialProfileData;
-use App\Features\PromiseTracker\Actions\Promises\RevokeApiToken;
-use App\Features\PromiseTracker\Actions\Promises\UpdateFinancialProfile;
+use App\Features\PromiseTracker\Actions\Data\CreateApiTokenData;
+use App\Features\PromiseTracker\Actions\Data\UpdateFinancialProfileData;
+use App\Features\PromiseTracker\Actions\Profiles\CreateApiToken;
+use App\Features\PromiseTracker\Actions\Profiles\RevokeApiToken;
+use App\Features\PromiseTracker\Actions\Profiles\UpdateFinancialProfile;
 use App\Features\PromiseTracker\Domain\Enums\ApiTokenAbility;
 use App\Features\PromiseTracker\Domain\Enums\MemberRole;
 use App\Features\PromiseTracker\EntryPoints\Livewire\Profiles\Settings as ProfileSettings;

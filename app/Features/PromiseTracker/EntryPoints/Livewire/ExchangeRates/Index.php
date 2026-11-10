@@ -2,8 +2,8 @@
 
 namespace App\Features\PromiseTracker\EntryPoints\Livewire\ExchangeRates;
 
-use App\Features\PromiseTracker\Actions\Promises\Data\SetExchangeRateData;
-use App\Features\PromiseTracker\Actions\Promises\SetExchangeRate;
+use App\Features\PromiseTracker\Actions\Data\SetExchangeRateData;
+use App\Features\PromiseTracker\Actions\Profiles\SetExchangeRate;
 use App\Features\PromiseTracker\Domain\Queries\ConvertedView;
 use App\Features\PromiseTracker\Models\FinancialProfile;
 use App\Features\PromiseTracker\Models\User;

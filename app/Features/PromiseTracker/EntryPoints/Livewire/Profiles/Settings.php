@@ -2,8 +2,8 @@
 
 namespace App\Features\PromiseTracker\EntryPoints\Livewire\Profiles;
 
-use App\Features\PromiseTracker\Actions\Promises\Data\UpdateFinancialProfileData;
-use App\Features\PromiseTracker\Actions\Promises\UpdateFinancialProfile;
+use App\Features\PromiseTracker\Actions\Data\UpdateFinancialProfileData;
+use App\Features\PromiseTracker\Actions\Profiles\UpdateFinancialProfile;
 use App\Features\PromiseTracker\Models\FinancialProfile;
 use App\Features\PromiseTracker\Models\User;
 use Illuminate\Contracts\View\View;

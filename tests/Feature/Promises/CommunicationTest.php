@@ -1,11 +1,11 @@
 <?php
 
-use App\Features\PromiseTracker\Actions\Promises\CreatePromise;
-use App\Features\PromiseTracker\Actions\Promises\Data\CreatePromiseData;
-use App\Features\PromiseTracker\Actions\Promises\Data\ScheduleReminderData;
-use App\Features\PromiseTracker\Actions\Promises\Data\UpdatePromiseDetailsData;
-use App\Features\PromiseTracker\Actions\Promises\ScheduleReminder;
-use App\Features\PromiseTracker\Actions\Promises\UpdatePromiseDetails;
+use App\Features\PromiseTracker\Actions\Data\CreatePromiseData;
+use App\Features\PromiseTracker\Actions\Data\ScheduleReminderData;
+use App\Features\PromiseTracker\Actions\Data\UpdatePromiseDetailsData;
+use App\Features\PromiseTracker\Actions\Records\CreatePromise;
+use App\Features\PromiseTracker\Actions\Records\UpdatePromiseDetails;
+use App\Features\PromiseTracker\Actions\Reminders\ScheduleReminder;
 use App\Features\PromiseTracker\Domain\Communication\MessageTemplates;
 use App\Features\PromiseTracker\Domain\Enums\Direction;
 use App\Features\PromiseTracker\Domain\Enums\ReminderChannel;

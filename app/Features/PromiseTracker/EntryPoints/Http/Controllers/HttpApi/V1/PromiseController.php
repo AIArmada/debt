@@ -2,10 +2,10 @@
 
 namespace App\Features\PromiseTracker\EntryPoints\Http\Controllers\HttpApi\V1;
 
-use App\Features\PromiseTracker\Actions\Promises\CreatePromise;
-use App\Features\PromiseTracker\Actions\Promises\Data\CreatePromiseData;
-use App\Features\PromiseTracker\Actions\Promises\Data\RecordMovementData;
-use App\Features\PromiseTracker\Actions\Promises\RecordMoneyMovement;
+use App\Features\PromiseTracker\Actions\Data\CreatePromiseData;
+use App\Features\PromiseTracker\Actions\Data\RecordMovementData;
+use App\Features\PromiseTracker\Actions\Money\RecordMoneyMovement;
+use App\Features\PromiseTracker\Actions\Records\CreatePromise;
 use App\Features\PromiseTracker\Domain\Enums\PartyRole;
 use App\Features\PromiseTracker\Domain\Enums\SubjectType;
 use App\Features\PromiseTracker\Domain\Queries\OutstandingBalance;

@@ -1,19 +1,19 @@
 <?php
 
-use App\Features\PromiseTracker\Actions\Promises\AcknowledgeShare;
-use App\Features\PromiseTracker\Actions\Promises\ConfirmProposedMovement;
-use App\Features\PromiseTracker\Actions\Promises\CreatePromise;
-use App\Features\PromiseTracker\Actions\Promises\CreateRecordShare;
-use App\Features\PromiseTracker\Actions\Promises\Data\AcknowledgeShareData;
-use App\Features\PromiseTracker\Actions\Promises\Data\CreatePromiseData;
-use App\Features\PromiseTracker\Actions\Promises\Data\CreateRecordShareData;
-use App\Features\PromiseTracker\Actions\Promises\Data\RecordMovementData;
-use App\Features\PromiseTracker\Actions\Promises\Data\SaveChargeTermsData;
-use App\Features\PromiseTracker\Actions\Promises\Data\VoidMovementData;
-use App\Features\PromiseTracker\Actions\Promises\DismissProposedMovement;
-use App\Features\PromiseTracker\Actions\Promises\RecordMoneyMovement;
-use App\Features\PromiseTracker\Actions\Promises\SaveChargeTerms;
-use App\Features\PromiseTracker\Actions\Promises\VoidMovement;
+use App\Features\PromiseTracker\Actions\Data\AcknowledgeShareData;
+use App\Features\PromiseTracker\Actions\Data\CreatePromiseData;
+use App\Features\PromiseTracker\Actions\Data\CreateRecordShareData;
+use App\Features\PromiseTracker\Actions\Data\RecordMovementData;
+use App\Features\PromiseTracker\Actions\Data\SaveChargeTermsData;
+use App\Features\PromiseTracker\Actions\Data\VoidMovementData;
+use App\Features\PromiseTracker\Actions\Money\ConfirmProposedMovement;
+use App\Features\PromiseTracker\Actions\Money\DismissProposedMovement;
+use App\Features\PromiseTracker\Actions\Money\RecordMoneyMovement;
+use App\Features\PromiseTracker\Actions\Money\VoidMovement;
+use App\Features\PromiseTracker\Actions\Obligations\SaveChargeTerms;
+use App\Features\PromiseTracker\Actions\Records\CreatePromise;
+use App\Features\PromiseTracker\Actions\Shares\AcknowledgeShare;
+use App\Features\PromiseTracker\Actions\Shares\CreateRecordShare;
 use App\Features\PromiseTracker\Domain\Enums\Direction;
 use App\Features\PromiseTracker\Domain\Enums\MoneyEntry;
 use App\Features\PromiseTracker\Domain\Enums\MovementStatus;

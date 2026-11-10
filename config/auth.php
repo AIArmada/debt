@@ -62,6 +62,7 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
+            // The owning feature provider sets this to its User model at runtime.
             'model' => env('AUTH_MODEL'),
         ],
 
